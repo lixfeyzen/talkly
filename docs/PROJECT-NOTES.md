@@ -89,8 +89,30 @@ nggak ada isu keamanan finansial tingkat tinggi. Data model lebih simpel
 cocok buat proyek mobile PERTAMA sebelum balik ke ide expense-tracker sebagai
 proyek kedua.
 
-## Next step
+## Progres
 
-Definisi produk & fitur SUDAH DIKUNCI. Tinggal susun fase development (mirror
-pola: scaffold → auth → data model → integrasi AI → aksi notifikasi →
-polish/demo) — belum dimulai, tunggu konfirmasi "go" dari user.
+- ✅ **Fase 1 SELESAI (2026-07-03) — Scaffold.** Expo SDK 57 + TypeScript +
+  Expo Router (`npx create-expo-app@latest`, template default). **Terbukti:**
+  `npx tsc --noEmit` 0 error, `npm run lint` 0 error, `npx expo start --web`
+  jalan & server merespons HTTP 200 di localhost:8081 (dicek via curl).
+  1 bug bawaan template diperbaiki: `src/hooks/use-color-scheme.web.ts`
+  melanggar rule `react-hooks/set-state-in-effect` (setState langsung di body
+  effect) — diganti ke `useSyncExternalStore` (pola resmi React buat nilai yang
+  beda sebelum/sesudah hydration), bukan cuma di-suppress.
+- ⚠️ **Catatan git penting:** folder ini AWALNYA nggak dikasih `.git` sendiri
+  oleh scaffold (ada prompt "existing Git repository" yang otomatis ke-skip
+  karena non-interactive) — ternyata **seluruh drive `D:\` adalah 1 repo git**
+  (`D:\.git`, tanpa remote, cuma lokal). Ini kemungkinan besar nggak disengaja
+  dan mencakup file kuliah pribadi (folder "ALL ABOUT UMN") juga. Sudah
+  di-mitigasi buat proyek ini dengan `git init` MANDIRI di dalam folder proyek
+  (persis kayak pola Vale/gym) — repo proyek ini AMAN & terpisah dari repo D:\
+  raksasa itu (git otomatis berhenti nge-track begitu ketemu `.git` bersarang).
+  **Belum ditangani:** repo `D:\.git` itu sendiri masih ada, bisa jadi masalah
+  kalau suatu saat ada yang nggak sengaja `git add` skala besar dari situ.
+- ⏳ **NEXT:** Fase 2 — auth mobile (JWT) + backend Next.js/Drizzle/Neon.
+
+## Next step (arah ke depan)
+
+Susun fase development lanjutan: auth → data model (riwayat chat + pola
+kesalahan) → integrasi AI (OpenAI, backend proxy) → aksi notifikasi (Expo
+Notifications) → polish/demo.
