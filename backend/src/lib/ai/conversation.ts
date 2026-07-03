@@ -12,6 +12,11 @@ const turnResultSchema = z.object({
       category: z.enum(MISTAKE_CATEGORIES),
       originalText: z.string().describe("Kutipan persis bagian kalimat user yang salah"),
       correctedText: z.string().describe("Versi yang benar dari bagian itu"),
+      note: z
+        .string()
+        .describe(
+          "Penjelasan 1 kalimat kenapa itu salah, ditulis dalam BAHASA NATIVE user",
+        ),
     }),
   ),
 });
@@ -22,12 +27,18 @@ function buildSystemPrompt(
   scenario: string,
   targetLanguage: string,
   focusCategories: MistakeCategory[],
+  nativeLanguage: string | null,
 ): string {
+  // Default Indonesian: basis user awal produk ini. User yang sudah
+  // onboarding selalu punya nilai sendiri.
+  const native = nativeLanguage ?? "Indonesian";
   const parts = [
     `Kamu berperan sebagai partner roleplay percakapan buat latihan bahasa ${targetLanguage}.`,
     `Skenario saat ini: "${scenario}".`,
+    `Bahasa native user: ${native} -- pertimbangkan pola kesalahan khas penutur ${native} saat mendeteksi kesalahan.`,
     `Balas HANYA dalam ${targetLanguage} (jangan campur bahasa lain di field "reply"), natural, sesuai skenario, singkat (1-3 kalimat) biar percakapan tetap mengalir seperti obrolan nyata.`,
     `Selain balasan, deteksi kesalahan grammar/vocab pada pesan TERAKHIR user (bukan pesan kamu sendiri). Kalau tidak ada kesalahan, kembalikan array mistakes kosong -- JANGAN mengarang kesalahan yang tidak ada.`,
+    `Field "note" tiap kesalahan: penjelasan 1 kalimat dalam bahasa ${native}.`,
     `Kategori kesalahan HARUS salah satu dari: ${MISTAKE_CATEGORIES.join(", ")}.`,
   ];
   if (focusCategories.length > 0) {
@@ -46,11 +57,15 @@ export async function runConversationTurn(
   history: ChatTurn[],
   userMessage: string,
   focusCategories: MistakeCategory[] = [],
+  nativeLanguage: string | null = null,
 ): Promise<TurnResult> {
   const completion = await openai.chat.completions.parse({
     model: "gpt-4o-2024-08-06",
     messages: [
-      { role: "system", content: buildSystemPrompt(scenario, targetLanguage, focusCategories) },
+      {
+        role: "system",
+        content: buildSystemPrompt(scenario, targetLanguage, focusCategories, nativeLanguage),
+      },
       ...history.map((turn) => ({ role: turn.role, content: turn.content })),
       { role: "user", content: userMessage },
     ],

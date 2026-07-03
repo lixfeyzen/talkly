@@ -3,6 +3,7 @@
 // DATABASE_URL hidup).
 import { registerSchema, loginSchema } from "../src/lib/validations/auth";
 import { sendMessageSchema } from "../src/lib/validations/conversation";
+import { updateProfileSchema } from "../src/lib/validations/profile";
 
 let pass = 0;
 let fail = 0;
@@ -73,6 +74,20 @@ check(
     sessionId: "00000000-0000-0000-0000-000000000000",
     message: "lanjut ngobrol",
   }).success,
+);
+
+// --- updateProfileSchema (bahasa native) ---
+check(
+  "profile: bahasa dari allowlist diterima",
+  updateProfileSchema.safeParse({ nativeLanguage: "Indonesian" }).success,
+);
+check(
+  "profile: bahasa di luar allowlist ditolak (bukan teks bebas)",
+  !updateProfileSchema.safeParse({ nativeLanguage: "Klingon" }).success,
+);
+check(
+  "profile: tanpa nativeLanguage ditolak",
+  !updateProfileSchema.safeParse({}).success,
 );
 
 console.log(`\nRINGKASAN: ${pass} lulus, ${fail} gagal`);

@@ -30,6 +30,11 @@ export default function HomeScreen() {
         router.replace('/login');
         return;
       }
+      // Belum pilih bahasa native (akun baru) -> onboarding sekali.
+      if (!user.nativeLanguage) {
+        router.replace('/onboarding');
+        return;
+      }
       setEmail(user.email);
       setChecking(false);
       // Streak & saran latihan buat home -- gagal fetch bukan alasan blokir,

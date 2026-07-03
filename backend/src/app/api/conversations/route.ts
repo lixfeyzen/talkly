@@ -10,6 +10,9 @@ import {
   recordMistakes,
 } from "@/lib/data/conversations";
 import { recordPractice } from "@/lib/data/streaks";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
 
 export function OPTIONS() {
@@ -66,6 +69,14 @@ export async function POST(req: NextRequest) {
   const MAX_HISTORY_TURNS = 20;
   const recentHistory = history.slice(-MAX_HISTORY_TURNS);
 
+  // Bahasa native user -> penjelasan koreksi (field note) ditulis dalam
+  // bahasa itu. null (belum onboarding) -> default Indonesian di prompt.
+  const [userRow] = await db
+    .select({ nativeLanguage: users.nativeLanguage })
+    .from(users)
+    .where(eq(users.id, auth.userId))
+    .limit(1);
+
   let result;
   try {
     result = await runConversationTurn(
@@ -74,6 +85,7 @@ export async function POST(req: NextRequest) {
       recentHistory,
       message,
       focusCategories,
+      userRow?.nativeLanguage ?? null,
     );
   } catch (err) {
     console.error("OpenAI conversation turn failed:", err);

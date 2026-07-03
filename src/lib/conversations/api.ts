@@ -15,6 +15,9 @@ export type Mistake = {
   category: MistakeCategory;
   originalText: string;
   correctedText: string;
+  // Penjelasan singkat dalam bahasa native user. Optional di type supaya
+  // kompatibel dgn transkrip lama yang tersimpan tanpa field ini.
+  note?: string;
 };
 
 type SendMessageResponse = {

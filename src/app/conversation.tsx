@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -169,12 +170,24 @@ export default function ConversationScreen() {
                 {msg.mistakes && msg.mistakes.length > 0 && (
                   <ThemedView style={styles.mistakeNote}>
                     {msg.mistakes.map((m, mi) => (
-                      <ThemedText
-                        key={mi}
-                        type="small"
-                        style={msg.role === 'user' ? styles.mistakeTextOnAccent : { color: theme.textSecondary }}>
-                        {m.originalText} → {m.correctedText}
-                      </ThemedText>
+                      <View key={mi} style={styles.mistakeItem}>
+                        <ThemedText
+                          type="small"
+                          style={msg.role === 'user' ? styles.mistakeTextOnAccent : { color: theme.textSecondary }}>
+                          {m.originalText} → {m.correctedText}
+                        </ThemedText>
+                        {m.note ? (
+                          <ThemedText
+                            type="small"
+                            style={
+                              msg.role === 'user'
+                                ? styles.mistakeNoteOnAccent
+                                : { color: theme.textSecondary }
+                            }>
+                            {m.note}
+                          </ThemedText>
+                        ) : null}
+                      </View>
                     ))}
                   </ThemedView>
                 )}
@@ -231,7 +244,9 @@ const styles = StyleSheet.create({
   bubbleUser: { alignSelf: 'flex-end' },
   bubbleAssistant: { alignSelf: 'flex-start' },
   mistakeNote: { marginTop: Spacing.two, gap: 2 },
+  mistakeItem: { gap: 1, marginBottom: Spacing.one },
   mistakeTextOnAccent: { color: 'rgba(255,255,255,0.85)' },
+  mistakeNoteOnAccent: { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' },
   typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
   error: { color: '#d92d20' },
   inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three },
