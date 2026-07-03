@@ -224,15 +224,36 @@ kode lain jalan. Diperbaiki pakai flag native `tsx --env-file=.env.local`.
    LUAR tab bar — ini juga desain produk yang benar (nggak masuk akal ada tab
    bar Home/Explore muncul pas lagi di layar login).
 
-**Verifikasi visual app-nya SENDIRI masih tertunda** — koneksi ekstensi
-browser terputus di tengah proses, bukan masalah di kode. Server backend
-(`:3001`) & Expo web (`:8081`) tetap hidup, siap dibuka user langsung.
+## ✅ Poles UI + bersih-bersih struktural (2026-07-03)
+
+User kasih feedback jujur: tampilannya belum kerasa "production ready".
+Dicek, benar — dan akar masalahnya BUKAN cuma soal warna:
+
+- **Tab "Explore" itu konten scaffold Expo default 100% tidak tersentuh**
+  (link dokumentasi generik) — nggak ada hubungannya sama Talkly, tapi
+  kelihatan di nav bar tiap user. DIHAPUS total, bareng seluruh sistem
+  Tabs+TabSlot (`app-tabs.tsx` dkk) yang memang didesain buat 2-tab demo
+  yang produknya sendiri nggak butuh. Root layout sekarang `Stack` polos.
+- Rebrand: `app.json` name → "Talkly" (masih "ai-language-practice-mobile"
+  sebelumnya), wordmark "TALKLY" di layar auth.
+- 1 warna aksen (coral `#FF6B4F`) dipakai KONSISTEN buat semua aksi utama
+  (tombol submit, chip skenario/bahasa terpilih, bubble chat user) —
+  bukan asal ganti-ganti warna, satu warna konsisten baru kerasa "didesain".
+- Input form pakai background terisi (bukan cuma border tipis default).
+
+**Batasan jujur yang BELUM diperbaiki:** splash screen native masih pakai
+logo Expo (`expo-logo.png`) — ganti ini butuh aset logo/ikon asli, perlu
+didesain dulu atau user yang sediakan, bukan sesuatu yang bisa kubuat
+sendiri dari kode doang.
+
+**Verifikasi visual app-nya SENDIRI masih belum bisa kulakukan** — koneksi
+ekstensi browser otomatisku terputus & belum konek lagi (di luar
+kendaliku). Server backend (`:3001`) & Expo web (`:8081`) tetap hidup.
 
 ## Next step (arah ke depan)
 
-1. **User buka `http://localhost:8081` sendiri di browser** buat lihat
-   langsung app-nya jalan (server sudah hidup) — sekalian jadi verifikasi
-   visual yang belum sempat aku selesaikan.
+1. **User buka `http://localhost:8081` sendiri di browser** buat lihat versi
+   yang sudah dipoles — kabari kalau ada yang masih kurang pas.
 2. Tambah saldo di platform.openai.com (klik "Add credits") — kode integrasi
    AI sudah terverifikasi BENAR, tinggal ini buat lanjut tes percakapan
    penuh.
