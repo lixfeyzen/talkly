@@ -19,6 +19,10 @@ export const conversationSessions = pgTable("conversation_sessions", {
   // tabel terpisah per-pesan -- percakapan roleplay pendek (~10-20 giliran),
   // nggak butuh query per-pesan individual di MVP ini.
   transcript: jsonb("transcript").notNull().default([]),
+  // Kategori kelemahan yang jadi fokus sesi ini (fitur #3 skenario adaptif).
+  // Disimpan di sesi (bukan dikirim ulang tiap giliran) supaya seluruh
+  // percakapan konsisten menargetkan pola yang sama.
+  focusCategories: jsonb("focus_categories").notNull().default([]),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

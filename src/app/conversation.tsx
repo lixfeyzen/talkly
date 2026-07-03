@@ -9,13 +9,13 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
-import { sendMessage, type Mistake } from '@/lib/conversations/api';
+import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { ApiError } from '@/lib/api/client';
 
 const SCENARIOS = ['Pesan kopi', 'Interview kerja', 'Tanya arah', 'Ngobrol santai'];
@@ -27,7 +27,17 @@ export default function ConversationScreen() {
   const theme = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
-  const [scenario, setScenario] = useState<string | null>(null);
+  // Latihan terarah (fitur #3): home bisa membuka layar ini dengan skenario
+  // adaptif + kategori fokus lewat route params. Tanpa params = alur biasa.
+  const params = useLocalSearchParams<{ scenario?: string; focus?: string }>();
+  const focusCategories =
+    typeof params.focus === 'string' && params.focus.length > 0
+      ? (params.focus.split(',') as MistakeCategory[])
+      : undefined;
+
+  const [scenario, setScenario] = useState<string | null>(
+    typeof params.scenario === 'string' && params.scenario.length > 0 ? params.scenario : null,
+  );
   const [language, setLanguage] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -50,6 +60,9 @@ export default function ConversationScreen() {
         sessionId,
         scenario: scenario ?? undefined,
         targetLanguage: language ?? undefined,
+        // Hanya relevan saat membuat sesi baru; sesi lanjutan pakai fokus
+        // yang sudah tersimpan di server.
+        focusCategories: sessionId ? undefined : focusCategories,
         message: userText,
       });
       setSessionId(res.sessionId);
@@ -104,7 +117,10 @@ export default function ConversationScreen() {
             Skenario
           </ThemedText>
           <ThemedView style={styles.optionRow}>
-            {SCENARIOS.map((s) => (
+            {(scenario && !SCENARIOS.includes(scenario)
+              ? [scenario, ...SCENARIOS]
+              : SCENARIOS
+            ).map((s) => (
               <Pressable
                 key={s}
                 onPress={() => setScenario(s)}

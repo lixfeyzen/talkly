@@ -4,10 +4,15 @@ import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/d
 import type { ChatTurn } from "@/lib/ai/conversation";
 import type { MistakeCategory } from "@/lib/ai/mistake-categories";
 
-export async function createSession(userId: string, scenario: string, targetLanguage: string) {
+export async function createSession(
+  userId: string,
+  scenario: string,
+  targetLanguage: string,
+  focusCategories: MistakeCategory[] = [],
+) {
   const [session] = await db
     .insert(conversationSessions)
-    .values({ userId, scenario, targetLanguage, transcript: [] })
+    .values({ userId, scenario, targetLanguage, transcript: [], focusCategories })
     .returning();
   return session;
 }

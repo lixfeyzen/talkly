@@ -27,6 +27,7 @@ export async function sendMessage(params: {
   sessionId?: string;
   scenario?: string;
   targetLanguage?: string;
+  focusCategories?: MistakeCategory[];
   message: string;
 }): Promise<SendMessageResponse> {
   return apiFetch<SendMessageResponse>('/api/conversations', {
@@ -34,4 +35,20 @@ export async function sendMessage(params: {
     auth: true,
     body: params,
   });
+}
+
+// Latihan terarah (fitur #3): saran skenario dari kelemahan user.
+// suggestion null = user belum punya data kesalahan (tampilkan pilihan standar).
+export type SuggestedScenario = {
+  scenario: string;
+  focusCategories: MistakeCategory[];
+  reason: string;
+};
+
+export async function fetchSuggestedScenario(): Promise<SuggestedScenario | null> {
+  const res = await apiFetch<{ suggestion: SuggestedScenario | null }>(
+    '/api/scenarios/suggested',
+    { auth: true },
+  );
+  return res.suggestion;
 }

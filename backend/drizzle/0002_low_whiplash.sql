@@ -1,0 +1,1 @@
+ALTER TABLE "conversation_sessions" ADD COLUMN "focus_categories" jsonb DEFAULT '[]'::jsonb NOT NULL;

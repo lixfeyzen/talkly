@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { sendMessageSchema } from "@/lib/validations/conversation";
 import { runConversationTurn, type ChatTurn } from "@/lib/ai/conversation";
+import type { MistakeCategory } from "@/lib/ai/mistake-categories";
 import {
   createSession,
   getSessionForUser,
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
   let history: ChatTurn[] = [];
   let scenario = parsed.data.scenario;
   let targetLanguage = parsed.data.targetLanguage;
+  let focusCategories: MistakeCategory[] = parsed.data.focusCategories ?? [];
 
   if (sessionId) {
     const session = await getSessionForUser(sessionId, auth.userId);
@@ -44,6 +46,8 @@ export async function POST(req: NextRequest) {
     history = (session.transcript as ChatTurn[]) ?? [];
     scenario = session.scenario;
     targetLanguage = session.targetLanguage;
+    // Sesi lanjutan pakai fokus yang tersimpan -- konsisten sepanjang sesi.
+    focusCategories = (session.focusCategories as MistakeCategory[] | undefined) ?? [];
   } else {
     if (!scenario || !targetLanguage) {
       return jsonCors(
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const session = await createSession(auth.userId, scenario, targetLanguage);
+    const session = await createSession(auth.userId, scenario, targetLanguage, focusCategories);
     sessionId = session.id;
   }
 
@@ -64,7 +68,13 @@ export async function POST(req: NextRequest) {
 
   let result;
   try {
-    result = await runConversationTurn(scenario, targetLanguage, recentHistory, message);
+    result = await runConversationTurn(
+      scenario,
+      targetLanguage,
+      recentHistory,
+      message,
+      focusCategories,
+    );
   } catch (err) {
     console.error("OpenAI conversation turn failed:", err);
     return jsonCors({ error: "ai_service_unavailable" }, { status: 502 });

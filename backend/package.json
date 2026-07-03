@@ -13,6 +13,8 @@
     "test:validations": "tsx scripts/test-validations.mts",
     "test:dashboard": "tsx --env-file=.env.local scripts/test-dashboard.mts",
     "test:streak": "tsx --env-file=.env.local scripts/test-streak.mts",
+    "test:adaptive": "tsx --env-file=.env.local scripts/test-adaptive.mts",
+    "dev:seed-stats": "tsx --env-file=.env.local scripts/dev-seed-stats.mts",
     "cleanup:test-users": "tsx --env-file=.env.local scripts/cleanup-test-users.mts"
   },
   "dependencies": {

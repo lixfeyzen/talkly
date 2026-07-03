@@ -289,16 +289,57 @@ DAN produksi, nggak gantung ke bundler. `proxy.ts` dihapus (mati).
 CORS; POST daftar cross-origin 201 + header; alur penuh daftar→login→me→
 dashboard semua bawa header CORS.
 
+## ✅ ONE-SHOT tanpa saldo OpenAI (2026-07-03): fitur #4 & #3 SELESAI — MVP 5/5 code-complete
+
+Dikerjakan satu sesi atas mandat "go" user (plan: kerjakan semua yang tidak
+butuh OpenAI; yang butuh cuma tersisa 1 pass verifikasi saat saldo masuk).
+
+**Fitur #4 — Streak harian + notifikasi (commit `d09d39c`):**
+- Tabel `user_streaks` (per-hari kalender **UTC** — timezone per-user = V2;
+  `longest_streak` terjaga saat reset). Migrasi 0001 applied ke Neon.
+- `recordPractice()` dipanggil tiap giliran `/api/conversations` sukses
+  (idempoten per-hari); streak ikut di respons conversations & `/api/dashboard`.
+- **`test:streak` 15/15 lulus lawan Neon live** (naik/tetap/reset/bolong/
+  longest/isolasi antar-user; tanggal disimulasi via param `now`).
+- Mobile: badge 🔥 di home, tile streak di dashboard, toggle reminder harian
+  19:00 via `expo-notifications` (native only — **web disembunyikan**, modul
+  tak didukung web; bukti notifikasi muncul = butuh HP/emulator, belum dicek).
+
+**Fitur #3 — Skenario adaptif (commit setelahnya):**
+- `suggestScenario()` = fungsi MURNI (tanpa DB/AI): stats → 1-2 kategori
+  terlemah → skenario yang memaksa pola itu + alasan. 9 kategori terpetakan.
+- `GET /api/scenarios/suggested` (auth-gated; user baru → `{suggestion:null}`).
+- `focus_categories` disimpan DI SESI (migrasi 0002) — sesi lanjutan pakai
+  fokus tersimpan, bukan kiriman client; injeksi ke system prompt hanya
+  menambah 1 instruksi "arahkan percakapan secara halus".
+- **`test:adaptive` 15/15 lulus** (9 unit murni + 6 live: urutan by count,
+  isolasi, persist di sesi, empty-state).
+- Mobile: kartu "🎯 Latihan terarah buatmu" di home (scenario+focus via route
+  params → conversation), chip skenario adaptif muncul di layar pilih.
+- Alat dev: `npm run dev:seed-stats -- <email>` (seed kelemahan buat uji
+  manual latihan terarah tanpa saldo OpenAI).
+
+**Verifikasi one-shot (semua output nyata, 2026-07-03):**
+- tsc + eslint 0 error di KEDUA proyek.
+- Semua suite lawan Neon live: validations 11 + auth 8 + dashboard 13 +
+  streak 15 + adaptive 15 = **62/62 lulus**.
+- Endpoint live via curl (server :3001): register 201 → suggested user baru
+  `{suggestion:null}` → tanpa auth 401 → dashboard ber-field streak →
+  setelah seed kelemahan: suggested balikin skenario preposisi+word_order
+  dengan reason ber-angka, header CORS lengkap. User test dibersihkan.
+- **BELUM terverifikasi (jujur):** percakapan AI end-to-end (tetap butuh
+  saldo OpenAI — kini SATU-SATUNYA utang bukti); notifikasi muncul di HP
+  fisik/emulator; tampilan visual layar baru (badge/kartu/tile) belum
+  di-screenshot.
+
 ## Next step (arah ke depan)
 
-1. **User buka `http://localhost:8081`** buat DAFTAR AKUN (sekarang harusnya
-   BISA) + lihat app (dashboard, ikon mata password). Backend `:3001` &
-   Expo web `:8081` sudah hidup.
-2. **Tambah saldo OpenAI** (platform.openai.com → "Add credits") — unblock tes
-   percakapan AI penuh; setelah itu dashboard bakal keisi data nyata.
-3. Bangun sisa fitur: **#3 skenario adaptif** (pilih skenario berdasar
-   kelemahan dari `user_mistake_stats`), **#4 streak + notifikasi harian**
-   (Expo Notifications).
+1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
+   (badge streak, kartu Latihan Terarah — pakai `dev:seed-stats` biar muncul,
+   tile streak di dashboard).
+2. **Tambah saldo OpenAI** (platform.openai.com → "Add credits") →
+   verifikasi ONE-SHOT penuh: ngobrol → koreksi → stats keisi → dashboard →
+   saran adaptif dari data nyata → streak naik. Lulus = 5/5 TERBUKTI hidup.
+3. Uji notifikasi di HP/emulator Android (Expo Go / dev build).
 4. Deploy publik (Vercel backend + Expo) → link hidup buat portfolio.
-5. (V2) grafik tren perbaikan lintas-waktu — butuh nyimpan mistake-rate
-   per-window, ditunda dari MVP.
+5. (V2) grafik tren perbaikan lintas-waktu; timezone per-user buat streak.

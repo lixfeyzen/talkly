@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { fetchCurrentUser, logout } from '@/lib/auth/api';
 import { fetchDashboard, type StreakData } from '@/lib/dashboard/api';
+import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
 import {
   notificationsSupported,
   configureNotificationHandler,
@@ -20,6 +21,7 @@ export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [streak, setStreak] = useState<StreakData | null>(null);
+  const [suggestion, setSuggestion] = useState<SuggestedScenario | null>(null);
   const [reminderOn, setReminderOn] = useState(false);
 
   useEffect(() => {
@@ -30,10 +32,13 @@ export default function HomeScreen() {
       }
       setEmail(user.email);
       setChecking(false);
-      // Streak buat badge -- gagal fetch bukan alasan blokir home, cukup
-      // badge-nya tidak tampil.
+      // Streak & saran latihan buat home -- gagal fetch bukan alasan blokir,
+      // cukup bagiannya tidak tampil.
       fetchDashboard()
         .then((d) => setStreak(d.streak))
+        .catch(() => {});
+      fetchSuggestedScenario()
+        .then(setSuggestion)
         .catch(() => {});
     });
     if (notificationsSupported) {
@@ -92,6 +97,31 @@ export default function HomeScreen() {
             Pilih skenario, ngobrol sama AI, dapatkan koreksi langsung.
           </ThemedText>
         </ThemedView>
+
+        {suggestion && (
+          <Pressable
+            onPress={() =>
+              router.push({
+                pathname: '/conversation',
+                params: {
+                  scenario: suggestion.scenario,
+                  focus: suggestion.focusCategories.join(','),
+                },
+              })
+            }
+            style={({ pressed }) => [
+              styles.suggestionCard,
+              { borderColor: AccentColor, opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <ThemedText type="smallBold" style={{ color: AccentColor }}>
+              🎯 Latihan terarah buatmu
+            </ThemedText>
+            <ThemedText type="smallBold">{suggestion.scenario}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {suggestion.reason}
+            </ThemedText>
+          </Pressable>
+        )}
 
         <Pressable
           onPress={() => router.push('/conversation')}
@@ -173,6 +203,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.three,
     marginTop: Spacing.two,
+  },
+  suggestionCard: {
+    borderWidth: 1,
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.one,
+    marginBottom: Spacing.three,
   },
   streakBadge: {
     borderRadius: Spacing.five,

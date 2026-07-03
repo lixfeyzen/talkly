@@ -15,6 +15,13 @@
       "when": 1783059821709,
       "tag": "0001_premium_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783060456905,
+      "tag": "0002_low_whiplash",
+      "breakpoints": true
     }
   ]
 }
