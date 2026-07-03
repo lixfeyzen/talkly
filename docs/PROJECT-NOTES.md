@@ -127,13 +127,41 @@ proyek kedua.
   **BELUM diverifikasi:** `npm run build` (production build) — sempat dicoba
   tapi dibatalkan user, belum diulang. `npm run db:migrate` + `npm run
   test:auth` — BUTUH `DATABASE_URL` asli, belum bisa jalan.
-- ⏳ **NEXT:** setelah user isi `.env.local` di `backend/` (dari
-  `.env.local.example`), jalankan migrasi + `test:auth` buat verifikasi
-  end-to-end. Lanjut fitur mobile (layar register/login, simpan token pakai
-  Expo SecureStore).
+- ✅ **Mobile auth screens SELESAI (2026-07-03).** `register.tsx`, `login.tsx`
+  (form email+password, ke backend), `src/lib/auth/token-storage.ts` (JWT
+  disimpan di keychain HP via `expo-secure-store`, BUKAN AsyncStorage biasa),
+  `src/lib/api/client.ts` (fetch wrapper + Bearer token). `index.tsx` sekarang
+  cek status login on-load, redirect ke `/login` kalau belum, tampilkan email +
+  tombol keluar kalau sudah. Nama app dikunci **"Talkly"** (dipakai juga jadi
+  nama project Neon). **Bug ditemukan & diperbaiki:** tsconfig root proyek
+  mobile ikut nge-scan folder `backend/` (proyek TS terpisah) dan bikin 10
+  error palsu — diperbaiki dengan `exclude: ["backend"]`.
+- ✅ **Fitur AI inti SELESAI ditulis (2026-07-03) — BELUM diverifikasi
+  hidup.** `lib/ai/conversation.ts`: panggilan OpenAI pakai *structured
+  output* (`zodResponseFormat`, API dicek langsung ke source SDK v6.45,
+  bukan tebakan) — hasil balik `{ reply, mistakes[] }` dalam SATU panggilan,
+  reply = balasan roleplay dalam bahasa target, mistakes = daftar kesalahan
+  terkategori. `lib/ai/mistake-categories.ts`: 9 kategori tetap (verb
+  conjugation, tense, gender agreement, dst) supaya bisa diagregasi, bukan
+  teks bebas. `lib/data/conversations.ts`: simpan sesi + transkrip (JSON,
+  bukan tabel per-pesan — cukup buat percakapan pendek) + catat kesalahan +
+  upsert statistik agregat per (user, kategori). `POST /api/conversations`:
+  endpoint auth-gated yang gabungin semua ini. **Bug ditemukan & diperbaiki
+  SEBELUM dicoba jalan:** `userMistakeStats` awalnya nggak punya unique
+  constraint di (userId, category) padahal kode upsert-nya
+  (`onConflictDoUpdate`) BUTUH itu di level database — kalau nggak
+  ditambahkan, bakal error saat runtime walau tsc lolos. Ditambahkan
+  `unique().on(table.userId, table.category)` di skema.
+- ⏳ **BLOCKER GANDA saat ini:** butuh 2 hal dari user buat verifikasi hidup:
+  (1) `DATABASE_URL` (Neon project "Talkly" — user konfirmasi sudah dibuat,
+  belum dikonfirmasi filenya sudah diisi), (2) `OPENAI_API_KEY`
+  (platform.openai.com/api-keys, berbayar). Dua-duanya tinggal ditempel ke
+  `backend/.env.local` (sudah disiapkan filenya + `JWT_SECRET` auto-generate).
 
 ## Next step (arah ke depan)
 
-Setelah auth backend terverifikasi hidup: layar register/login di mobile app
-→ data model (riwayat chat + pola kesalahan) → integrasi AI (OpenAI, backend
-proxy) → aksi notifikasi (Expo Notifications) → polish/demo.
+Begitu `DATABASE_URL` + `OPENAI_API_KEY` terisi: jalankan migrasi
+(`db:migrate`) + `test:auth` (verifikasi auth end-to-end) + tes manual
+`POST /api/conversations` (verifikasi AI + deteksi kesalahan beneran jalan).
+Lanjut: layar chat/roleplay di mobile app → aksi notifikasi (Expo
+Notifications, streak harian) → dashboard progres → polish/demo.
