@@ -41,7 +41,7 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout
-      title={'Start your\nlanguage journey!'}
+      title={'Ace your next\nEnglish interview!'}
       topQuestion="Already have an account?"
       topAction="Sign in"
       onTopAction={() => router.push('/login')}>

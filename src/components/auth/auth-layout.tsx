@@ -54,18 +54,19 @@ const DOTS: { size: number; top: number; left?: number; right?: number; color: s
   { size: 12, top: 210, right: 84, color: AuthPalette.pastel.pink },
 ];
 
-// Bubble sapaan (pengganti avatar 3D referensi).
+// Bubble frasa percakapan kerja (pengganti avatar 3D referensi) -- selaras
+// positioning: latihan interview & percakapan kantor English.
 function GreetingBubbles() {
   return (
     <View style={styles.bubbleArea}>
       <View style={[styles.bubble, styles.bubbleBig, { backgroundColor: AuthPalette.pastel.pink }]}>
-        <Text style={styles.bubbleTextBig}>Hola</Text>
+        <Text style={styles.bubbleTextBig}>Hello!</Text>
       </View>
       <View style={[styles.bubble, styles.bubbleMid, { backgroundColor: AuthPalette.pastel.ice }]}>
-        <Text style={styles.bubbleTextMid}>Bonjour</Text>
+        <Text style={styles.bubbleTextMid}>Let's talk</Text>
       </View>
       <View style={[styles.bubble, styles.bubbleSmall, { backgroundColor: AuthPalette.pastel.mint }]}>
-        <Text style={styles.bubbleTextSmall}>こんにちは</Text>
+        <Text style={styles.bubbleTextSmall}>You got this</Text>
       </View>
       <View style={styles.chip}>
         <Text style={styles.chipText}>Hey!</Text>

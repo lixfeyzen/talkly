@@ -26,7 +26,7 @@ check("UNIT: tanpa data -> null (fallback ke skenario standar)", emptyResult ===
 
 const single = suggestScenario([{ category: "tense_usage", occurrenceCount: 4 }]);
 check("UNIT: 1 kategori -> fokus 1 kategori itu", single?.focusCategories.length === 1 && single.focusCategories[0] === "tense_usage");
-check("UNIT: skenario tense menyebut latihan yang memaksa tense", single?.scenario.includes("vacation") === true);
+check("UNIT: skenario tense memaksa past+future (proyek lalu vs rencana)", single?.scenario.includes("next role") === true);
 check("UNIT: reason menyebut jumlah kesalahan", single?.reason.includes("4×") === true);
 
 const multi = suggestScenario([

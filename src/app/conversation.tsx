@@ -19,8 +19,19 @@ import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constant
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { ApiError } from '@/lib/api/client';
 
-const SCENARIOS = ['Job interview', 'Small talk with a colleague', 'Order a coffee', 'Ask for directions'];
-const LANGUAGES = ['Spanish', 'French', 'Japanese', 'English'];
+// Skenario di-target ke market: interview kerja & percakapan kantor English.
+const SCENARIOS = [
+  'Job interview',
+  'Tell me about yourself',
+  'Salary negotiation',
+  'Small talk with a colleague',
+  'Client meeting Q&A',
+  'Networking event',
+];
+// Beachhead produk = belajar ENGLISH (keputusan market 2026-07-03). Kolom
+// target_language tetap ada di DB -- ekspansi multi-bahasa nanti tinggal
+// menghidupkan kembali picker-nya.
+const TARGET_LANGUAGE = 'English';
 
 type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[] };
 
@@ -39,14 +50,13 @@ export default function ConversationScreen() {
   const [scenario, setScenario] = useState<string | null>(
     typeof params.scenario === 'string' && params.scenario.length > 0 ? params.scenario : null,
   );
-  const [language, setLanguage] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const started = scenario !== null && language !== null;
+  const started = scenario !== null;
 
   async function handleSend() {
     if (!input.trim() || sending) return;
@@ -60,7 +70,7 @@ export default function ConversationScreen() {
       const res = await sendMessage({
         sessionId,
         scenario: scenario ?? undefined,
-        targetLanguage: language ?? undefined,
+        targetLanguage: TARGET_LANGUAGE,
         // Hanya relevan saat membuat sesi baru; sesi lanjutan pakai fokus
         // yang sudah tersimpan di server.
         focusCategories: sessionId ? undefined : focusCategories,
@@ -97,26 +107,7 @@ export default function ConversationScreen() {
             What do you want to practice?
           </ThemedText>
 
-          <ThemedText type="smallBold">Target language</ThemedText>
-          <ThemedView style={styles.optionRow}>
-            {LANGUAGES.map((lang) => (
-              <Pressable
-                key={lang}
-                onPress={() => setLanguage(lang)}
-                style={[
-                  styles.optionChip,
-                  { backgroundColor: lang === language ? AccentColor : theme.backgroundElement },
-                ]}>
-                <ThemedText type="small" style={lang === language ? { color: AccentColorOn } : undefined}>
-                  {lang}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ThemedView>
-
-          <ThemedText type="smallBold" style={{ marginTop: Spacing.three }}>
-            Scenario
-          </ThemedText>
+          <ThemedText type="smallBold">Scenario</ThemedText>
           <ThemedView style={styles.optionRow}>
             {(scenario && !SCENARIOS.includes(scenario)
               ? [scenario, ...SCENARIOS]
@@ -147,7 +138,7 @@ export default function ConversationScreen() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <ThemedText type="subtitle" style={styles.title}>
-            {scenario} · {language}
+            {scenario} · {TARGET_LANGUAGE}
           </ThemedText>
 
           <ScrollView

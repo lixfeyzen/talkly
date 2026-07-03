@@ -14,16 +14,18 @@ export type SuggestedScenario = {
 
 // Tiap kategori kesalahan dipetakan ke skenario yang secara alami memaksa
 // pola itu sering muncul (mis. cerita kemarin-vs-besok memaksa ganti tense).
+// Konteks skenario mengikuti target market: interview kerja & percakapan
+// kantor. Tiap skenario tetap MEMAKSA pola grammar kategorinya muncul sering.
 const SCENARIO_BY_CATEGORY: Record<MistakeCategory, string> = {
-  verb_conjugation: "Tell a new colleague about your family's daily routine",
-  tense_usage: "Talk about your last vacation, then your plans for the next one",
-  gender_agreement: "Shop for clothes: describe colors, sizes, and materials",
-  plural_agreement: "Order food & drinks for a big group at a restaurant",
-  preposition_usage: "Explain the route from your home to a favorite place, step by step",
-  article_usage: "Describe what's in your room and the things you want to buy",
-  word_order: "Light debate: agree or disagree, give your opinion + reasons",
-  vocabulary_choice: "Explain your favorite hobby in as much detail as you can",
-  other: "Casual small talk about your week",
+  verb_conjugation: "Describe your team's daily routine to a new colleague",
+  tense_usage: "Interview question: walk through your last project, then your plans for your next role",
+  gender_agreement: "Describe your company, its products, and the people you work with",
+  plural_agreement: "Describe your responsibilities across multiple teams and projects",
+  preposition_usage: "Explain a project timeline: deadlines, handoffs, and who reports to whom",
+  article_usage: "Describe your role, the company you work for, and the tools you use",
+  word_order: "Interview question: describe a challenge you faced — your opinion + reasons",
+  vocabulary_choice: "Explain your proudest project in as much detail as you can",
+  other: "Small talk with a colleague about your week",
 };
 
 const LABELS: Record<MistakeCategory, string> = {
