@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Pressable, ActivityIndicator, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -37,20 +37,26 @@ export default function HomeScreen() {
       }
       setEmail(user.email);
       setChecking(false);
-      // Streak & saran latihan buat home -- gagal fetch bukan alasan blokir,
-      // cukup bagiannya tidak tampil.
-      fetchDashboard()
-        .then((d) => setStreak(d.streak))
-        .catch(() => {});
-      fetchSuggestedScenario()
-        .then(setSuggestion)
-        .catch(() => {});
     });
     if (notificationsSupported) {
       configureNotificationHandler();
       isDailyReminderEnabled().then(setReminderOn);
     }
   }, []);
+
+  // Refresh tiap kali home KEMBALI fokus (bukan cuma mount pertama) --
+  // pulang dari sesi latihan, streak & saran latihan harus langsung update.
+  // Gagal fetch bukan alasan blokir; cukup bagiannya tidak tampil.
+  useFocusEffect(
+    useCallback(() => {
+      fetchDashboard()
+        .then((d) => setStreak(d.streak))
+        .catch(() => {});
+      fetchSuggestedScenario()
+        .then(setSuggestion)
+        .catch(() => {});
+    }, []),
+  );
 
   async function handleReminderToggle(next: boolean) {
     if (next) {

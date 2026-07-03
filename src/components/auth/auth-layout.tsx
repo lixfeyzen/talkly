@@ -63,7 +63,7 @@ function GreetingBubbles() {
         <Text style={styles.bubbleTextBig}>Hello!</Text>
       </View>
       <View style={[styles.bubble, styles.bubbleMid, { backgroundColor: AuthPalette.pastel.ice }]}>
-        <Text style={styles.bubbleTextMid}>Let's talk</Text>
+        <Text style={styles.bubbleTextMid}>Let’s talk</Text>
       </View>
       <View style={[styles.bubble, styles.bubbleSmall, { backgroundColor: AuthPalette.pastel.mint }]}>
         <Text style={styles.bubbleTextSmall}>You got this</Text>

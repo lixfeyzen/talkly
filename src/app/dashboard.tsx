@@ -11,10 +11,11 @@ import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboa
 
 function formatLastPracticed(iso: string | null): string {
   if (!iso) return 'Never';
-  const date = new Date(iso);
-  const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
+  // Selisih HARI KALENDER (tengah-malam lokal), bukan jendela 24 jam --
+  // latihan kemarin 22:00 dilihat pagi ini harus "Yesterday", bukan "Today".
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 86_400_000);
+  if (diffDays <= 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   return `${diffDays} days ago`;
 }
@@ -44,7 +45,7 @@ export default function DashboardScreen() {
     return (
       <ThemedView style={styles.centered}>
         <ThemedText type="default" themeColor="textSecondary">
-          Couldn't load your data. Try again later.
+          Couldn’t load your data. Try again later.
         </ThemedText>
         <Pressable onPress={() => router.back()} style={styles.backLink}>
           <ThemedText type="link">← Back</ThemedText>
