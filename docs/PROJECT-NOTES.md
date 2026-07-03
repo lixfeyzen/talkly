@@ -203,11 +203,39 @@ kode lain jalan. Diperbaiki pakai flag native `tsx --env-file=.env.local`.
   sesuai desain, bukan crash. Artinya KODE integrasinya BENAR, tinggal
   **user perlu tambah saldo/billing di platform.openai.com** buat lanjut.
 
+## ✅ 3 bug lagi ketemu & diperbaiki (2026-07-03, saat coba screenshot app-nya)
+
+1. **CORS** — Next.js API routes nggak kirim header CORS secara default.
+   Native iOS/Android nggak kena masalah ini, tapi target WEB kena. Ditambah
+   `backend/proxy.ts`. Auth pakai Bearer-token (bukan cookie), jadi origin
+   permisif aman di sini — risiko "jangan pakai * dengan credentials" itu
+   spesifik ke cookie.
+2. **`expo-secure-store` nggak ada implementasi WEB beneran** (modul web-nya
+   cuma objek kosong) — manggil ini di web bikin HANG DIAM-DIAM (bukan error),
+   bikin proses cek-login-saat-app-dibuka nyangkut selamanya tanpa pesan
+   error apa pun. `token-storage.ts` sekarang pakai `localStorage` di web,
+   keychain asli di native — pola standar Expo buat ini.
+3. **Arsitektur navigasi:** `login`/`register`/`conversation` awalnya jadi
+   route SEJAJAR sama `index`/`explore` di bawah layout `Tabs+TabSlot` yang
+   didesain buat SET TAB TETAP. Di web, ini bikin pindah ke `/login` tetap
+   nunjukkin isi tab Home — URL berubah tapi layarnya nggak. Direstruktur
+   jadi route group `(tabs)` (index+explore, layout sendiri) + root layout
+   ganti ke `Stack` yang nampilin login/register/conversation full-screen DI
+   LUAR tab bar — ini juga desain produk yang benar (nggak masuk akal ada tab
+   bar Home/Explore muncul pas lagi di layar login).
+
+**Verifikasi visual app-nya SENDIRI masih tertunda** — koneksi ekstensi
+browser terputus di tengah proses, bukan masalah di kode. Server backend
+(`:3001`) & Expo web (`:8081`) tetap hidup, siap dibuka user langsung.
+
 ## Next step (arah ke depan)
 
-**Tinggal 1 langkah dari user:** tambah metode pembayaran + isi saldo di
-platform.openai.com (klik "Add credits"). Begitu itu beres, ulang tes manual
-`POST /api/conversations` buat konfirmasi balasan AI + deteksi kesalahan
-beneran keluar. Setelah itu baru masuk fase polish: aksi notifikasi (Expo
-Notifications, streak harian), skenario adaptif (#3), dashboard progres (#5,
-agregat dari `user_mistake_stats`), lalu demo/deploy.
+1. **User buka `http://localhost:8081` sendiri di browser** buat lihat
+   langsung app-nya jalan (server sudah hidup) — sekalian jadi verifikasi
+   visual yang belum sempat aku selesaikan.
+2. Tambah saldo di platform.openai.com (klik "Add credits") — kode integrasi
+   AI sudah terverifikasi BENAR, tinggal ini buat lanjut tes percakapan
+   penuh.
+3. Setelah itu: aksi notifikasi (Expo Notifications, streak harian), skenario
+   adaptif (#3), dashboard progres (#5, agregat dari `user_mistake_stats`),
+   lalu demo/deploy.
