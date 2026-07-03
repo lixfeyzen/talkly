@@ -439,6 +439,24 @@ dashboard, streak+reminder, onboarding bahasa native; kategori
 `gender_agreement` dibiarkan (tak merusak, jarang kepilih utk English).
 Bukti: 80/80 suite hijau + register & scenario picker diverifikasi visual.
 
+## ✅ Audit fitur #5 + fix presisi + layar Settings (2026-07-03, `57e63d8` + `77889bd`)
+
+Audit teliti dashboard: data layer & layar SOLID (13/13, selalu fresh saat
+dibuka krn di-push→remount), TAPI ketemu & FIX 2 cacat: (1) "Last practiced"
+dihitung jendela 24-jam, kini HARI KALENDER lokal; (2) badge streak + kartu
+saran di HOME basi setelah latihan (home tak remount saat back) → kini
+refresh tiap fokus via `useFocusEffect`. +2 error lint `no-unescaped-entities`
+yang sebelumnya TERSEMBUNYI karena output lint di-`tail` (pelajaran: jangan
+truncate output verifikasi). **Gap visi #5 tetap V2 sadar:** dashboard =
+akumulasi kelemahan, belum lintasan perbaikan lintas-waktu (butuh skema
+per-window). **Layar Settings SELESAI+terverifikasi** (`/settings`): ganti
+bahasa native (tap chip → optimistic+rollback, bukti DB: me balikin nilai
+baru), Change password → alur kode-email yang sudah teruji (tanpa endpoint
+baru), Log out pindah ke sini (home → link Settings). CATATAN OPS: IP LAN
+BERUBAH saat ganti Wi-Fi (192.168.0.110→192.168.40.229) — sempat bikin
+redirect-login palsu (bundle nembak IP lama); kalau app "can't reach server",
+cek `ipconfig` dulu.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
