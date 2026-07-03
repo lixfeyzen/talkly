@@ -16,6 +16,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
         <Stack.Screen name="conversation" />
+        <Stack.Screen name="dashboard" />
       </Stack>
     </ThemeProvider>
   );

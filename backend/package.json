@@ -10,7 +10,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "test:auth": "tsx --env-file=.env.local scripts/test-auth.mts",
-    "test:validations": "tsx scripts/test-validations.mts"
+    "test:validations": "tsx scripts/test-validations.mts",
+    "test:dashboard": "tsx --env-file=.env.local scripts/test-dashboard.mts",
+    "cleanup:test-users": "tsx --env-file=.env.local scripts/cleanup-test-users.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

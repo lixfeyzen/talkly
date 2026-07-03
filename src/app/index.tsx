@@ -68,6 +68,12 @@ export default function HomeScreen() {
           </ThemedText>
         </Pressable>
 
+        <Pressable
+          onPress={() => router.push('/dashboard')}
+          style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
+          <ThemedText type="smallBold">Lihat progresku</ThemedText>
+        </Pressable>
+
         <Pressable onPress={handleLogout} style={styles.secondaryButton}>
           <ThemedText type="small" themeColor="textSecondary">
             Keluar
@@ -105,6 +111,14 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     paddingVertical: Spacing.three,
     alignItems: 'center',
+  },
+  secondaryOutlineButton: {
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: AccentColor,
+    marginTop: Spacing.two,
   },
   secondaryButton: {
     alignItems: 'center',
