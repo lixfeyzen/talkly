@@ -14,7 +14,7 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { sendMessage, type Mistake } from '@/lib/conversations/api';
 import { ApiError } from '@/lib/api/client';
 
@@ -91,9 +91,11 @@ export default function ConversationScreen() {
                 onPress={() => setLanguage(lang)}
                 style={[
                   styles.optionChip,
-                  { backgroundColor: lang === language ? theme.backgroundSelected : theme.backgroundElement },
+                  { backgroundColor: lang === language ? AccentColor : theme.backgroundElement },
                 ]}>
-                <ThemedText type="small">{lang}</ThemedText>
+                <ThemedText type="small" style={lang === language ? { color: AccentColorOn } : undefined}>
+                  {lang}
+                </ThemedText>
               </Pressable>
             ))}
           </ThemedView>
@@ -108,9 +110,11 @@ export default function ConversationScreen() {
                 onPress={() => setScenario(s)}
                 style={[
                   styles.optionChip,
-                  { backgroundColor: s === scenario ? theme.backgroundSelected : theme.backgroundElement },
+                  { backgroundColor: s === scenario ? AccentColor : theme.backgroundElement },
                 ]}>
-                <ThemedText type="small">{s}</ThemedText>
+                <ThemedText type="small" style={s === scenario ? { color: AccentColorOn } : undefined}>
+                  {s}
+                </ThemedText>
               </Pressable>
             ))}
           </ThemedView>
@@ -136,13 +140,23 @@ export default function ConversationScreen() {
             {messages.map((msg, i) => (
               <ThemedView
                 key={i}
-                type={msg.role === 'user' ? 'backgroundSelected' : 'backgroundElement'}
-                style={[styles.bubble, msg.role === 'user' ? styles.bubbleUser : styles.bubbleAssistant]}>
-                <ThemedText type="default">{msg.content}</ThemedText>
+                type={msg.role === 'assistant' ? 'backgroundElement' : undefined}
+                style={[
+                  styles.bubble,
+                  msg.role === 'user'
+                    ? [styles.bubbleUser, { backgroundColor: AccentColor }]
+                    : styles.bubbleAssistant,
+                ]}>
+                <ThemedText type="default" style={msg.role === 'user' ? { color: AccentColorOn } : undefined}>
+                  {msg.content}
+                </ThemedText>
                 {msg.mistakes && msg.mistakes.length > 0 && (
                   <ThemedView style={styles.mistakeNote}>
                     {msg.mistakes.map((m, mi) => (
-                      <ThemedText key={mi} type="small" themeColor="textSecondary">
+                      <ThemedText
+                        key={mi}
+                        type="small"
+                        style={msg.role === 'user' ? styles.mistakeTextOnAccent : { color: theme.textSecondary }}>
                         {m.originalText} → {m.correctedText}
                       </ThemedText>
                     ))}
@@ -160,19 +174,26 @@ export default function ConversationScreen() {
           )}
 
           <ThemedView style={styles.inputRow}>
-            <TextInput
-              placeholder="Ketik pesanmu..."
-              placeholderTextColor={theme.textSecondary}
-              value={input}
-              onChangeText={setInput}
-              onSubmitEditing={handleSend}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            />
+            <ThemedView type="backgroundElement" style={styles.inputWrapper}>
+              <TextInput
+                placeholder="Ketik pesanmu..."
+                placeholderTextColor={theme.textSecondary}
+                value={input}
+                onChangeText={setInput}
+                onSubmitEditing={handleSend}
+                style={[styles.input, { color: theme.text }]}
+              />
+            </ThemedView>
             <Pressable
               onPress={handleSend}
               disabled={sending || !input.trim()}
-              style={[styles.sendButton, { backgroundColor: theme.backgroundSelected }]}>
-              <ThemedText type="smallBold">Kirim</ThemedText>
+              style={({ pressed }) => [
+                styles.sendButton,
+                { backgroundColor: AccentColor, opacity: !input.trim() ? 0.5 : pressed ? 0.85 : 1 },
+              ]}>
+              <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
+                Kirim
+              </ThemedText>
             </Pressable>
           </ThemedView>
         </SafeAreaView>
@@ -190,13 +211,15 @@ const styles = StyleSheet.create({
   optionChip: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: Spacing.five },
   messages: { flex: 1 },
   messagesContent: { gap: Spacing.two, paddingBottom: Spacing.three },
-  bubble: { padding: Spacing.three, borderRadius: Spacing.two, maxWidth: '85%' },
+  bubble: { padding: Spacing.three, borderRadius: Spacing.three, maxWidth: '85%' },
   bubbleUser: { alignSelf: 'flex-end' },
   bubbleAssistant: { alignSelf: 'flex-start' },
   mistakeNote: { marginTop: Spacing.two, gap: 2 },
+  mistakeTextOnAccent: { color: 'rgba(255,255,255,0.85)' },
   typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
   error: { color: '#d92d20' },
   inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three },
-  input: { flex: 1, borderWidth: 1, borderRadius: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
-  sendButton: { borderRadius: Spacing.two, paddingHorizontal: Spacing.four, justifyContent: 'center' },
+  inputWrapper: { flex: 1, borderRadius: Spacing.three },
+  input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
+  sendButton: { borderRadius: Spacing.three, paddingHorizontal: Spacing.four, justifyContent: 'center' },
 });

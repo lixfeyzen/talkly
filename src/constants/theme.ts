@@ -7,6 +7,12 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Talkly brand accent -- warm coral, distinct from the generic tech-blue
+// default template color and from Duolingo's green. Used for primary
+// actions (buttons, active states) only; everything else stays neutral.
+export const AccentColor = '#FF6B4F';
+export const AccentColorOn = '#ffffff';
+
 export const Colors = {
   light: {
     text: '#000000',

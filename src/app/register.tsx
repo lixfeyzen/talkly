@@ -6,7 +6,7 @@ import { Link, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { register } from '@/lib/auth/api';
 import { ApiError } from '@/lib/api/client';
 
@@ -39,30 +39,37 @@ export default function RegisterScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.brand}>
+          TALKLY
+        </ThemedText>
         <ThemedText type="title" style={styles.title}>
-          Daftar
+          Buat akun
         </ThemedText>
 
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor={theme.textSecondary}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-        />
-        <TextInput
-          placeholder="Password (minimal 8 karakter)"
-          placeholderTextColor={theme.textSecondary}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-        />
+        <ThemedView type="backgroundElement" style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor={theme.textSecondary}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            style={[styles.input, { color: theme.text }]}
+          />
+        </ThemedView>
+        <ThemedView type="backgroundElement" style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Password (minimal 8 karakter)"
+            placeholderTextColor={theme.textSecondary}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={[styles.input, { color: theme.text }]}
+          />
+        </ThemedView>
 
         {error && (
-          <ThemedText type="small" themeColor="text" style={styles.error}>
+          <ThemedText type="small" style={styles.error}>
             {error}
           </ThemedText>
         )}
@@ -70,8 +77,17 @@ export default function RegisterScreen() {
         <Pressable
           onPress={handleSubmit}
           disabled={loading || !email || !password}
-          style={[styles.button, { backgroundColor: theme.backgroundSelected, opacity: loading ? 0.6 : 1 }]}>
-          {loading ? <ActivityIndicator /> : <ThemedText type="smallBold">Buat akun</ThemedText>}
+          style={({ pressed }) => [
+            styles.button,
+            { backgroundColor: AccentColor, opacity: loading ? 0.6 : pressed ? 0.85 : 1 },
+          ]}>
+          {loading ? (
+            <ActivityIndicator color={AccentColorOn} />
+          ) : (
+            <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
+              Buat akun
+            </ThemedText>
+          )}
         </Pressable>
 
         <Link href="/login" style={styles.link}>
@@ -93,18 +109,21 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
   },
-  title: { marginBottom: Spacing.three },
+  brand: { letterSpacing: 2 },
+  title: { marginBottom: Spacing.two },
+  inputWrapper: {
+    borderRadius: Spacing.three,
+  },
   input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
     fontSize: 16,
   },
   button: {
-    borderRadius: Spacing.two,
+    borderRadius: Spacing.three,
     paddingVertical: Spacing.three,
     alignItems: 'center',
+    marginTop: Spacing.two,
   },
   error: { color: '#d92d20' },
   link: { alignSelf: 'center', marginTop: Spacing.two },
