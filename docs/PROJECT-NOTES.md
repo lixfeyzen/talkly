@@ -423,6 +423,22 @@ penutur asli Inggris.
   dashboard 13/auth 8), login English diverifikasi visual di browser.
 - Catatan: komentar kode masih Indonesia (internal, tak berdampak user).
 
+## ✅ Audit market-fit fitur (2026-07-03, commit `a8a69a5`)
+
+Cross-check semua fitur vs ICP terkunci. **3 kontradiksi dibuang:**
+(1) picker bahasa target Spanish/French/Japanese DIHAPUS dari UI —
+`TARGET_LANGUAGE='English'` (kolom DB `target_language` TETAP; ekspansi
+multi-bahasa nanti = hidupkan lagi picker); (2) skenario turis (pesan kopi,
+tanya arah) → set karier: Job interview · Tell me about yourself · Salary
+negotiation · Small talk with a colleague · Client meeting Q&A · Networking
+event; (3) peta skenario adaptif di-rekontekstualisasi ke situasi kerja
+(pola grammar tetap dipaksa — mis. tense = "last project vs next role").
+Minor: bubble auth Hola/Bonjour → frasa kerja English; judul register →
+"Ace your next English interview!". **Tetap (selaras):** mistake tracking,
+dashboard, streak+reminder, onboarding bahasa native; kategori
+`gender_agreement` dibiarkan (tak merusak, jarang kepilih utk English).
+Bukti: 80/80 suite hijau + register & scenario picker diverifikasi visual.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
