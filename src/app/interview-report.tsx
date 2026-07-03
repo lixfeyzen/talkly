@@ -5,8 +5,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, CardShadow } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
 
@@ -71,7 +72,7 @@ export default function InterviewReportScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={() => router.replace('/')} style={styles.backLink}>
@@ -170,7 +171,7 @@ export default function InterviewReportScreen() {
           </ThemedView>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -182,15 +183,15 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.four, gap: Spacing.three },
   backLink: { marginBottom: Spacing.one },
   title: { marginBottom: Spacing.two },
-  scoreCard: { borderRadius: Spacing.three, padding: Spacing.four, alignItems: 'center', gap: Spacing.one },
+  scoreCard: { ...CardShadow, borderRadius: 24, padding: Spacing.four, alignItems: 'center', gap: Spacing.one },
   scoreNumber: { fontSize: 64, lineHeight: 72, fontWeight: '800' },
-  section: { gap: Spacing.two, marginTop: Spacing.two },
+  section: { gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
   sectionTitle: { marginBottom: Spacing.half },
-  dimCard: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.two },
+  dimCard: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.two },
   dimHeader: { flexDirection: 'row', justifyContent: 'space-between' },
   barTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: 4 },
-  card: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
+  card: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
   ok: { color: '#067647' },
   warn: { color: '#d92d20' },
 });

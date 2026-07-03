@@ -5,8 +5,9 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, CardShadow } from '@/constants/theme';
 import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboard/api';
 
 function formatLastPracticed(iso: string | null): string {
@@ -57,7 +58,7 @@ export default function DashboardScreen() {
   const hasData = data.activity.totalSessions > 0;
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
@@ -181,7 +182,7 @@ export default function DashboardScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -192,23 +193,26 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.four, gap: Spacing.three },
   backLink: { marginBottom: Spacing.one },
   title: { marginBottom: Spacing.two },
-  statRow: { flexDirection: 'row', gap: Spacing.three },
+  statRow: { flexDirection: 'row', gap: Spacing.three, backgroundColor: 'transparent' },
   statBox: {
     flex: 1,
-    borderRadius: Spacing.three,
+    ...CardShadow,
+    borderRadius: 20,
     padding: Spacing.three,
     alignItems: 'center',
     gap: Spacing.one,
   },
   statNumber: { fontSize: 36, lineHeight: 42 },
   card: {
-    borderRadius: Spacing.three,
+    ...CardShadow,
+    borderRadius: 20,
     padding: Spacing.three,
     gap: Spacing.one,
   },
-  section: { gap: Spacing.two, marginTop: Spacing.two },
+  section: { gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
   sectionTitle: { marginBottom: Spacing.one },
   weaknessRow: {
+    ...CardShadow,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

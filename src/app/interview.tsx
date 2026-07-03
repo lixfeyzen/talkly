@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { INTERVIEW_ROLES } from '@/lib/interviews/api';
@@ -15,7 +16,7 @@ export default function InterviewStartScreen() {
   const [role, setRole] = useState<string | null>(null);
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
@@ -66,7 +67,7 @@ export default function InterviewStartScreen() {
           </Pressable>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -77,14 +78,14 @@ const styles = StyleSheet.create({
   backLink: { marginBottom: Spacing.one },
   title: { marginBottom: Spacing.half },
   label: { marginTop: Spacing.two },
-  optionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  optionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
   optionChip: {
     borderRadius: 999,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
   },
   startButton: {
-    borderRadius: Spacing.three,
+    borderRadius: 999,
     paddingVertical: Spacing.three,
     alignItems: 'center',
     marginTop: Spacing.three,

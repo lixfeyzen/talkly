@@ -5,8 +5,9 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from '@/constants/theme';
 import {
   fetchCurrentUser,
   logout,
@@ -62,7 +63,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
@@ -146,7 +147,7 @@ export default function SettingsScreen() {
           </Pressable>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -156,10 +157,11 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.four, gap: Spacing.three },
   backLink: { marginBottom: Spacing.one },
   title: { marginBottom: Spacing.two },
-  card: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  section: { gap: Spacing.two, marginTop: Spacing.two },
+  card: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
+  section: { gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
   sectionTitle: { marginBottom: Spacing.half },
   optionGrid: {
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.two,
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
   },
-  rowButton: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
+  rowButton: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
   ok: { color: '#067647' },
   error: { color: '#d92d20' },
   logout: { alignItems: 'center', paddingVertical: Spacing.three, marginTop: Spacing.four },

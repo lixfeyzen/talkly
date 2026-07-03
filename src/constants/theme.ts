@@ -7,27 +7,37 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// Talkly brand accent -- warm coral, distinct from the generic tech-blue
-// default template color and from Duolingo's green. Used for primary
-// actions (buttons, active states) only; everything else stays neutral.
-export const AccentColor = '#FF6B4F';
+// Talkly brand (2026-07-03, arahan user dari referensi UI kit "Coursely"):
+// terang, lavender lembut, kartu putih membulat, aksen UNGU. Satu bahasa
+// desain utk seluruh app -- tema dark DISENGAJA disamakan dgn light (brand
+// light-first; lihat juga userInterfaceStyle di app.json).
+export const AccentColor = '#6C5CE7';
 export const AccentColorOn = '#ffffff';
 
+// Gradient latar khas kit: lavender -> hampir putih. Dipakai via komponen
+// GradientBackground (expo-linear-gradient).
+export const BrandGradient = ['#E4DDFF', '#F2ECFB', '#FAF8FF'] as const;
+
+// Bayangan kartu lembut (senada aksen) -- dipakai kartu putih di atas gradient.
+export const CardShadow = {
+  shadowColor: '#6C5CE7',
+  shadowOpacity: 0.08,
+  shadowRadius: 16,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+} as const;
+
+const brandPalette = {
+  text: '#1B1740',
+  background: '#F5F2FE',
+  backgroundElement: '#FFFFFF',
+  backgroundSelected: '#E7E1FB',
+  textSecondary: '#6B678D',
+};
+
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
+  light: brandPalette,
+  dark: brandPalette,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;

@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { setNativeLanguage, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
@@ -37,7 +38,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <ThemedText type="title" style={styles.title}>
@@ -95,7 +96,7 @@ export default function OnboardingScreen() {
           </Pressable>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -116,6 +117,7 @@ const styles = StyleSheet.create({
   title: { textAlign: 'center' },
   subtitle: { textAlign: 'center', marginBottom: Spacing.two },
   optionGrid: {
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
   },
   error: { color: '#d92d20', textAlign: 'center' },
   button: {
-    borderRadius: Spacing.three,
+    borderRadius: 999,
     paddingVertical: Spacing.three,
     alignItems: 'center',
     marginTop: Spacing.three,

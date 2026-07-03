@@ -14,8 +14,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { GradientBackground } from '@/components/gradient-background';
 import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from '@/constants/theme';
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { INTERVIEW_OPENER } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
@@ -125,7 +126,7 @@ export default function ConversationScreen() {
 
   if (!started) {
     return (
-      <ThemedView style={styles.container}>
+      <GradientBackground>
         <SafeAreaView style={styles.safeArea}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
             <ThemedText type="link">← Back</ThemedText>
@@ -155,7 +156,7 @@ export default function ConversationScreen() {
             ))}
           </ThemedView>
         </SafeAreaView>
-      </ThemedView>
+      </GradientBackground>
     );
   }
 
@@ -163,7 +164,7 @@ export default function ConversationScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ThemedView style={styles.container}>
+      <GradientBackground>
         <SafeAreaView style={styles.safeArea}>
           <ThemedText type="subtitle" style={styles.title}>
             {isInterview
@@ -268,7 +269,7 @@ export default function ConversationScreen() {
           </ThemedView>
           )}
         </SafeAreaView>
-      </ThemedView>
+      </GradientBackground>
     </KeyboardAvoidingView>
   );
 }
@@ -278,11 +279,11 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, paddingHorizontal: Spacing.three, gap: Spacing.two, maxWidth: MaxContentWidth, alignSelf: 'center', width: '100%' },
   backLink: { marginTop: Spacing.two },
   title: { marginVertical: Spacing.two },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
   optionChip: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: Spacing.five },
   messages: { flex: 1 },
   messagesContent: { gap: Spacing.two, paddingBottom: Spacing.three },
-  bubble: { padding: Spacing.three, borderRadius: Spacing.three, maxWidth: '85%' },
+  bubble: { ...CardShadow, padding: Spacing.three, borderRadius: 20, maxWidth: '85%' },
   bubbleUser: { alignSelf: 'flex-end' },
   bubbleAssistant: { alignSelf: 'flex-start' },
   mistakeNote: { marginTop: Spacing.two, gap: 2 },
@@ -291,10 +292,10 @@ const styles = StyleSheet.create({
   mistakeNoteOnAccent: { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' },
   typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
   error: { color: '#d92d20' },
-  inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three },
-  inputWrapper: { flex: 1, borderRadius: Spacing.three },
+  inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three, backgroundColor: 'transparent' },
+  inputWrapper: { flex: 1, borderRadius: 999 },
   input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
-  sendButton: { borderRadius: Spacing.three, paddingHorizontal: Spacing.four, justifyContent: 'center' },
+  sendButton: { borderRadius: 999, paddingHorizontal: Spacing.four, justifyContent: 'center' },
   reportButton: {
     borderRadius: Spacing.three,
     paddingVertical: Spacing.three,

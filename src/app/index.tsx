@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, Switch, ScrollView } from 'react-native';
+import { StyleSheet, Pressable, ActivityIndicator, Switch, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { GradientBackground } from '@/components/gradient-background';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from '@/constants/theme';
 import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type StreakData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
@@ -77,33 +78,31 @@ export default function HomeScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title" style={styles.brand}>
-            Talkly
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {email}
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedView style={styles.hero}>
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <ThemedText type="small" themeColor="textSecondary">
+              Welcome back,
+            </ThemedText>
+            <ThemedText type="smallBold">{email}</ThemedText>
+          </View>
           {streak !== null && streak.currentStreak > 0 && (
-            <ThemedView type="backgroundElement" style={styles.streakBadge}>
-              <ThemedText type="smallBold">
-                🔥 {streak.currentStreak}-day streak
-              </ThemedText>
-            </ThemedView>
+            <View style={styles.streakBadge}>
+              <ThemedText type="smallBold">🔥 {streak.currentStreak}</ThemedText>
+            </View>
           )}
-          <ThemedText type="subtitle" style={styles.heroTitle}>
-            Ready to practice speaking today?
+        </View>
+
+        <View style={styles.hero}>
+          <ThemedText type="title" style={styles.heroTitle}>
+            Ready to practice{'\n'}your English?
           </ThemedText>
           <ThemedText type="default" themeColor="textSecondary" style={styles.heroSubtitle}>
             Pick a scenario, chat with the AI, get instant corrections.
           </ThemedText>
-        </ThemedView>
+        </View>
 
         {suggestion && (
           <Pressable
@@ -116,10 +115,7 @@ export default function HomeScreen() {
                 },
               })
             }
-            style={({ pressed }) => [
-              styles.suggestionCard,
-              { borderColor: AccentColor, opacity: pressed ? 0.85 : 1 },
-            ]}>
+            style={({ pressed }) => [styles.card, { opacity: pressed ? 0.85 : 1 }]}>
             <ThemedText type="smallBold" style={{ color: AccentColor }}>
               🎯 Targeted practice for you
             </ThemedText>
@@ -143,18 +139,34 @@ export default function HomeScreen() {
 
         <Pressable
           onPress={() => router.push('/interview')}
-          style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
-          <ThemedText type="smallBold">🎤 Mock interview</ThemedText>
+          style={({ pressed }) => [styles.card, styles.actionCard, { opacity: pressed ? 0.85 : 1 }]}>
+          <View style={styles.actionText}>
+            <ThemedText type="smallBold">🎤 Mock interview</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              5 questions + readiness report
+            </ThemedText>
+          </View>
+          <ThemedText type="smallBold" style={{ color: AccentColor }}>
+            →
+          </ThemedText>
         </Pressable>
 
         <Pressable
           onPress={() => router.push('/dashboard')}
-          style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
-          <ThemedText type="smallBold">See my progress</ThemedText>
+          style={({ pressed }) => [styles.card, styles.actionCard, { opacity: pressed ? 0.85 : 1 }]}>
+          <View style={styles.actionText}>
+            <ThemedText type="smallBold">📈 My progress</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              Weak spots, streak & readiness score
+            </ThemedText>
+          </View>
+          <ThemedText type="smallBold" style={{ color: AccentColor }}>
+            →
+          </ThemedText>
         </Pressable>
 
         {notificationsSupported && (
-          <ThemedView style={styles.reminderRow}>
+          <View style={styles.reminderRow}>
             <ThemedText type="small" themeColor="textSecondary">
               Daily practice reminder (7 PM)
             </ThemedText>
@@ -163,7 +175,7 @@ export default function HomeScreen() {
               onValueChange={handleReminderToggle}
               trackColor={{ true: AccentColor }}
             />
-          </ThemedView>
+          </View>
         )}
 
         <Pressable onPress={() => router.push('/settings')} style={styles.secondaryButton}>
@@ -173,7 +185,7 @@ export default function HomeScreen() {
         </Pressable>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </GradientBackground>
   );
 }
 
@@ -190,48 +202,52 @@ const styles = StyleSheet.create({
   // di-scroll (tidak kepotong) di HP layar pendek saat badge+kartu muncul.
   scrollContent: { flexGrow: 1, justifyContent: 'center' },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: Spacing.one,
-    marginBottom: Spacing.six,
-  },
-  brand: { fontSize: 32, lineHeight: 38 },
-  hero: {
-    alignItems: 'center',
-    gap: Spacing.two,
     marginBottom: Spacing.five,
   },
-  heroTitle: { textAlign: 'center' },
-  heroSubtitle: { textAlign: 'center' },
-  primaryButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
+  headerText: { gap: 2 },
+  hero: {
+    gap: Spacing.two,
+    marginBottom: Spacing.four,
   },
-  secondaryOutlineButton: {
-    borderRadius: Spacing.three,
+  heroTitle: { fontSize: 30, lineHeight: 38 },
+  heroSubtitle: {},
+  primaryButton: {
+    borderRadius: 999,
     paddingVertical: Spacing.three,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: AccentColor,
-    marginTop: Spacing.two,
+    marginBottom: Spacing.two,
+    ...CardShadow,
   },
   secondaryButton: {
     alignItems: 'center',
     paddingVertical: Spacing.three,
     marginTop: Spacing.two,
   },
-  suggestionCard: {
-    borderWidth: 1,
-    borderRadius: Spacing.three,
+  // Kartu putih membulat ber-bayangan lembut -- blok bangunan khas brand.
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: Spacing.three,
     gap: Spacing.one,
     marginBottom: Spacing.three,
+    ...CardShadow,
   },
+  actionCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.two,
+  },
+  actionText: { gap: 2, flexShrink: 1 },
   streakBadge: {
-    borderRadius: Spacing.five,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-    marginBottom: Spacing.one,
+    paddingVertical: Spacing.two,
+    ...CardShadow,
   },
   reminderRow: {
     flexDirection: 'row',
