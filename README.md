@@ -1,56 +1,59 @@
-# Welcome to your Expo app 👋
+# Talkly
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**AI conversation practice partner for language learners who know the grammar but freeze up in real conversation.**
 
-## Get started
+## The problem
 
-1. Install dependencies
+Apps like Duolingo are excellent at building vocabulary and grammar knowledge through bite-sized drills — but drilling isn't the same skill as constructing a sentence yourself, in real time, under a bit of social pressure. Plenty of learners can pass every lesson and still blank out the first time they actually have to order coffee in the language they've been "learning" for months. There's no low-stakes, always-available way to practice the *use* of a language before you're forced to use it for real.
 
-   ```bash
-   npm install
-   ```
+Talkly is built specifically for that gap: learners who already have the book knowledge and need the conversational reflex.
 
-2. Start the app
+## How it works
 
-   ```bash
-   npx expo start
-   ```
+1. Pick a target language and a real-life scenario (ordering coffee, a job interview, asking for directions, casual small talk).
+2. Have a text conversation with an AI playing that scenario, in-character, in the target language.
+3. Mistakes in your messages are detected and corrected inline, tagged by category (verb conjugation, tense, gender agreement, word order, etc.) — not just flagged, but *tracked*.
+4. Over multiple sessions, the app builds a picture of which patterns you actually struggle with, so future practice can target them instead of drilling things you've already mastered.
 
-In the output, you'll find options to open the app in a
+This is deliberately **not** a wrapper around a single ChatGPT prompt. The value is in the parts a raw chat interface doesn't give you for free: a persistent record of your mistakes across sessions, and a system built to act on that record (adaptive scenario selection, spaced practice) rather than just answer one question at a time.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Status
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+This is an active portfolio project, not a finished product. Honest breakdown of what's built vs. planned:
 
-## Get a fresh project
+| Feature | Status |
+|---|---|
+| Auth (register/login, JWT) | Built, pending live verification |
+| Roleplay conversation with an AI partner | Built, pending live verification |
+| Structured mistake detection & persistent tracking | Built, pending live verification |
+| Adaptive scenario selection based on weak points | Not started |
+| Daily streak + practice reminders | Not started |
+| Progress dashboard | Not started |
 
-When you're ready, run:
+## Stack
 
+- **Mobile:** React Native + Expo (Expo Router), TypeScript
+- **Backend:** Next.js API routes, deployed independently from the mobile client
+- **Database:** Neon (serverless Postgres) + Drizzle ORM
+- **AI:** OpenAI, structured outputs (`zodResponseFormat`) so the model returns a typed `{ reply, mistakes[] }` shape in one call instead of free-text that has to be parsed and hoped for
+- **Auth:** JWT (Bearer token), not cookie sessions — mobile clients don't get a browser's cookie jar, so this is the standard pattern rather than a workaround
+
+Backend and mobile client are separate deployable units living in one repo (`backend/` + the Expo app at the root) so the whole project reads as one coherent product, not two disconnected halves.
+
+## Running it locally
+
+**Backend** (`backend/`):
 ```bash
-npm run reset-project
+npm install
+cp .env.local.example .env.local   # fill in DATABASE_URL, JWT_SECRET, OPENAI_API_KEY
+npm run db:migrate
+npm run dev
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**Mobile** (project root):
+```bash
+npm install
+npx expo start
+```
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Point the mobile app at your local backend via `EXPO_PUBLIC_API_URL`.
