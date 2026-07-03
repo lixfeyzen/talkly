@@ -366,6 +366,23 @@ salah 400 → benar 200 → login pw lama 401 / baru 200 → reuse 400. Bundle w
 Metro diperiksa: hanya berisi `localhost:3001`. **Belum:** kirim email
 sungguhan (butuh RESEND_API_KEY user), tampilan visual layar forgot-password.
 
+## ✅ Redesign layar auth (2026-07-03, commit `99c3828`) + bukti daftar via UI
+
+Gaya baru dari referensi user: **hero gelap + titik pastel melayang + bubble
+sapaan beda bahasa (pengganti karakter 3D referensi — tak bisa dibuat dari
+kode) + sheet putih membulat + tombol pill hitam**. Komponen bersama
+`src/components/auth/auth-layout.tsx` (AuthLayout/AuthInput/AuthPasswordInput/
+AuthButton, palet TETAP — sengaja tak ikut dark/light theme). 3 layar
+(login/register/forgot) pindah ke layout ini, logika tak berubah;
+PasswordInput lama dihapus (yatim). **Terverifikasi VISUAL via browser** (3
+layar dirender benar, sheet sampai dasar — band hitam di screenshot pertama
+= artefak capture) dan **register E2E LEWAT UI ASLI: akun dibuat → redirect
+home login** (bukti final fix akar port 3000→3001). Catatan: (1) home/
+dashboard/conversation masih gaya lama — belum diselaraskan ke bahasa desain
+baru; (2) quirk web: Chrome autofill mengisi field tanpa mengisi state React
+→ tombol tetap disabled sampai user mengetik (perilaku Android native beda);
+(3) user menyebut tujuan baru: dipakai rekruiter + **bibit startup**.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
