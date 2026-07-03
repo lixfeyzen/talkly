@@ -550,6 +550,28 @@ Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
 - Nyalakan ulang dev: `npx expo start --port 8081` (root) + `npx next
   dev -p 3001` (backend/). Utang bukti lama tetap: saldo OpenAI.
 
+## 🗺️ ROADMAP DOMINASI (dikunci user 2026-07-03, dari analisis kompetitor)
+
+Riset kompetitor (Speak/TalkPal/ELSA; Yoodli/Huru/SmallTalk2Me/Big
+Interview; Google Interview Warmup TUTUP Apr 2026): per-fitur kita
+menengah, TAPI tak ada satu pun pesaing yang punya LOOP utuh
+"kelemahan persisten → latihan terarah → skor kesiapan". Tesis: menang
+dengan memperdalam loop itu, bukan menambah lebar fitur. Urutan SETELAH
+verifikasi produk hidup (Vercel→APK→AI):
+1. **Voice mode** (Whisper STT → pipeline kesalahan yg sudah ada) —
+   prasyarat kredibilitas kategori interview, bukan pembeda.
+2. **Readiness Trajectory** — grafik skor & kelemahan lintas-waktu
+   ("3 minggu lalu 52 → sekarang 74") = jawaban "apakah aku makin
+   siap?" + alasan retensi langganan. Butuh skema mistake-rate
+   per-window (naik dari parkiran V2).
+3. **Interview-day countdown** — user set tanggal interview asli →
+   rencana latihan mundur dari hari-H (mock H-3 & H-1). Tak ada
+   pesaing yg berorientasi tanggal interview nyata user.
+4. **Bahasa native sbg strategi pasar per-negara** — "app interview
+   English terbaik utk orang Indonesia" dulu (penjelasan + konteks
+   budaya interview lokal), baru negara berikutnya.
+Prinsip: JANGAN bangun #1-#4 sebelum ada user nyata memakai loop yg ada.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
