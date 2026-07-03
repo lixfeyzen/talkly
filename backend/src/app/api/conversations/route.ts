@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { sendMessageSchema } from "@/lib/validations/conversation";
 import { runConversationTurn, type ChatTurn } from "@/lib/ai/conversation";
@@ -8,17 +8,22 @@ import {
   appendTurns,
   recordMistakes,
 } from "@/lib/data/conversations";
+import { jsonCors, corsPreflight } from "@/lib/http/cors";
+
+export function OPTIONS() {
+  return corsPreflight();
+}
 
 export async function POST(req: NextRequest) {
   const auth = getAuthFromRequest(req);
   if (!auth) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return jsonCors({ error: "unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => null);
   const parsed = sendMessageSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
+    return jsonCors(
       { error: "invalid_input", details: parsed.error.flatten() },
       { status: 400 },
     );
@@ -33,14 +38,14 @@ export async function POST(req: NextRequest) {
   if (sessionId) {
     const session = await getSessionForUser(sessionId, auth.userId);
     if (!session) {
-      return NextResponse.json({ error: "session_not_found" }, { status: 404 });
+      return jsonCors({ error: "session_not_found" }, { status: 404 });
     }
     history = (session.transcript as ChatTurn[]) ?? [];
     scenario = session.scenario;
     targetLanguage = session.targetLanguage;
   } else {
     if (!scenario || !targetLanguage) {
-      return NextResponse.json(
+      return jsonCors(
         { error: "scenario_and_targetLanguage_required_for_new_session" },
         { status: 400 },
       );
@@ -61,7 +66,7 @@ export async function POST(req: NextRequest) {
     result = await runConversationTurn(scenario, targetLanguage, recentHistory, message);
   } catch (err) {
     console.error("OpenAI conversation turn failed:", err);
-    return NextResponse.json({ error: "ai_service_unavailable" }, { status: 502 });
+    return jsonCors({ error: "ai_service_unavailable" }, { status: 502 });
   }
 
   const newTurns: ChatTurn[] = [
@@ -71,7 +76,7 @@ export async function POST(req: NextRequest) {
   await appendTurns(sessionId, newTurns);
   await recordMistakes(auth.userId, sessionId, result.mistakes);
 
-  return NextResponse.json({
+  return jsonCors({
     sessionId,
     reply: result.reply,
     mistakes: result.mistakes,
