@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, Switch } from 'react-native';
+import { StyleSheet, Pressable, ActivityIndicator, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -78,6 +78,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedView style={styles.header}>
           <ThemedText type="title" style={styles.brand}>
             Talkly
@@ -163,6 +164,7 @@ export default function HomeScreen() {
             Log out
           </ThemedText>
         </Pressable>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -173,11 +175,13 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   safeArea: {
     flex: 1,
-    justifyContent: 'center',
     paddingHorizontal: Spacing.four,
     maxWidth: MaxContentWidth,
     width: '100%',
   },
+  // flexGrow 1 + justify center: konten tetap di-tengah saat muat, tapi bisa
+  // di-scroll (tidak kepotong) di HP layar pendek saat badge+kartu muncul.
+  scrollContent: { flexGrow: 1, justifyContent: 'center' },
   header: {
     alignItems: 'center',
     gap: Spacing.one,
