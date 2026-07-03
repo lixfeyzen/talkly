@@ -14,29 +14,31 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Spacing, MaxContentWidth, CardShadow } from '@/constants/theme';
-import { GradientBackground } from '@/components/gradient-background';
+import { Spacing, MaxContentWidth } from '@/constants/theme';
 
-// Layar auth Talkly -- bahasa desain brand (referensi UI kit Coursely):
-// hero lavender terang dengan bubble sapaan (pengganti karakter 3D),
-// sheet putih membulat ber-bayangan lembut, tombol pill ungu.
+// Layar auth Talkly -- gaya "dark hero + pastel + white sheet":
+// atas gelap dengan bubble sapaan berbagai bahasa (pengganti karakter 3D
+// referensi -- on-brand buat app latihan bahasa), bawah kartu putih membulat
+// berisi form. Palet DISENGAJA tetap (tidak ikut dark/light theme) -- kontras
+// gelap-vs-putih adalah identitas layar ini.
 export const AuthPalette = {
-  heroText: '#1B1740',
+  heroBg: '#101014',
+  heroText: '#FFFFFF',
   sheet: '#FFFFFF',
-  inputBg: '#F4F2FB',
-  inputText: '#1B1740',
-  placeholder: '#8D89AC',
-  button: '#6C5CE7',
+  inputBg: '#F2F3F5',
+  inputText: '#111114',
+  placeholder: '#8B8F98',
+  button: '#111114',
   buttonText: '#FFFFFF',
-  textPrimary: '#1B1740',
-  textSecondary: '#6B678D',
+  textPrimary: '#111114',
+  textSecondary: '#60646C',
   error: '#D92D20',
   success: '#067647',
   pastel: {
     pink: '#F9D9E0',
     mint: '#CDEEDB',
     ice: '#D8EFF6',
-    lilac: '#CFC4F9',
+    lilac: '#E6DCF8',
     cream: '#F7EDC9',
   },
 } as const;
@@ -87,7 +89,7 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <GradientBackground>
+    <View style={styles.root}>
       <KeyboardAvoidingView
         style={styles.root}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -134,7 +136,7 @@ export function AuthLayout({
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </GradientBackground>
+    </View>
   );
 }
 
@@ -203,9 +205,9 @@ export function AuthButton({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: AuthPalette.heroBg },
   scrollContent: { flexGrow: 1 },
-  heroSafe: { backgroundColor: 'transparent' },
+  heroSafe: { backgroundColor: AuthPalette.heroBg },
   hero: {
     paddingTop: Spacing.five,
     paddingBottom: Spacing.five,
@@ -224,11 +226,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    // Bayangan lembut senada brand (di latar terang, glow putih tak terlihat).
-    shadowColor: '#6C5CE7',
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
+    // Glow lembut ala referensi.
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
     elevation: 6,
   },
   bubbleBig: { width: 110, height: 110, borderRadius: 55, top: 0, left: 0 },
@@ -241,10 +243,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 76,
     left: 92,
-    backgroundColor: AuthPalette.button,
+    backgroundColor: 'rgba(40,40,46,0.92)',
     borderRadius: 22,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
   },
   chipText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   title: {
@@ -259,7 +263,6 @@ const styles = StyleSheet.create({
     backgroundColor: AuthPalette.sheet,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
-    ...CardShadow,
   },
   sheetInner: {
     width: '100%',
