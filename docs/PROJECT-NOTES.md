@@ -403,6 +403,26 @@ null; bisa diubah nanti via endpoint yang sama (layar pengaturan belum ada).
 - **Belum:** kualitas isi `note` dari AI beneran (butuh saldo OpenAI); i18n
   UI penuh SENGAJA ditunda sampai ada user non-Indonesia.
 
+## ✅ KEPUTUSAN MARKET + English-first UI (2026-07-03, commit `96712f4`)
+
+**Target market DIKUNCI user (founder):** non-native professionals & job
+seekers global (level menengah B1-B2, ~20-35 th; Indonesia/India/Vietnam/
+Brazil dst) yang menyiapkan **interview kerja & percakapan kantor dalam
+bahasa Inggris**. Positioning: *"AI practice partner for English job
+interviews — it remembers your weak spots."* UI English = lingua franca
+segmen ini (mereka post-beginner, bisa baca English); pembeda = koreksi
+dijelaskan dalam BAHASA NATIVE masing-masing (field note). BUKAN menyasar
+penutur asli Inggris.
+- Semua string UI mobile → English (84+ replacement: auth/home/onboarding/
+  dashboard/conversation/notifikasi/label kategori/a11y).
+- Skenario chips di-retarget karier: Job interview · Small talk with a
+  colleague · Order a coffee · Ask for directions.
+- Skenario adaptif + reason + system prompt AI → English; fallback bahasa
+  native prompt Indonesian → **English**.
+- Bukti: 80/80 test hijau (validations 14/adaptive 15/streak 15/reset 15/
+  dashboard 13/auth 8), login English diverifikasi visual di browser.
+- Catatan: komentar kode masih Indonesia (internal, tak berdampak user).
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
