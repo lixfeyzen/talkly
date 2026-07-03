@@ -485,6 +485,21 @@ inti ICP: **"Am I ready?"** Mock interview 5 pertanyaan + Readiness Report.
 - **Utang bukti sama:** percakapan interview + kualitas rapor AI asli
   menunggu saldo OpenAI. Alat dev: `npm run dev:seed-interview -- <email>`.
 
+## ✅ Redesign "Coursely" seluruh app (2026-07-03, `d02687d`)
+
+User beri referensi UI kit Coursely (LMS) → diadopsi sbg SATU bahasa desain
+app-wide: **gradient lavender + kartu putih membulat ber-bayangan lembut +
+aksen UNGU `#6C5CE7`** (menggantikan coral; auth gelap ikut di-reskin —
+tak ada lagi dua kepribadian visual). Token pusat di `constants/theme.ts`
+(BrandGradient, CardShadow, palet light; dark = mirror light DISENGAJA,
+`userInterfaceStyle: light`); komponen `GradientBackground`; splash lavender.
+Trik teknis: grouping ThemedView dibuat transparan via style override
+(style prop menang atas warna type — tanpa bedah JSX). **Terverifikasi
+visual di viewport mobile 363×687:** login, home (greeting+streak pill+
+kartu aksi), dashboard (stat cards+badge ungu), readiness report (bar ungu).
+Belum di-screenshot (pola sama, tsc+lint 0): conversation, interview start,
+settings, onboarding, register/forgot.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
