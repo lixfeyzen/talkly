@@ -269,10 +269,31 @@ grafik-tren-lintas-waktu ditunda ke V2 karena butuh skema per-waktu).
 **Status fitur MVP: 3/5 selesai** (#1 roleplay, #2 pelacakan kesalahan, #5
 dashboard). Sisa: #3 skenario adaptif, #4 streak+notifikasi.
 
+## ✅ BUG NYATA diperbaiki (2026-07-03): daftar dari browser gagal krn CORS
+
+User lapor "masih nggak bisa daftar akun". Didiagnosa lewat curl (bukan
+nebak): web app (`:8081`) panggil API (`:3001`) beda-origin → browser kirim
+CORS preflight tiap POST. **Middleware `proxy.ts` yang harusnya jawab itu
+TIDAK PERNAH jalan** — Next 16 + Turbopack dev mengompilasi `proxy.ts` jadi
+`middleware.js` TAPI `middleware-manifest.json` KOSONG, jadi nggak ada
+request yang kena. Terkonfirmasi: GET biasa pun 0 header `Access-Control-*`.
+Nama/lokasi/signature file SUDAH sesuai dokumen Next 16 (dicek via context7)
+— ini celah registrasi Turbopack-dev, bukan salah config. **KOREKSI catatan
+lama: klaim "proxy.ts beresin CORS" (2026-07-03 awal) itu SALAH — nggak
+pernah jalan.**
+
+**Fix:** CORS ditangani per-route via helper `lib/http/cors.ts`
+(`jsonCors` + `corsPreflight`, tiap route ekspor `OPTIONS`) — jalan di dev
+DAN produksi, nggak gantung ke bundler. `proxy.ts` dihapus (mati).
+**Terverifikasi live via curl (Origin browser):** preflight 204 + header
+CORS; POST daftar cross-origin 201 + header; alur penuh daftar→login→me→
+dashboard semua bawa header CORS.
+
 ## Next step (arah ke depan)
 
-1. **User buka `http://localhost:8081`** buat lihat app (termasuk dashboard
-   baru — walau masih empty-state sampai ada percakapan nyata).
+1. **User buka `http://localhost:8081`** buat DAFTAR AKUN (sekarang harusnya
+   BISA) + lihat app (dashboard, ikon mata password). Backend `:3001` &
+   Expo web `:8081` sudah hidup.
 2. **Tambah saldo OpenAI** (platform.openai.com → "Add credits") — unblock tes
    percakapan AI penuh; setelah itu dashboard bakal keisi data nyata.
 3. Bangun sisa fitur: **#3 skenario adaptif** (pilih skenario berdasar
