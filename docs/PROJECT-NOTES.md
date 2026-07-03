@@ -500,6 +500,26 @@ kartu aksi), dashboard (stat cards+badge ungu), readiness report (bar ungu).
 Belum di-screenshot (pola sama, tsc+lint 0): conversation, interview start,
 settings, onboarding, register/forgot.
 
+## ✅ Redesign final: "Lumina" dark utk layar dalam (2026-07-03, `db79244`+`5d9b7c7`)
+
+Perjalanan desain hari ini: Coursely lavender-terang (`d02687d`) → user
+minta AUTH dikembalikan ke dark-hero yang sudah di-approve (`db79244`,
+pelajaran: layar approved = beku) → user beri referensi kedua "Lumina"
+(AI assistant GELAP) utk layar dalam → diadopsi `5d9b7c7`. Hasil akhir:
+**seluruh app satu kepribadian GELAP** (auth dark-hero + inner Lumina).
+- Token: bg `#0F0E15`, kartu `#1C1A26`, teks `#F4F2FA`, muted `#9B97B0`,
+  aksen tetap ungu `#6C5CE7`; BrandGradient gelap; status colors terang
+  (`#34C88A`/`#FF7A70`); userInterfaceStyle+splash dark.
+- Home = replika komponen Lumina: wordmark ✦ Talkly + avatar inisial,
+  greeting SERIF tengah, chip aksi pill (Free chat / Mock interview /
+  Targeted ungu), section "Workspace" (rows: ikon tile berwarna +
+  Conversations N sessions / Interview readiness skor / Streak N days),
+  "Recent corrections", bottom bar Home·Progress·Settings.
+- Toggle reminder pindah home → Settings (section Reminder).
+- Verifikasi visual mobile viewport: home (sangat mirip referensi),
+  dashboard, report. Insiden kecil: 1× NetworkError transien saat dev
+  server kompilasi route pertama kali — endpoint diverifikasi 200/0.24s.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
