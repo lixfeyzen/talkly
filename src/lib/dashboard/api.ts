@@ -34,15 +34,15 @@ export async function fetchDashboard(): Promise<DashboardData> {
 
 // Label kategori kesalahan yang ramah dibaca (bukan snake_case mentah).
 const CATEGORY_LABELS: Record<string, string> = {
-  verb_conjugation: 'Konjugasi kata kerja',
-  tense_usage: 'Penggunaan tense',
-  gender_agreement: 'Kesesuaian gender',
-  plural_agreement: 'Kesesuaian jamak',
-  preposition_usage: 'Preposisi',
-  article_usage: 'Artikel (a/the/le/la)',
-  word_order: 'Urutan kata',
-  vocabulary_choice: 'Pilihan kosakata',
-  other: 'Lainnya',
+  verb_conjugation: 'Verb conjugation',
+  tense_usage: 'Tense usage',
+  gender_agreement: 'Gender agreement',
+  plural_agreement: 'Plural agreement',
+  preposition_usage: 'Prepositions',
+  article_usage: 'Articles (a/the/le/la)',
+  word_order: 'Word order',
+  vocabulary_choice: 'Vocabulary choice',
+  other: 'Other',
 };
 
 export function categoryLabel(category: string): string {

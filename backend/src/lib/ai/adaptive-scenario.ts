@@ -15,27 +15,27 @@ export type SuggestedScenario = {
 // Tiap kategori kesalahan dipetakan ke skenario yang secara alami memaksa
 // pola itu sering muncul (mis. cerita kemarin-vs-besok memaksa ganti tense).
 const SCENARIO_BY_CATEGORY: Record<MistakeCategory, string> = {
-  verb_conjugation: "Ceritakan rutinitas harian keluargamu ke teman baru",
-  tense_usage: "Ceritakan liburan terakhirmu, lalu rencana liburan berikutnya",
-  gender_agreement: "Belanja pakaian di toko: deskripsikan warna, ukuran, dan bahan barang",
-  plural_agreement: "Pesan makanan & minuman untuk rombongan besar di restoran",
-  preposition_usage: "Jelaskan rute dari rumahmu ke tempat favorit, lokasi demi lokasi",
-  article_usage: "Deskripsikan isi kamarmu dan barang-barang yang ingin kamu beli",
-  word_order: "Diskusi ringan: setuju atau tidak, sampaikan pendapat + alasannya",
-  vocabulary_choice: "Jelaskan hobi favoritmu sedetail mungkin ke teman baru",
-  other: "Ngobrol santai tentang kabar dan aktivitas minggu ini",
+  verb_conjugation: "Tell a new colleague about your family's daily routine",
+  tense_usage: "Talk about your last vacation, then your plans for the next one",
+  gender_agreement: "Shop for clothes: describe colors, sizes, and materials",
+  plural_agreement: "Order food & drinks for a big group at a restaurant",
+  preposition_usage: "Explain the route from your home to a favorite place, step by step",
+  article_usage: "Describe what's in your room and the things you want to buy",
+  word_order: "Light debate: agree or disagree, give your opinion + reasons",
+  vocabulary_choice: "Explain your favorite hobby in as much detail as you can",
+  other: "Casual small talk about your week",
 };
 
 const LABELS: Record<MistakeCategory, string> = {
-  verb_conjugation: "konjugasi kata kerja",
-  tense_usage: "penggunaan tense",
-  gender_agreement: "kesesuaian gender",
-  plural_agreement: "kesesuaian jamak",
-  preposition_usage: "preposisi",
-  article_usage: "artikel",
-  word_order: "urutan kata",
-  vocabulary_choice: "pilihan kosakata",
-  other: "pola lainnya",
+  verb_conjugation: "verb conjugation",
+  tense_usage: "tense usage",
+  gender_agreement: "gender agreement",
+  plural_agreement: "plural agreement",
+  preposition_usage: "prepositions",
+  article_usage: "articles",
+  word_order: "word order",
+  vocabulary_choice: "vocabulary choice",
+  other: "other patterns",
 };
 
 function isKnownCategory(category: string): category is MistakeCategory {
@@ -61,7 +61,7 @@ export function suggestScenario(stats: WeaknessStat[]): SuggestedScenario | null
     focusCategories,
     reason:
       focusCategories.length === 2
-        ? `Kamu paling sering keliru di ${LABELS[primary]} (${primaryCount}×) dan ${LABELS[focusCategories[1]]} — latihan ini dirancang buat keduanya.`
-        : `Kamu paling sering keliru di ${LABELS[primary]} (${primaryCount}×) — latihan ini dirancang buat itu.`,
+        ? `Your most frequent mistakes are ${LABELS[primary]} (${primaryCount}×) and ${LABELS[focusCategories[1]]} — this practice targets both.`
+        : `Your most frequent mistake is ${LABELS[primary]} (${primaryCount}×) — this practice targets it.`,
   };
 }

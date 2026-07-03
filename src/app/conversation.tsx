@@ -19,7 +19,7 @@ import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constant
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { ApiError } from '@/lib/api/client';
 
-const SCENARIOS = ['Pesan kopi', 'Interview kerja', 'Tanya arah', 'Ngobrol santai'];
+const SCENARIOS = ['Job interview', 'Small talk with a colleague', 'Order a coffee', 'Ask for directions'];
 const LANGUAGES = ['Spanish', 'French', 'Japanese', 'English'];
 
 type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[] };
@@ -75,9 +75,9 @@ export default function ConversationScreen() {
       });
     } catch (err) {
       if (err instanceof ApiError && err.status === 502) {
-        setError('AI lagi bermasalah, coba lagi sebentar.');
+        setError('The AI is having trouble right now, try again in a moment.');
       } else {
-        setError('Gagal kirim pesan, coba lagi.');
+        setError('Message failed to send, try again.');
       }
     } finally {
       setSending(false);
@@ -90,14 +90,14 @@ export default function ConversationScreen() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <ThemedText type="link">← Kembali</ThemedText>
+            <ThemedText type="link">← Back</ThemedText>
           </Pressable>
 
           <ThemedText type="title" style={styles.title}>
-            Mau latihan apa?
+            What do you want to practice?
           </ThemedText>
 
-          <ThemedText type="smallBold">Bahasa target</ThemedText>
+          <ThemedText type="smallBold">Target language</ThemedText>
           <ThemedView style={styles.optionRow}>
             {LANGUAGES.map((lang) => (
               <Pressable
@@ -115,7 +115,7 @@ export default function ConversationScreen() {
           </ThemedView>
 
           <ThemedText type="smallBold" style={{ marginTop: Spacing.three }}>
-            Skenario
+            Scenario
           </ThemedText>
           <ThemedView style={styles.optionRow}>
             {(scenario && !SCENARIOS.includes(scenario)
@@ -205,7 +205,7 @@ export default function ConversationScreen() {
           <ThemedView style={styles.inputRow}>
             <ThemedView type="backgroundElement" style={styles.inputWrapper}>
               <TextInput
-                placeholder="Ketik pesanmu..."
+                placeholder="Type your message..."
                 placeholderTextColor={theme.textSecondary}
                 value={input}
                 onChangeText={setInput}

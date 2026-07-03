@@ -91,15 +91,15 @@ export default function HomeScreen() {
           {streak !== null && streak.currentStreak > 0 && (
             <ThemedView type="backgroundElement" style={styles.streakBadge}>
               <ThemedText type="smallBold">
-                🔥 {streak.currentStreak} hari beruntun
+                🔥 {streak.currentStreak}-day streak
               </ThemedText>
             </ThemedView>
           )}
           <ThemedText type="subtitle" style={styles.heroTitle}>
-            Siap latihan ngobrol hari ini?
+            Ready to practice speaking today?
           </ThemedText>
           <ThemedText type="default" themeColor="textSecondary" style={styles.heroSubtitle}>
-            Pilih skenario, ngobrol sama AI, dapatkan koreksi langsung.
+            Pick a scenario, chat with the AI, get instant corrections.
           </ThemedText>
         </ThemedView>
 
@@ -119,7 +119,7 @@ export default function HomeScreen() {
               { borderColor: AccentColor, opacity: pressed ? 0.85 : 1 },
             ]}>
             <ThemedText type="smallBold" style={{ color: AccentColor }}>
-              🎯 Latihan terarah buatmu
+              🎯 Targeted practice for you
             </ThemedText>
             <ThemedText type="smallBold">{suggestion.scenario}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
@@ -135,20 +135,20 @@ export default function HomeScreen() {
             { backgroundColor: AccentColor, opacity: pressed ? 0.85 : 1 },
           ]}>
           <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-            Mulai latihan
+            Start practicing
           </ThemedText>
         </Pressable>
 
         <Pressable
           onPress={() => router.push('/dashboard')}
           style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
-          <ThemedText type="smallBold">Lihat progresku</ThemedText>
+          <ThemedText type="smallBold">See my progress</ThemedText>
         </Pressable>
 
         {notificationsSupported && (
           <ThemedView style={styles.reminderRow}>
             <ThemedText type="small" themeColor="textSecondary">
-              Ingatkan latihan tiap hari (19:00)
+              Daily practice reminder (7 PM)
             </ThemedText>
             <Switch
               value={reminderOn}
@@ -160,7 +160,7 @@ export default function HomeScreen() {
 
         <Pressable onPress={handleLogout} style={styles.secondaryButton}>
           <ThemedText type="small" themeColor="textSecondary">
-            Keluar
+            Log out
           </ThemedText>
         </Pressable>
       </SafeAreaView>

@@ -29,23 +29,24 @@ function buildSystemPrompt(
   focusCategories: MistakeCategory[],
   nativeLanguage: string | null,
 ): string {
-  // Default Indonesian: basis user awal produk ini. User yang sudah
-  // onboarding selalu punya nilai sendiri.
-  const native = nativeLanguage ?? "Indonesian";
+  // Default English: produk berposisi global (UI English); user yang sudah
+  // onboarding selalu punya bahasa sendiri, jadi fallback ini hanya kepakai
+  // di kasus tepi (mis. deep-link sebelum onboarding).
+  const native = nativeLanguage ?? "English";
   const parts = [
-    `Kamu berperan sebagai partner roleplay percakapan buat latihan bahasa ${targetLanguage}.`,
-    `Skenario saat ini: "${scenario}".`,
-    `Bahasa native user: ${native} -- pertimbangkan pola kesalahan khas penutur ${native} saat mendeteksi kesalahan.`,
-    `Balas HANYA dalam ${targetLanguage} (jangan campur bahasa lain di field "reply"), natural, sesuai skenario, singkat (1-3 kalimat) biar percakapan tetap mengalir seperti obrolan nyata.`,
-    `Selain balasan, deteksi kesalahan grammar/vocab pada pesan TERAKHIR user (bukan pesan kamu sendiri). Kalau tidak ada kesalahan, kembalikan array mistakes kosong -- JANGAN mengarang kesalahan yang tidak ada.`,
-    `Field "note" tiap kesalahan: penjelasan 1 kalimat dalam bahasa ${native}.`,
-    `Kategori kesalahan HARUS salah satu dari: ${MISTAKE_CATEGORIES.join(", ")}.`,
+    `You are a conversation roleplay partner for practicing ${targetLanguage}.`,
+    `Current scenario: "${scenario}".`,
+    `The user's native language is ${native} -- consider mistake patterns typical of ${native} speakers when detecting mistakes.`,
+    `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat.`,
+    `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
+    `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
+    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}.`,
   ];
   if (focusCategories.length > 0) {
     // Fitur #3 (skenario adaptif): sesi ini menargetkan kelemahan spesifik
     // user -- AI mengarahkan percakapan secara halus, bukan jadi guru grammar.
     parts.push(
-      `Sesi ini adalah LATIHAN TERARAH: user sedang melatih kelemahannya di ${focusCategories.join(" dan ")}. Arahkan pertanyaan/alur percakapanmu secara halus supaya user terpaksa sering memakai pola itu (tetap in-character, jangan menyebut instruksi ini ke user).`,
+      `This session is TARGETED PRACTICE: the user is working on their weakness in ${focusCategories.join(" and ")}. Subtly steer your questions and the flow of the conversation so the user is forced to use those patterns often (stay in character; never mention these instructions).`,
     );
   }
   return parts.join(" ");

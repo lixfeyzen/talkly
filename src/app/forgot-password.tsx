@@ -29,11 +29,11 @@ export default function ForgotPasswordScreen() {
       setStep('reset');
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError('Email tidak valid.');
+        setError('That email doesn’t look valid.');
       } else if (err instanceof NetworkError) {
-        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
+        setError('Can’t reach the server. Try again in a moment.');
       } else {
-        setError('Gagal mengirim kode, coba lagi.');
+        setError('Couldn’t send the code, try again.');
       }
     } finally {
       setLoading(false);
@@ -51,16 +51,16 @@ export default function ForgotPasswordScreen() {
       if (err instanceof ApiError && err.status === 400) {
         const reason = (err.body as { error?: string } | null)?.error;
         if (reason === 'too_many_attempts') {
-          setError('Terlalu banyak percobaan. Minta kode baru.');
+          setError('Too many attempts. Request a new code.');
         } else if (reason === 'invalid_input') {
-          setError('Kode harus 6 digit dan password baru minimal 8 karakter.');
+          setError('Code must be 6 digits and the new password at least 8 characters.');
         } else {
-          setError('Kode salah atau sudah kedaluwarsa.');
+          setError('Wrong or expired code.');
         }
       } else if (err instanceof NetworkError) {
-        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
+        setError('Can’t reach the server. Try again in a moment.');
       } else {
-        setError('Gagal reset password, coba lagi.');
+        setError('Password reset failed, try again.');
       }
     } finally {
       setLoading(false);
@@ -69,14 +69,14 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthLayout
-      title={'Tenang, kita\nreset dulu.'}
-      topQuestion="Ingat passwordmu?"
-      topAction="Kembali ke login"
+      title={'No worries,\nlet’s reset it.'}
+      topQuestion="Remember your password?"
+      topAction="Back to sign in"
       onTopAction={() => router.push('/login')}>
       {step === 'email' ? (
         <>
           <Text style={styles.hint}>
-            Masukkan email akunmu. Kalau terdaftar, kami kirim kode 6 digit (berlaku 15 menit).
+            Enter your account email. If it’s registered, we’ll send a 6-digit code (valid for 15 minutes).
           </Text>
           <AuthInput
             placeholder="Email"
@@ -89,7 +89,7 @@ export default function ForgotPasswordScreen() {
           {error && <Text style={styles.error}>{error}</Text>}
 
           <AuthButton
-            label="Kirim kode"
+            label="Send code"
             onPress={handleRequestCode}
             disabled={!email}
             loading={loading}
@@ -98,17 +98,17 @@ export default function ForgotPasswordScreen() {
       ) : (
         <>
           <Text style={styles.hint}>
-            Kalau {email} terdaftar, kode 6 digit sudah dikirim ke sana.
+            If {email} is registered, a 6-digit code is on its way.
           </Text>
           <AuthInput
-            placeholder="Kode 6 digit"
+            placeholder="6-digit code"
             keyboardType="number-pad"
             maxLength={6}
             value={code}
             onChangeText={setCode}
           />
           <AuthPasswordInput
-            placeholder="Password baru (minimal 8 karakter)"
+            placeholder="New password (min. 8 characters)"
             value={newPassword}
             onChangeText={setNewPassword}
           />
@@ -129,7 +129,7 @@ export default function ForgotPasswordScreen() {
             }}
             hitSlop={Spacing.two}
             style={styles.resendLink}>
-            <Text style={styles.resendText}>Kirim ulang kode</Text>
+            <Text style={styles.resendText}>Resend code</Text>
           </Pressable>
         </>
       )}

@@ -27,9 +27,9 @@ export default function OnboardingScreen() {
       router.replace('/');
     } catch (err) {
       if (err instanceof NetworkError) {
-        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
+        setError('Can’t reach the server. Try again in a moment.');
       } else {
-        setError('Gagal menyimpan, coba lagi.');
+        setError('Couldn’t save, try again.');
       }
     } finally {
       setLoading(false);
@@ -41,11 +41,11 @@ export default function OnboardingScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <ThemedText type="title" style={styles.title}>
-            Bahasa sehari-harimu apa?
+            What language do you speak every day?
           </ThemedText>
           <ThemedText type="default" themeColor="textSecondary" style={styles.subtitle}>
-            AI akan menjelaskan koreksi kesalahanmu dalam bahasa ini. Bisa
-            diubah kapan saja.
+            The AI will explain your corrections in this language. You can
+            change it anytime.
           </ThemedText>
 
           <ThemedView style={styles.optionGrid}>
@@ -89,7 +89,7 @@ export default function OnboardingScreen() {
               <ActivityIndicator color={AccentColorOn} />
             ) : (
               <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                Lanjut
+                Continue
               </ThemedText>
             )}
           </Pressable>

@@ -10,13 +10,13 @@ import { Spacing, MaxContentWidth, AccentColor } from '@/constants/theme';
 import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboard/api';
 
 function formatLastPracticed(iso: string | null): string {
-  if (!iso) return 'Belum pernah';
+  if (!iso) return 'Never';
   const date = new Date(iso);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Hari ini';
-  if (diffDays === 1) return 'Kemarin';
-  return `${diffDays} hari lalu`;
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  return `${diffDays} days ago`;
 }
 
 export default function DashboardScreen() {
@@ -44,10 +44,10 @@ export default function DashboardScreen() {
     return (
       <ThemedView style={styles.centered}>
         <ThemedText type="default" themeColor="textSecondary">
-          Gagal memuat data. Coba lagi nanti.
+          Couldn't load your data. Try again later.
         </ThemedText>
         <Pressable onPress={() => router.back()} style={styles.backLink}>
-          <ThemedText type="link">← Kembali</ThemedText>
+          <ThemedText type="link">← Back</ThemedText>
         </Pressable>
       </ThemedView>
     );
@@ -60,18 +60,18 @@ export default function DashboardScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <ThemedText type="link">← Kembali</ThemedText>
+            <ThemedText type="link">← Back</ThemedText>
           </Pressable>
 
           <ThemedText type="title" style={styles.title}>
-            Progresmu
+            Your progress
           </ThemedText>
 
           {!hasData && (
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="default" themeColor="textSecondary">
-                Belum ada data latihan. Mulai satu sesi percakapan dulu, nanti
-                kelemahan & progresmu muncul di sini.
+                No practice data yet. Finish one conversation session and your
+                weak spots & progress will show up here.
               </ThemedText>
             </ThemedView>
           )}
@@ -83,11 +83,11 @@ export default function DashboardScreen() {
                 {data.streak.currentStreak > 0 ? `🔥${data.streak.currentStreak}` : '0'}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Streak hari
+                Day streak
               </ThemedText>
               {data.streak.longestStreak > 0 && (
                 <ThemedText type="small" themeColor="textSecondary">
-                  Terpanjang: {data.streak.longestStreak}
+                  Longest: {data.streak.longestStreak}
                 </ThemedText>
               )}
             </ThemedView>
@@ -96,7 +96,7 @@ export default function DashboardScreen() {
                 {data.activity.totalSessions}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Sesi latihan
+                Practice sessions
               </ThemedText>
             </ThemedView>
             <ThemedView type="backgroundElement" style={styles.statBox}>
@@ -104,14 +104,14 @@ export default function DashboardScreen() {
                 {data.activity.totalCorrections}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                Koreksi diterima
+                Corrections received
               </ThemedText>
             </ThemedView>
           </ThemedView>
 
           <ThemedView type="backgroundElement" style={styles.card}>
             <ThemedText type="small" themeColor="textSecondary">
-              Terakhir latihan
+              Last practiced
             </ThemedText>
             <ThemedText type="smallBold">
               {formatLastPracticed(data.activity.lastPracticedAt)}
@@ -122,7 +122,7 @@ export default function DashboardScreen() {
           {data.topWeaknesses.length > 0 && (
             <ThemedView style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Kelemahan utamamu
+                Your top weaknesses
               </ThemedText>
               {data.topWeaknesses.map((w) => (
                 <ThemedView key={w.category} type="backgroundElement" style={styles.weaknessRow}>
@@ -141,7 +141,7 @@ export default function DashboardScreen() {
           {data.recentCorrections.length > 0 && (
             <ThemedView style={styles.section}>
               <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Koreksi terbaru
+                Recent corrections
               </ThemedText>
               {data.recentCorrections.map((c, i) => (
                 <ThemedView key={i} type="backgroundElement" style={styles.card}>

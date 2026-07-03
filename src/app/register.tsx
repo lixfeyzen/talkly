@@ -26,13 +26,13 @@ export default function RegisterScreen() {
       router.replace('/');
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError('Email ini sudah terdaftar.');
+        setError('This email is already registered.');
       } else if (err instanceof ApiError && err.status === 400) {
-        setError('Password minimal 8 karakter, email harus valid.');
+        setError('Password needs at least 8 characters and a valid email.');
       } else if (err instanceof NetworkError) {
-        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
+        setError('Can’t reach the server. Try again in a moment.');
       } else {
-        setError('Gagal daftar, coba lagi.');
+        setError('Sign-up failed, try again.');
       }
     } finally {
       setLoading(false);
@@ -41,9 +41,9 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout
-      title={'Mulai perjalanan\nbahasamu!'}
-      topQuestion="Sudah punya akun?"
-      topAction="Masuk"
+      title={'Start your\nlanguage journey!'}
+      topQuestion="Already have an account?"
+      topAction="Sign in"
       onTopAction={() => router.push('/login')}>
       <AuthInput
         placeholder="Email"
@@ -53,7 +53,7 @@ export default function RegisterScreen() {
         onChangeText={setEmail}
       />
       <AuthPasswordInput
-        placeholder="Password (minimal 8 karakter)"
+        placeholder="Password (min. 8 characters)"
         value={password}
         onChangeText={setPassword}
       />
@@ -61,7 +61,7 @@ export default function RegisterScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <AuthButton
-        label="Buat akun"
+        label="Create account"
         onPress={handleSubmit}
         disabled={!email || !password}
         loading={loading}

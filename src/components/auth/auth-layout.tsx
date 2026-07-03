@@ -163,7 +163,7 @@ export function AuthPasswordInput(props: Omit<TextInputProps, 'secureTextEntry' 
         onPress={() => setVisible((v) => !v)}
         hitSlop={Spacing.two}
         accessibilityRole="button"
-        accessibilityLabel={visible ? 'Sembunyikan password' : 'Tampilkan password'}
+        accessibilityLabel={visible ? 'Hide password' : 'Show password'}
         style={styles.eyeToggle}>
         <Ionicons
           name={visible ? 'eye-off-outline' : 'eye-outline'}

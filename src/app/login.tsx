@@ -28,11 +28,11 @@ export default function LoginScreen() {
       router.replace('/');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError('Email atau password salah.');
+        setError('Wrong email or password.');
       } else if (err instanceof NetworkError) {
-        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
+        setError('Can’t reach the server. Try again in a moment.');
       } else {
-        setError('Gagal login, coba lagi.');
+        setError('Sign-in failed, try again.');
       }
     } finally {
       setLoading(false);
@@ -41,9 +41,9 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout
-      title={'Yuk, masuk &\nlanjut latihan!'}
-      topQuestion="Belum punya akun?"
-      topAction="Daftar"
+      title={'Welcome back!\nReady to practice?'}
+      topQuestion="Don’t have an account?"
+      topAction="Sign up"
       onTopAction={() => router.push('/register')}>
       <AuthInput
         placeholder="Email"
@@ -58,19 +58,19 @@ export default function LoginScreen() {
         onPress={() => router.push('/forgot-password')}
         hitSlop={Spacing.two}
         style={styles.forgotLink}>
-        <Text style={styles.forgotText}>Lupa password?</Text>
+        <Text style={styles.forgotText}>Forgot password?</Text>
       </Pressable>
 
       {resetDone === '1' && !error && (
         <Text style={styles.success}>
-          Password berhasil direset. Silakan login dengan password baru.
+          Password reset successful. Sign in with your new password.
         </Text>
       )}
 
       {error && <Text style={styles.error}>{error}</Text>}
 
       <AuthButton
-        label="Masuk"
+        label="Sign in"
         onPress={handleSubmit}
         disabled={!email || !password}
         loading={loading}

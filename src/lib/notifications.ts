@@ -39,7 +39,7 @@ export async function enableDailyReminder(): Promise<boolean> {
   // Android wajib punya channel sebelum notifikasi bisa tampil.
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('daily-reminder', {
-      name: 'Pengingat latihan harian',
+      name: 'Daily practice reminder',
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }
@@ -49,8 +49,8 @@ export async function enableDailyReminder(): Promise<boolean> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Waktunya latihan ngobrol 🔥',
-      body: 'Jaga streak-mu — satu sesi singkat hari ini cukup.',
+      title: 'Time to practice 🔥',
+      body: 'Keep your streak alive — one short session is enough.',
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
