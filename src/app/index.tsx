@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
-import { fetchCurrentUser, logout } from '@/lib/auth/api';
+import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type StreakData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
 import {
@@ -66,11 +66,6 @@ export default function HomeScreen() {
       await disableDailyReminder();
       setReminderOn(false);
     }
-  }
-
-  async function handleLogout() {
-    await logout();
-    router.replace('/login');
   }
 
   if (checking) {
@@ -165,9 +160,9 @@ export default function HomeScreen() {
           </ThemedView>
         )}
 
-        <Pressable onPress={handleLogout} style={styles.secondaryButton}>
+        <Pressable onPress={() => router.push('/settings')} style={styles.secondaryButton}>
           <ThemedText type="small" themeColor="textSecondary">
-            Log out
+            Settings
           </ThemedText>
         </Pressable>
         </ScrollView>

@@ -1,0 +1,178 @@
+import { useEffect, useState } from 'react';
+import { StyleSheet, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import {
+  fetchCurrentUser,
+  logout,
+  setNativeLanguage,
+  NATIVE_LANGUAGE_OPTIONS,
+} from '@/lib/auth/api';
+import { NetworkError } from '@/lib/api/client';
+
+export default function SettingsScreen() {
+  const theme = useTheme();
+  const [email, setEmail] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    fetchCurrentUser().then((user) => {
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+      setEmail(user.email);
+      setSelected(user.nativeLanguage ?? null);
+    });
+  }, []);
+
+  async function handlePickLanguage(value: string) {
+    if (saving || value === selected) return;
+    const previous = selected;
+    setSelected(value);
+    setSaving(true);
+    setFeedback(null);
+    try {
+      await setNativeLanguage(value);
+      setFeedback({ kind: 'ok', text: 'Saved — corrections will be explained in this language.' });
+    } catch (err) {
+      setSelected(previous); // gagal -> balikin pilihan lama, jangan bohong di UI
+      setFeedback({
+        kind: 'error',
+        text:
+          err instanceof NetworkError
+            ? 'Can’t reach the server. Try again in a moment.'
+            : 'Couldn’t save, try again.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleLogout() {
+    await logout();
+    router.replace('/login');
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Pressable onPress={() => router.back()} style={styles.backLink}>
+            <ThemedText type="link">← Back</ThemedText>
+          </Pressable>
+
+          <ThemedText type="title" style={styles.title}>
+            Settings
+          </ThemedText>
+
+          {/* Akun */}
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <ThemedText type="small" themeColor="textSecondary">
+              Signed in as
+            </ThemedText>
+            <ThemedText type="smallBold">{email ?? '…'}</ThemedText>
+          </ThemedView>
+
+          {/* Bahasa native */}
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle" style={styles.sectionTitle}>
+              My everyday language
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              The AI explains your corrections in this language.
+            </ThemedText>
+            <ThemedView style={styles.optionGrid}>
+              {NATIVE_LANGUAGE_OPTIONS.map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => handlePickLanguage(opt.value)}
+                  disabled={saving}
+                  style={[
+                    styles.optionChip,
+                    {
+                      backgroundColor:
+                        opt.value === selected ? AccentColor : theme.backgroundElement,
+                      opacity: saving ? 0.6 : 1,
+                    },
+                  ]}>
+                  <ThemedText
+                    type="small"
+                    style={opt.value === selected ? { color: AccentColorOn } : undefined}>
+                    {opt.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </ThemedView>
+            {saving && <ActivityIndicator color={AccentColor} />}
+            {feedback && (
+              <ThemedText
+                type="small"
+                style={feedback.kind === 'ok' ? styles.ok : styles.error}>
+                {feedback.text}
+              </ThemedText>
+            )}
+          </ThemedView>
+
+          {/* Password */}
+          <ThemedView style={styles.section}>
+            <ThemedText type="subtitle" style={styles.sectionTitle}>
+              Password
+            </ThemedText>
+            <Pressable
+              onPress={() => router.push('/forgot-password')}
+              style={({ pressed }) => [
+                styles.rowButton,
+                { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
+              ]}>
+              <ThemedText type="smallBold">Change password</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                We’ll email you a 6-digit code to set a new one.
+              </ThemedText>
+            </Pressable>
+          </ThemedView>
+
+          <Pressable onPress={handleLogout} style={styles.logout}>
+            <ThemedText type="smallBold" style={styles.logoutText}>
+              Log out
+            </ThemedText>
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
+  content: { padding: Spacing.four, gap: Spacing.three },
+  backLink: { marginBottom: Spacing.one },
+  title: { marginBottom: Spacing.two },
+  card: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
+  section: { gap: Spacing.two, marginTop: Spacing.two },
+  sectionTitle: { marginBottom: Spacing.half },
+  optionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    marginTop: Spacing.one,
+  },
+  optionChip: {
+    borderRadius: 999,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+  },
+  rowButton: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
+  ok: { color: '#067647' },
+  error: { color: '#d92d20' },
+  logout: { alignItems: 'center', paddingVertical: Spacing.three, marginTop: Spacing.four },
+  logoutText: { color: '#d92d20' },
+});
