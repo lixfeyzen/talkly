@@ -457,6 +457,34 @@ BERUBAH saat ganti Wi-Fi (192.168.0.110→192.168.40.229) — sempat bikin
 redirect-login palsu (bundle nembak IP lama); kalau app "can't reach server",
 cek `ipconfig` dulu.
 
+## ✅ FITUR #6 "Interview Readiness" SELESAI (2026-07-03, `1fce713` + `acfbe02`)
+
+Keputusan founder: MVP kurang "dominan" → tambah fitur yang menjawab pain
+inti ICP: **"Am I ready?"** Mock interview 5 pertanyaan + Readiness Report.
+- **Backend:** `mode`/`interview_role` di sessions + tabel `interview_reports`
+  (migrasi 0005). Bank pertanyaan TERKURASI per-role (6 role; opener + 2
+  behavioral + 1 role-specific + closer), pemilihan deterministik per
+  sessionId (stabil antar-giliran). Prompt interviewer: bereaksi + tanya
+  berikutnya, TANPA koreksi saat interview (realisme) — kesalahan tetap
+  tercatat diam-diam ke pipeline pelacak kelemahan. `POST/GET
+  /api/interviews/[sessionId]/report`: rapor terstruktur (skor 0-100, 3
+  dimensi, jawaban terkuat/terlemah, top fixes dlm bahasa native, answer
+  upgrades STAR dlm English) — **idempoten** (rapor ada → tak panggil AI lagi).
+- **Mobile:** `/interview` (role picker) → conversation mode interview
+  (intro+opener client-side tanpa AI, header Question x/5, koreksi live
+  disembunyikan, selesai → tombol rapor) → `/interview-report` (skor, bar
+  dimensi, fixes, original-vs-upgraded). Dashboard: kartu "Latest interview
+  readiness" → rapor. Bonus: label "Kirim" yang lolos English-ifikasi → "Send".
+- **Bukti:** `test:interview` **22/22** lawan Neon (determinisme bank soal,
+  progress, prompt, roundtrip/replace/isolasi rapor, dashboard); 6 guard
+  HTTP live: 409 finished / 400 unfinished / 400 non-interview / 404 / 502-
+  sampai-OpenAI / 401; VISUAL: layar start, mode interview (bubble intro +
+  Q1/5 + jawaban terkirim + 502 rapi), layar rapor render penuh dari data DB
+  (68/100), kartu dashboard. Suite total **102/102**. Catatan dev: route
+  dinamis baru saat `next dev` jalan → crash "Jest worker" → restart server.
+- **Utang bukti sama:** percakapan interview + kualitas rapor AI asli
+  menunggu saldo OpenAI. Alat dev: `npm run dev:seed-interview -- <email>`.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
