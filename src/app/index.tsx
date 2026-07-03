@@ -47,6 +47,12 @@ export default function HomeScreen() {
         <ThemedText type="default">Login sebagai {email}</ThemedText>
 
         <Pressable
+          onPress={() => router.push('/conversation')}
+          style={[styles.button, { backgroundColor: theme.backgroundSelected }]}>
+          <ThemedText type="smallBold">Mulai latihan</ThemedText>
+        </Pressable>
+
+        <Pressable
           onPress={handleLogout}
           style={[styles.button, { backgroundColor: theme.backgroundSelected }]}>
           <ThemedText type="smallBold">Keluar</ThemedText>
