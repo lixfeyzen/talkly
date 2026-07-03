@@ -8,6 +8,7 @@ import {
   appendTurns,
   recordMistakes,
 } from "@/lib/data/conversations";
+import { recordPractice } from "@/lib/data/streaks";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
 
 export function OPTIONS() {
@@ -75,10 +76,16 @@ export async function POST(req: NextRequest) {
   ];
   await appendTurns(sessionId, newTurns);
   await recordMistakes(auth.userId, sessionId, result.mistakes);
+  // Streak harian (fitur #4): tiap giliran latihan yang sukses menghitung
+  // sebagai "latihan hari ini". Idempoten per-hari, jadi aman dipanggil
+  // berkali-kali dalam satu hari. Ikut dikembalikan supaya UI bisa langsung
+  // merayakan kenaikan streak tanpa fetch tambahan.
+  const streak = await recordPractice(auth.userId);
 
   return jsonCors({
     sessionId,
     reply: result.reply,
     mistakes: result.mistakes,
+    streak,
   });
 }

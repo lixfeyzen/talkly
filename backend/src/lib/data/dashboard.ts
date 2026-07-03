@@ -1,6 +1,7 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/db/schema";
+import { getStreak, type StreakData } from "@/lib/data/streaks";
 
 export type TopWeakness = {
   category: string;
@@ -21,6 +22,7 @@ export type DashboardData = {
     lastPracticedAt: string | null;
   };
   recentCorrections: RecentCorrection[];
+  streak: StreakData;
 };
 
 export async function getDashboardData(userId: string): Promise<DashboardData> {
@@ -61,7 +63,10 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     .orderBy(desc(mistakePatterns.createdAt))
     .limit(5);
 
+  const streak = await getStreak(userId);
+
   return {
+    streak,
     topWeaknesses,
     activity: {
       totalSessions: sessionAgg?.totalSessions ?? 0,

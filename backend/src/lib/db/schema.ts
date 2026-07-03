@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, unique } from "drizzle-orm/pg-core";
+import { date, pgTable, text, timestamp, uuid, integer, jsonb, unique } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,6 +45,21 @@ export const mistakePatterns = pgTable("mistake_patterns", {
 // Ringkasan agregat per-user per-kategori kesalahan -- dihitung ulang tiap
 // sesi selesai, dibaca cepat buat dashboard & pemilihan skenario adaptif
 // (hindari agregasi mahal dari mistake_patterns tiap kali dibutuhkan).
+// Streak latihan harian per-user (fitur #4). Satu baris per user (userId
+// unique). Tanggal pakai kolom `date` (bukan timestamp) karena streak dihitung
+// per-hari kalender, bukan per-24-jam. Batasan MVP yang disengaja: hari
+// dihitung dalam UTC (timezone per-user = kerumitan V2).
+export const userStreaks = pgTable("user_streaks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  currentStreak: integer("current_streak").notNull().default(0),
+  longestStreak: integer("longest_streak").notNull().default(0),
+  lastPracticeDate: date("last_practice_date").notNull(),
+});
+
 export const userMistakeStats = pgTable(
   "user_mistake_stats",
   {

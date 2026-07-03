@@ -8,6 +8,13 @@
       "when": 1783050791983,
       "tag": "0000_panoramic_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783059821709,
+      "tag": "0001_premium_molten_man",
+      "breakpoints": true
     }
   ]
 }

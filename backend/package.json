@@ -12,6 +12,7 @@
     "test:auth": "tsx --env-file=.env.local scripts/test-auth.mts",
     "test:validations": "tsx scripts/test-validations.mts",
     "test:dashboard": "tsx --env-file=.env.local scripts/test-dashboard.mts",
+    "test:streak": "tsx --env-file=.env.local scripts/test-streak.mts",
     "cleanup:test-users": "tsx --env-file=.env.local scripts/cleanup-test-users.mts"
   },
   "dependencies": {

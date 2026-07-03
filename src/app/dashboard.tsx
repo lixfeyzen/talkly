@@ -80,6 +80,19 @@ export default function DashboardScreen() {
           <ThemedView style={styles.statRow}>
             <ThemedView type="backgroundElement" style={styles.statBox}>
               <ThemedText type="title" style={styles.statNumber}>
+                {data.streak.currentStreak > 0 ? `🔥${data.streak.currentStreak}` : '0'}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                Streak hari
+              </ThemedText>
+              {data.streak.longestStreak > 0 && (
+                <ThemedText type="small" themeColor="textSecondary">
+                  Terpanjang: {data.streak.longestStreak}
+                </ThemedText>
+              )}
+            </ThemedView>
+            <ThemedView type="backgroundElement" style={styles.statBox}>
+              <ThemedText type="title" style={styles.statNumber}>
                 {data.activity.totalSessions}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">

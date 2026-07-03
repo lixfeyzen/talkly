@@ -11,6 +11,12 @@ export type RecentCorrection = {
   correctedText: string;
 };
 
+export type StreakData = {
+  currentStreak: number;
+  longestStreak: number;
+  lastPracticeDate: string | null;
+};
+
 export type DashboardData = {
   topWeaknesses: TopWeakness[];
   activity: {
@@ -19,6 +25,7 @@ export type DashboardData = {
     lastPracticedAt: string | null;
   };
   recentCorrections: RecentCorrection[];
+  streak: StreakData;
 };
 
 export async function fetchDashboard(): Promise<DashboardData> {
