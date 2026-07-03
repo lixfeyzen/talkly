@@ -24,6 +24,8 @@ type SendMessageResponse = {
   sessionId: string;
   reply: string;
   mistakes: Mistake[];
+  // Terisi hanya di mode mock interview (fitur #6).
+  interview?: { questionNumber: number; total: number; finished: boolean };
 };
 
 export async function sendMessage(params: {
@@ -31,6 +33,8 @@ export async function sendMessage(params: {
   scenario?: string;
   targetLanguage?: string;
   focusCategories?: MistakeCategory[];
+  mode?: 'free' | 'mock_interview';
+  interviewRole?: string;
   message: string;
 }): Promise<SendMessageResponse> {
   return apiFetch<SendMessageResponse>('/api/conversations', {

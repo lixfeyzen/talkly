@@ -142,6 +142,12 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => router.push('/interview')}
+          style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
+          <ThemedText type="smallBold">🎤 Mock interview</ThemedText>
+        </Pressable>
+
+        <Pressable
           onPress={() => router.push('/dashboard')}
           style={({ pressed }) => [styles.secondaryOutlineButton, { opacity: pressed ? 0.7 : 1 }]}>
           <ThemedText type="smallBold">See my progress</ThemedText>

@@ -119,6 +119,26 @@ export default function DashboardScreen() {
             </ThemedText>
           </ThemedView>
 
+          {/* Skor mock interview terakhir (fitur #6) */}
+          {data.latestReadiness && (
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: '/interview-report',
+                  params: { sessionId: data.latestReadiness!.sessionId },
+                })
+              }>
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  🎤 Latest interview readiness
+                </ThemedText>
+                <ThemedText type="smallBold" style={{ color: AccentColor }}>
+                  {data.latestReadiness.score}/100 — tap to see the report
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
+
           {/* Kelemahan utama */}
           {data.topWeaknesses.length > 0 && (
             <ThemedView style={styles.section}>

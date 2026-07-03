@@ -26,6 +26,7 @@ export type DashboardData = {
   };
   recentCorrections: RecentCorrection[];
   streak: StreakData;
+  latestReadiness: { score: number; sessionId: string; createdAt: string } | null;
 };
 
 export async function fetchDashboard(): Promise<DashboardData> {

@@ -17,6 +17,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
+import { INTERVIEW_OPENER } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
 
 // Skenario di-target ke market: interview kerja & percakapan kantor English.
@@ -40,23 +41,47 @@ export default function ConversationScreen() {
   const scrollRef = useRef<ScrollView>(null);
 
   // Latihan terarah (fitur #3): home bisa membuka layar ini dengan skenario
-  // adaptif + kategori fokus lewat route params. Tanpa params = alur biasa.
-  const params = useLocalSearchParams<{ scenario?: string; focus?: string }>();
+  // adaptif + kategori fokus lewat route params. Mode interview (fitur #6)
+  // juga lewat params. Tanpa params = alur biasa.
+  const params = useLocalSearchParams<{
+    scenario?: string;
+    focus?: string;
+    mode?: string;
+    role?: string;
+  }>();
   const focusCategories =
     typeof params.focus === 'string' && params.focus.length > 0
       ? (params.focus.split(',') as MistakeCategory[])
       : undefined;
+  const isInterview = params.mode === 'interview' && typeof params.role === 'string';
+  const interviewRole = isInterview ? (params.role as string) : undefined;
 
   const [scenario, setScenario] = useState<string | null>(
     typeof params.scenario === 'string' && params.scenario.length > 0 ? params.scenario : null,
   );
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Interview dibuka dengan bubble interviewer berisi pertanyaan pembuka
+  // (teksnya konstanta backend) -- tanpa panggilan AI.
+  const [messages, setMessages] = useState<Message[]>(
+    isInterview
+      ? [
+          {
+            role: 'assistant',
+            content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions — answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+          },
+        ]
+      : [],
+  );
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [interviewProgress, setInterviewProgress] = useState<{
+    questionNumber: number;
+    total: number;
+    finished: boolean;
+  } | null>(null);
 
-  const started = scenario !== null;
+  const started = scenario !== null || isInterview;
 
   async function handleSend() {
     if (!input.trim() || sending) return;
@@ -71,12 +96,15 @@ export default function ConversationScreen() {
         sessionId,
         scenario: scenario ?? undefined,
         targetLanguage: TARGET_LANGUAGE,
-        // Hanya relevan saat membuat sesi baru; sesi lanjutan pakai fokus
-        // yang sudah tersimpan di server.
+        // Hanya relevan saat membuat sesi baru; sesi lanjutan pakai fokus/
+        // mode yang sudah tersimpan di server.
         focusCategories: sessionId ? undefined : focusCategories,
+        mode: !sessionId && isInterview ? 'mock_interview' : undefined,
+        interviewRole: !sessionId && isInterview ? interviewRole : undefined,
         message: userText,
       });
       setSessionId(res.sessionId);
+      if (res.interview) setInterviewProgress(res.interview);
       setMessages((prev) => {
         const next = [...prev];
         next[next.length - 1] = { ...next[next.length - 1], mistakes: res.mistakes };
@@ -138,7 +166,15 @@ export default function ConversationScreen() {
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           <ThemedText type="subtitle" style={styles.title}>
-            {scenario} · {TARGET_LANGUAGE}
+            {isInterview
+              ? `Mock interview · ${interviewRole}${
+                  interviewProgress && !interviewProgress.finished
+                    ? ` — Question ${interviewProgress.questionNumber}/${interviewProgress.total}`
+                    : interviewProgress?.finished
+                      ? ' — Done!'
+                      : ' — Question 1/5'
+                }`
+              : `${scenario} · ${TARGET_LANGUAGE}`}
           </ThemedText>
 
           <ScrollView
@@ -158,7 +194,7 @@ export default function ConversationScreen() {
                 <ThemedText type="default" style={msg.role === 'user' ? { color: AccentColorOn } : undefined}>
                   {msg.content}
                 </ThemedText>
-                {msg.mistakes && msg.mistakes.length > 0 && (
+                {!isInterview && msg.mistakes && msg.mistakes.length > 0 && (
                   <ThemedView style={styles.mistakeNote}>
                     {msg.mistakes.map((m, mi) => (
                       <View key={mi} style={styles.mistakeItem}>
@@ -193,6 +229,20 @@ export default function ConversationScreen() {
             </ThemedText>
           )}
 
+          {interviewProgress?.finished ? (
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: '/interview-report', params: { sessionId: sessionId ?? '' } })
+              }
+              style={({ pressed }) => [
+                styles.reportButton,
+                { backgroundColor: AccentColor, opacity: pressed ? 0.85 : 1 },
+              ]}>
+              <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
+                View my readiness report →
+              </ThemedText>
+            </Pressable>
+          ) : (
           <ThemedView style={styles.inputRow}>
             <ThemedView type="backgroundElement" style={styles.inputWrapper}>
               <TextInput
@@ -212,10 +262,11 @@ export default function ConversationScreen() {
                 { backgroundColor: AccentColor, opacity: !input.trim() ? 0.5 : pressed ? 0.85 : 1 },
               ]}>
               <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                Kirim
+                Send
               </ThemedText>
             </Pressable>
           </ThemedView>
+          )}
         </SafeAreaView>
       </ThemedView>
     </KeyboardAvoidingView>
@@ -244,4 +295,10 @@ const styles = StyleSheet.create({
   inputWrapper: { flex: 1, borderRadius: Spacing.three },
   input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
   sendButton: { borderRadius: Spacing.three, paddingHorizontal: Spacing.four, justifyContent: 'center' },
+  reportButton: {
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
+    marginVertical: Spacing.three,
+  },
 });
