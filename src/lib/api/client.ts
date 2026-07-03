@@ -1,8 +1,24 @@
+import { Platform } from 'react-native';
 import { getToken } from '@/lib/auth/token-storage';
 
 // Backend Next.js jalan di port 3001 (lihat backend/: `next dev -p 3001`).
-// Bisa dioverride via env EXPO_PUBLIC_API_URL (mis. URL produksi/device fisik).
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
+// WEB: alamat API DITURUNKAN dari host halaman (localhost -> localhost:3001,
+// buka via IP LAN -> IP itu juga) -- kebal terhadap IP Wi-Fi yang berubah,
+// kelas bug yang sudah dua kali menggigit. Env hanya menang bila menunjuk
+// URL non-lokal (produksi).
+// NATIVE (Expo Go/APK dev): tak ada window -- pakai EXPO_PUBLIC_API_URL.
+function resolveBaseUrl(): string {
+  const env = process.env.EXPO_PUBLIC_API_URL;
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    const envIsLocalNetwork = !env || /localhost|127\.0\.0\.1|192\.168\.|10\.|172\./.test(env);
+    if (envIsLocalNetwork) {
+      return `${window.location.protocol}//${window.location.hostname}:3001`;
+    }
+  }
+  return env ?? 'http://localhost:3001';
+}
+
+const API_BASE_URL = resolveBaseUrl();
 
 // Batas tunggu request -- tanpa ini, server yang hang bikin UI muter selamanya.
 const DEFAULT_TIMEOUT_MS = 15_000;
