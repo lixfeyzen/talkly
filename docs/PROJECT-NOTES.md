@@ -533,6 +533,19 @@ adaptiveIcon bg → #0F0E15. **Template Expo terakhir (icon/splash) LENYAP
 — app siap tampil bermerek di home screen & boot.** Verifikasi: icon &
 splash dilihat mata; monochrome/foreground via statistik alpha.
 
+## ✅ BACKEND LIVE DI PRODUCTION (Vercel, 2026-07-03)
+
+Deploy backend Next.js ke Vercel — **`https://talkly-api.vercel.app`**
+(project `talkly-api`, akun `wiliams-projects-acd6d5f0`/lixfeyzen). Env
+di Vercel: DATABASE_URL + JWT_SECRET + OPENAI_API_KEY (Encrypted,
+Preview+Production; user isi manual via dashboard). Build lokal lulus
+lebih dulu (11 route API). **Terbukti live:** `/api/auth/me` 401,
+register via curl → user asli + token asli (DB Neon tersambung dari
+cloud); user probe dibersihkan. `.env.local` mobile → URL publik ini
+(tak pernah basi walau IP Wi-Fi berubah). **Kini backend TIDAK numpang
+laptop** — jalan buat siapa pun, di mana pun. Sisa jalur APK: EAS build.
+Catatan: Neon free-tier bisa cold-start (200-500ms) request pertama.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
