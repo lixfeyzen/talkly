@@ -250,13 +250,34 @@ sendiri dari kode doang.
 ekstensi browser otomatisku terputus & belum konek lagi (di luar
 kendaliku). Server backend (`:3001`) & Expo web (`:8081`) tetap hidup.
 
+## ✅ Dashboard progres (fitur #5) SELESAI + terverifikasi live (2026-07-03)
+
+Dikerjakan bertahap (opsi A user: bangun dari data yang sudah ada dulu,
+grafik-tren-lintas-waktu ditunda ke V2 karena butuh skema per-waktu).
+- Backend: `lib/data/dashboard.ts` (top-5 kelemahan dari `user_mistake_stats`,
+  hitung sesi/koreksi, terakhir latihan, 5 koreksi terbaru — semua ber-scope
+  `userId`), `GET /api/dashboard` (auth-gated, 401 tanpa token).
+- **`test-dashboard.mts`: 13/13 lulus terhadap DB live** — agregasi benar,
+  ISOLASI antar-user (A tak lihat data B), EMPTY-STATE (user baru → nol, bukan
+  crash). Endpoint juga dites via curl: empty-state JSON benar + 401 tanpa auth.
+- Mobile: `src/app/dashboard.tsx` (stat tiles, daftar kelemahan + badge jumlah,
+  koreksi terbaru original→corrected, empty-state rapi), tombol "Lihat
+  progresku" di home.
+- Housekeeping: `cleanup-test-users.mts` + `npm run cleanup:test-users` buat
+  hapus user throwaway hasil tes manual (biar DB nggak numpuk sampah).
+
+**Status fitur MVP: 3/5 selesai** (#1 roleplay, #2 pelacakan kesalahan, #5
+dashboard). Sisa: #3 skenario adaptif, #4 streak+notifikasi.
+
 ## Next step (arah ke depan)
 
-1. **User buka `http://localhost:8081` sendiri di browser** buat lihat versi
-   yang sudah dipoles — kabari kalau ada yang masih kurang pas.
-2. Tambah saldo di platform.openai.com (klik "Add credits") — kode integrasi
-   AI sudah terverifikasi BENAR, tinggal ini buat lanjut tes percakapan
-   penuh.
-3. Setelah itu: aksi notifikasi (Expo Notifications, streak harian), skenario
-   adaptif (#3), dashboard progres (#5, agregat dari `user_mistake_stats`),
-   lalu demo/deploy.
+1. **User buka `http://localhost:8081`** buat lihat app (termasuk dashboard
+   baru — walau masih empty-state sampai ada percakapan nyata).
+2. **Tambah saldo OpenAI** (platform.openai.com → "Add credits") — unblock tes
+   percakapan AI penuh; setelah itu dashboard bakal keisi data nyata.
+3. Bangun sisa fitur: **#3 skenario adaptif** (pilih skenario berdasar
+   kelemahan dari `user_mistake_stats`), **#4 streak + notifikasi harian**
+   (Expo Notifications).
+4. Deploy publik (Vercel backend + Expo) → link hidup buat portfolio.
+5. (V2) grafik tren perbaikan lintas-waktu — butuh nyimpan mistake-rate
+   per-window, ditunda dari MVP.
