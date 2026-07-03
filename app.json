@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.talkly.app",
       "adaptiveIcon": {
         "backgroundColor": "#0F0E15",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -38,6 +39,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "82c80f26-f6bf-4071-b6b7-9925ac00147b"
+      }
+    },
+    "owner": "lixfey"
   }
 }
