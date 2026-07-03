@@ -109,10 +109,31 @@ proyek kedua.
   raksasa itu (git otomatis berhenti nge-track begitu ketemu `.git` bersarang).
   **Belum ditangani:** repo `D:\.git` itu sendiri masih ada, bisa jadi masalah
   kalau suatu saat ada yang nggak sengaja `git add` skala besar dari situ.
-- ⏳ **NEXT:** Fase 2 — auth mobile (JWT) + backend Next.js/Drizzle/Neon.
+- 🟡 **Fase 2 SEBAGIAN (2026-07-03) — Backend auth.** Backend Next.js
+  diletakkan di `backend/` (subfolder DALAM repo yang sama, bukan repo
+  terpisah — monorepo satu proyek). Dibangun: skema Drizzle (`users`: email +
+  hash password bcrypt), koneksi Neon (`neon-http`), helper JWT sign/verify
+  (`backend/src/lib/auth/jwt.ts`), logika createUser/verifyCredentials
+  (bcrypt), 3 endpoint (`POST /api/auth/register`, `POST /api/auth/login`,
+  `GET /api/auth/me` — pola Bearer-token buat mobile, BEDA dari cookie-session
+  Auth.js versi Vale). Skrip `scripts/test-auth.mts` (pola sama kayak test
+  Vale) sudah ditulis tapi **BELUM dijalankan** — butuh `DATABASE_URL` dari
+  project Neon baru milik user (belum dikasih ke sesi ini, sesuai instruksi
+  keamanan — user isi sendiri di `.env.local`, bukan lewat chat).
+  **Terbukti (tanpa DB):** `npx tsc --noEmit` 0 error project-wide, `npm run
+  lint` 0 error project-wide. **Bug type di `jwt.ts`** (overload `jwt.sign`/
+  `jwt.verify` nggak ke-resolve krn closure narrowing gagal) diperbaiki dengan
+  eksplisit tipe `string` (bukan `string | undefined`) — bukan di-suppress.
+  **BELUM diverifikasi:** `npm run build` (production build) — sempat dicoba
+  tapi dibatalkan user, belum diulang. `npm run db:migrate` + `npm run
+  test:auth` — BUTUH `DATABASE_URL` asli, belum bisa jalan.
+- ⏳ **NEXT:** setelah user isi `.env.local` di `backend/` (dari
+  `.env.local.example`), jalankan migrasi + `test:auth` buat verifikasi
+  end-to-end. Lanjut fitur mobile (layar register/login, simpan token pakai
+  Expo SecureStore).
 
 ## Next step (arah ke depan)
 
-Susun fase development lanjutan: auth → data model (riwayat chat + pola
-kesalahan) → integrasi AI (OpenAI, backend proxy) → aksi notifikasi (Expo
-Notifications) → polish/demo.
+Setelah auth backend terverifikasi hidup: layar register/login di mobile app
+→ data model (riwayat chat + pola kesalahan) → integrasi AI (OpenAI, backend
+proxy) → aksi notifikasi (Expo Notifications) → polish/demo.
