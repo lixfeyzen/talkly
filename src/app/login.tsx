@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, Pressable, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { StyleSheet, Text, Pressable } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { PasswordInput } from '@/components/password-input';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import {
+  AuthLayout,
+  AuthInput,
+  AuthPasswordInput,
+  AuthButton,
+  AuthPalette,
+} from '@/components/auth/auth-layout';
+import { Spacing } from '@/constants/theme';
 import { login } from '@/lib/auth/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
 
 export default function LoginScreen() {
-  const theme = useTheme();
   const { resetDone } = useLocalSearchParams<{ resetDone?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,99 +40,48 @@ export default function LoginScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="smallBold" themeColor="textSecondary" style={styles.brand}>
-          TALKLY
-        </ThemedText>
-        <ThemedText type="title" style={styles.title}>
-          Selamat datang lagi
-        </ThemedText>
+    <AuthLayout
+      title={'Yuk, masuk &\nlanjut latihan!'}
+      topQuestion="Belum punya akun?"
+      topAction="Daftar"
+      onTopAction={() => router.push('/register')}>
+      <AuthInput
+        placeholder="Email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <AuthPasswordInput placeholder="Password" value={password} onChangeText={setPassword} />
 
-        <ThemedView type="backgroundElement" style={styles.inputWrapper}>
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor={theme.textSecondary}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            style={[styles.input, { color: theme.text }]}
-          />
-        </ThemedView>
-        <PasswordInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-        />
+      <Pressable
+        onPress={() => router.push('/forgot-password')}
+        hitSlop={Spacing.two}
+        style={styles.forgotLink}>
+        <Text style={styles.forgotText}>Lupa password?</Text>
+      </Pressable>
 
-        {resetDone === '1' && !error && (
-          <ThemedText type="small" style={styles.success}>
-            Password berhasil direset. Silakan login dengan password baru.
-          </ThemedText>
-        )}
+      {resetDone === '1' && !error && (
+        <Text style={styles.success}>
+          Password berhasil direset. Silakan login dengan password baru.
+        </Text>
+      )}
 
-        {error && (
-          <ThemedText type="small" style={styles.error}>
-            {error}
-          </ThemedText>
-        )}
+      {error && <Text style={styles.error}>{error}</Text>}
 
-        <Pressable
-          onPress={handleSubmit}
-          disabled={loading || !email || !password}
-          style={({ pressed }) => [
-            styles.button,
-            { backgroundColor: AccentColor, opacity: loading ? 0.6 : pressed ? 0.85 : 1 },
-          ]}>
-          {loading ? (
-            <ActivityIndicator color={AccentColorOn} />
-          ) : (
-            <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-              Masuk
-            </ThemedText>
-          )}
-        </Pressable>
-
-        <Link href="/forgot-password" style={styles.link}>
-          <ThemedText type="link">Lupa password?</ThemedText>
-        </Link>
-        <Link href="/register" style={styles.link}>
-          <ThemedText type="link">Belum punya akun? Daftar</ThemedText>
-        </Link>
-      </SafeAreaView>
-    </ThemedView>
+      <AuthButton
+        label="Masuk"
+        onPress={handleSubmit}
+        disabled={!email || !password}
+        loading={loading}
+      />
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', flexDirection: 'row' },
-  safeArea: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.three,
-    maxWidth: MaxContentWidth,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  brand: { letterSpacing: 2 },
-  title: { marginBottom: Spacing.two },
-  inputWrapper: {
-    borderRadius: Spacing.three,
-  },
-  input: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    fontSize: 16,
-  },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.two,
-  },
-  error: { color: '#d92d20' },
-  success: { color: '#067647' },
-  link: { alignSelf: 'center', marginTop: Spacing.two },
+  forgotLink: { alignSelf: 'center' },
+  forgotText: { color: AuthPalette.textPrimary, fontSize: 14, fontWeight: '600' },
+  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center' },
+  success: { color: AuthPalette.success, fontSize: 14, textAlign: 'center' },
 });
