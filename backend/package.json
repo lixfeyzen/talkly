@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "test:auth": "tsx scripts/test-auth.mts"
+    "test:auth": "tsx scripts/test-auth.mts",
+    "test:validations": "tsx scripts/test-validations.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
