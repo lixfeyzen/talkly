@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, Pressable, ActivityIndicator, ScrollView, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -15,6 +15,12 @@ import {
   NATIVE_LANGUAGE_OPTIONS,
 } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
+import {
+  notificationsSupported,
+  isDailyReminderEnabled,
+  enableDailyReminder,
+  disableDailyReminder,
+} from '@/lib/notifications';
 
 export default function SettingsScreen() {
   const theme = useTheme();
@@ -22,6 +28,7 @@ export default function SettingsScreen() {
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const [reminderOn, setReminderOn] = useState(false);
 
   useEffect(() => {
     fetchCurrentUser().then((user) => {
@@ -32,7 +39,20 @@ export default function SettingsScreen() {
       setEmail(user.email);
       setSelected(user.nativeLanguage ?? null);
     });
+    if (notificationsSupported) {
+      isDailyReminderEnabled().then(setReminderOn);
+    }
   }, []);
+
+  async function handleReminderToggle(next: boolean) {
+    if (next) {
+      const granted = await enableDailyReminder();
+      setReminderOn(granted); // izin ditolak -> toggle balik mati, jujur
+    } else {
+      await disableDailyReminder();
+      setReminderOn(false);
+    }
+  }
 
   async function handlePickLanguage(value: string) {
     if (saving || value === selected) return;
@@ -122,6 +142,28 @@ export default function SettingsScreen() {
             )}
           </ThemedView>
 
+          {/* Reminder harian (native saja; web tak didukung expo-notifications) */}
+          {notificationsSupported && (
+            <ThemedView style={styles.section}>
+              <ThemedText type="subtitle" style={styles.sectionTitle}>
+                Reminder
+              </ThemedText>
+              <ThemedView type="backgroundElement" style={[styles.rowButton, styles.reminderRow]}>
+                <View style={styles.reminderText}>
+                  <ThemedText type="smallBold">Daily practice reminder</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Every day at 7 PM
+                  </ThemedText>
+                </View>
+                <Switch
+                  value={reminderOn}
+                  onValueChange={handleReminderToggle}
+                  trackColor={{ true: AccentColor }}
+                />
+              </ThemedView>
+            </ThemedView>
+          )}
+
           {/* Password */}
           <ThemedView style={styles.section}>
             <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -173,8 +215,16 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two + 2,
   },
   rowButton: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
-  ok: { color: '#067647' },
-  error: { color: '#d92d20' },
+  reminderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  reminderText: { gap: 2, flexShrink: 1 },
+  // Warna status di latar gelap: versi terang biar terbaca.
+  ok: { color: '#34C88A' },
+  error: { color: '#FF7A70' },
   logout: { alignItems: 'center', paddingVertical: Spacing.three, marginTop: Spacing.four },
-  logoutText: { color: '#d92d20' },
+  logoutText: { color: '#FF7A70' },
 });

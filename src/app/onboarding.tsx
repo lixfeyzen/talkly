@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two + 2,
   },
-  error: { color: '#d92d20', textAlign: 'center' },
+  error: { color: '#FF7A70', textAlign: 'center' },
   button: {
     borderRadius: 999,
     paddingVertical: Spacing.three,

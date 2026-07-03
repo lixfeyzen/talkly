@@ -7,32 +7,33 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// Talkly brand (2026-07-03, arahan user dari referensi UI kit "Coursely"):
-// terang, lavender lembut, kartu putih membulat, aksen UNGU. Satu bahasa
-// desain utk seluruh app -- tema dark DISENGAJA disamakan dgn light (brand
-// light-first; lihat juga userInterfaceStyle di app.json).
+// Talkly brand (2026-07-03, arahan user dari referensi "Lumina" -- AI
+// assistant gelap elegan): latar hampir-hitam keunguan, kartu gelap
+// membulat, teks putih, aksen UNGU. Senada dgn layar auth (dark hero) →
+// seluruh app satu kepribadian gelap. Tema light DISENGAJA disamakan dgn
+// dark (brand dark-first; lihat userInterfaceStyle di app.json).
 export const AccentColor = '#6C5CE7';
 export const AccentColorOn = '#ffffff';
 
-// Gradient latar khas kit: lavender -> hampir putih. Dipakai via komponen
-// GradientBackground (expo-linear-gradient).
-export const BrandGradient = ['#E4DDFF', '#F2ECFB', '#FAF8FF'] as const;
+// Gradient latar: ungu-gelap pekat -> hampir hitam (nuansa layar Lumina).
+export const BrandGradient = ['#191627', '#121019', '#0C0B10'] as const;
 
-// Bayangan kartu lembut (senada aksen) -- dipakai kartu putih di atas gradient.
+// Di latar gelap, "bayangan" kartu = kedalaman halus (shadow hitam tipis);
+// pemisah utama antar-permukaan adalah beda tone bg kartu vs latar.
 export const CardShadow = {
-  shadowColor: '#6C5CE7',
-  shadowOpacity: 0.08,
-  shadowRadius: 16,
-  shadowOffset: { width: 0, height: 6 },
+  shadowColor: '#000000',
+  shadowOpacity: 0.35,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 } as const;
 
 const brandPalette = {
-  text: '#1B1740',
-  background: '#F5F2FE',
-  backgroundElement: '#FFFFFF',
-  backgroundSelected: '#E7E1FB',
-  textSecondary: '#6B678D',
+  text: '#F4F2FA',
+  background: '#0F0E15',
+  backgroundElement: '#1C1A26',
+  backgroundSelected: '#2B2839',
+  textSecondary: '#9B97B0',
 };
 
 export const Colors = {

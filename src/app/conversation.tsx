@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   mistakeTextOnAccent: { color: 'rgba(255,255,255,0.85)' },
   mistakeNoteOnAccent: { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' },
   typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
-  error: { color: '#d92d20' },
+  error: { color: '#FF7A70' },
   inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three, backgroundColor: 'transparent' },
   inputWrapper: { flex: 1, borderRadius: 999 },
   input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },

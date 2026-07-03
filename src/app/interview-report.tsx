@@ -192,6 +192,6 @@ const styles = StyleSheet.create({
   barTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: 4 },
   card: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
-  ok: { color: '#067647' },
-  warn: { color: '#d92d20' },
+  ok: { color: '#34C88A' },
+  warn: { color: '#FF7A70' },
 });
