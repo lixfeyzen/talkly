@@ -383,6 +383,26 @@ baru; (2) quirk web: Chrome autofill mengisi field tanpa mengisi state React
 → tombol tetap disabled sampai user mengetik (perilaku Android native beda);
 (3) user menyebut tujuan baru: dipakai rekruiter + **bibit startup**.
 
+## ✅ Onboarding bahasa native (2026-07-03, commit `a606c7e`) — inti produk global-ready
+
+Keputusan produk: yang ditanya **bahasa sehari-hari**, BUKAN negara asal
+(negara = proxy yang bisa salah + data pribadi tak terpakai). Ditaruh sebagai
+**onboarding satu layar SETELAH daftar** (bukan field di form register —
+jaga conversion signup 2-field), gerbang di `index.tsx` saat `nativeLanguage`
+null; bisa diubah nanti via endpoint yang sama (layar pengaturan belum ada).
+- Backend: `users.native_language` (migrasi 0004), `POST /api/profile`
+  (allowlist 10 bahasa — nilai TIDAK pernah teks bebas masuk prompt),
+  `/api/auth/me` kini baca DB (+401 kalau user sudah dihapus).
+- AI: prompt tahu bahasa native (pola kesalahan khas penutur X) + field
+  **`note`** baru per-koreksi — penjelasan 1 kalimat DALAM BAHASA USER,
+  tampil di bawah koreksi di chat (`conversation.tsx`); transkrip lama tanpa
+  note tetap kompatibel (optional).
+- **Bukti:** validations 14/14; HTTP E2E (me null → set Spanish → me
+  Spanish → Klingon 400 → tanpa token 401); alur UI penuh daftar →
+  onboarding → pilih bahasa → home (screenshot; akun uji dibersihkan).
+- **Belum:** kualitas isi `note` dari AI beneran (butuh saldo OpenAI); i18n
+  UI penuh SENGAJA ditunda sampai ada user non-Indonesia.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
