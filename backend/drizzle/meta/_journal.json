@@ -22,6 +22,13 @@
       "when": 1783060456905,
       "tag": "0002_low_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783061684787,
+      "tag": "0003_fat_red_hulk",
+      "breakpoints": true
     }
   ]
 }

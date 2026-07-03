@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, AI_TIMEOUT_MS } from '@/lib/api/client';
 
 export type MistakeCategory =
   | 'verb_conjugation'
@@ -34,6 +34,7 @@ export async function sendMessage(params: {
     method: 'POST',
     auth: true,
     body: params,
+    timeoutMs: AI_TIMEOUT_MS,
   });
 }
 

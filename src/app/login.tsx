@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -9,10 +9,11 @@ import { PasswordInput } from '@/components/password-input';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { login } from '@/lib/auth/api';
-import { ApiError } from '@/lib/api/client';
+import { ApiError, NetworkError } from '@/lib/api/client';
 
 export default function LoginScreen() {
   const theme = useTheme();
+  const { resetDone } = useLocalSearchParams<{ resetDone?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,8 @@ export default function LoginScreen() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError('Email atau password salah.');
+      } else if (err instanceof NetworkError) {
+        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
       } else {
         setError('Gagal login, coba lagi.');
       }
@@ -62,6 +65,12 @@ export default function LoginScreen() {
           onChangeText={setPassword}
         />
 
+        {resetDone === '1' && !error && (
+          <ThemedText type="small" style={styles.success}>
+            Password berhasil direset. Silakan login dengan password baru.
+          </ThemedText>
+        )}
+
         {error && (
           <ThemedText type="small" style={styles.error}>
             {error}
@@ -84,6 +93,9 @@ export default function LoginScreen() {
           )}
         </Pressable>
 
+        <Link href="/forgot-password" style={styles.link}>
+          <ThemedText type="link">Lupa password?</ThemedText>
+        </Link>
         <Link href="/register" style={styles.link}>
           <ThemedText type="link">Belum punya akun? Daftar</ThemedText>
         </Link>
@@ -120,5 +132,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   error: { color: '#d92d20' },
+  success: { color: '#067647' },
   link: { alignSelf: 'center', marginTop: Spacing.two },
 });

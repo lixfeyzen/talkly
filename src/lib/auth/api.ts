@@ -34,3 +34,23 @@ export async function fetchCurrentUser(): Promise<AuthUser | null> {
 export async function logout(): Promise<void> {
   await clearToken();
 }
+
+// Respons selalu { ok: true } apa pun emailnya (anti email-enumeration di
+// sisi server) -- UI cukup tampilkan "kalau email terdaftar, kode terkirim".
+export async function forgotPassword(email: string): Promise<void> {
+  await apiFetch('/api/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
+  });
+}
+
+export async function resetPassword(
+  email: string,
+  code: string,
+  newPassword: string,
+): Promise<void> {
+  await apiFetch('/api/auth/reset-password', {
+    method: 'POST',
+    body: { email, code, newPassword },
+  });
+}

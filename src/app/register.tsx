@@ -9,7 +9,7 @@ import { PasswordInput } from '@/components/password-input';
 import { useTheme } from '@/hooks/use-theme';
 import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
 import { register } from '@/lib/auth/api';
-import { ApiError } from '@/lib/api/client';
+import { ApiError, NetworkError } from '@/lib/api/client';
 
 export default function RegisterScreen() {
   const theme = useTheme();
@@ -29,6 +29,8 @@ export default function RegisterScreen() {
         setError('Email ini sudah terdaftar.');
       } else if (err instanceof ApiError && err.status === 400) {
         setError('Password minimal 8 karakter, email harus valid.');
+      } else if (err instanceof NetworkError) {
+        setError('Tidak bisa terhubung ke server. Coba beberapa saat lagi.');
       } else {
         setError('Gagal daftar, coba lagi.');
       }

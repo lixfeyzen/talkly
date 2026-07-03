@@ -1,6 +1,13 @@
 import { getToken } from '@/lib/auth/token-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+// Backend Next.js jalan di port 3001 (lihat backend/: `next dev -p 3001`).
+// Bisa dioverride via env EXPO_PUBLIC_API_URL (mis. URL produksi/device fisik).
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
+
+// Batas tunggu request -- tanpa ini, server yang hang bikin UI muter selamanya.
+const DEFAULT_TIMEOUT_MS = 15_000;
+// Panggilan AI (conversation) butuh lebih lama dari CRUD biasa.
+export const AI_TIMEOUT_MS = 60_000;
 
 export class ApiError extends Error {
   status: number;
@@ -13,9 +20,18 @@ export class ApiError extends Error {
   }
 }
 
+// Server tidak tercapai / timeout -- beda dari ApiError (server MENJAWAB
+// dengan status error). UI bisa kasih pesan "tidak bisa terhubung".
+export class NetworkError extends Error {
+  constructor(cause?: unknown) {
+    super('Cannot reach API server');
+    this.cause = cause;
+  }
+}
+
 export async function apiFetch<T>(
   path: string,
-  options: { method?: string; body?: unknown; auth?: boolean } = {},
+  options: { method?: string; body?: unknown; auth?: boolean; timeoutMs?: number } = {},
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -28,11 +44,25 @@ export async function apiFetch<T>(
     }
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  // AbortController manual, bukan AbortSignal.timeout() -- yang terakhir
+  // belum tentu tersedia di Hermes (React Native).
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    // fetch melempar (bukan balikin status) saat koneksi gagal/timeout.
+    throw new NetworkError(err);
+  } finally {
+    clearTimeout(timer);
+  }
 
   const data = await res.json().catch(() => null);
 

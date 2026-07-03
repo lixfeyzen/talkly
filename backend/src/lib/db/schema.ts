@@ -7,6 +7,22 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Kode reset password (forgot password). Kode 6 digit dikirim ke email user;
+// yang disimpan HANYA hash-nya (sha256) -- bocornya isi tabel ini tidak
+// membocorkan kode yang masih hidup. Single-use + kedaluwarsa 15 menit +
+// batas percobaan (anti brute-force 6 digit).
+export const passwordResetCodes = pgTable("password_reset_codes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Satu sesi = satu percakapan roleplay (mis. "pesan kopi", "interview kerja").
 export const conversationSessions = pgTable("conversation_sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
