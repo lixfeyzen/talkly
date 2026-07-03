@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, jsonb, unique } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -45,12 +45,21 @@ export const mistakePatterns = pgTable("mistake_patterns", {
 // Ringkasan agregat per-user per-kategori kesalahan -- dihitung ulang tiap
 // sesi selesai, dibaca cepat buat dashboard & pemilihan skenario adaptif
 // (hindari agregasi mahal dari mistake_patterns tiap kali dibutuhkan).
-export const userMistakeStats = pgTable("user_mistake_stats", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  category: text("category").notNull(),
-  occurrenceCount: integer("occurrence_count").notNull().default(0),
-  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const userMistakeStats = pgTable(
+  "user_mistake_stats",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    occurrenceCount: integer("occurrence_count").notNull().default(0),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // Wajib ada -- recordMistakes() di lib/data/conversations.ts pakai
+    // onConflictDoUpdate([userId, category]), butuh unique constraint asli
+    // di DB (bukan cuma dijamin di level kode) supaya UPSERT-nya valid.
+    unique().on(table.userId, table.category),
+  ],
+);
