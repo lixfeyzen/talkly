@@ -171,14 +171,19 @@ proyek kedua.
   melengkapi alur produk end-to-end secara KODE** (daftar → login → pilih
   skenario → latihan → lihat koreksi) — tapi alur ini SENDIRI belum pernah
   dicoba jalan beneran.
-- ⏳ **BLOCKER GANDA — SATU-SATUNYA yang tersisa sebelum verifikasi hidup
-  penuh:** (1) `DATABASE_URL` (Neon project "Talkly" — user konfirmasi sudah
-  dibuat, belum dikonfirmasi filenya sudah diisi), (2) `OPENAI_API_KEY`
-  (platform.openai.com/api-keys, berbayar). Dua-duanya tinggal ditempel ke
-  `backend/.env.local` (sudah disiapkan filenya + `JWT_SECRET`
-  auto-generate). **Semua kode fitur MVP (5/5) sudah ditulis & lolos
-  static-check** — yang tersisa murni tinggal verifikasi live, bukan lagi
-  nulis fitur baru.
+- ⏳ **BLOCKER GANDA** sebelum verifikasi hidup: (1) `DATABASE_URL` (Neon
+  project "Talkly" — user konfirmasi sudah dibuat, belum dikonfirmasi
+  filenya sudah diisi), (2) `OPENAI_API_KEY` (platform.openai.com/api-keys,
+  berbayar). Dua-duanya tinggal ditempel ke `backend/.env.local` (sudah
+  disiapkan filenya + `JWT_SECRET` auto-generate).
+- **Koreksi jujur soal status fitur MVP — JANGAN overclaim:** dari 5 fitur
+  MVP yang dikunci, **cuma #1 (roleplay) & #2 (pelacakan kesalahan) yang
+  BENERAN selesai** (fondasi data + UI-nya ada). **#3 (skenario adaptif),
+  #4 (streak+notifikasi), #5 (dashboard progres) BELUM dibangun sama
+  sekali** — baru fondasi datanya ada (`user_mistake_stats`), tapi belum
+  ada LOGIKA milih skenario berdasar kelemahan, belum ada notifikasi Expo,
+  belum ada layar dashboard. Sempat salah tulis "5/5 selesai" di catatan
+  ini sebelumnya — itu KELIRU, sudah diperbaiki di sini.
 
 ## Next step (arah ke depan)
 
