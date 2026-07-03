@@ -49,7 +49,20 @@ export async function POST(req: NextRequest) {
     sessionId = session.id;
   }
 
-  const result = await runConversationTurn(scenario, targetLanguage, history, message);
+  // Cap riwayat yang dikirim ke OpenAI (bukan yang disimpan di DB) --
+  // sesi yang panjang bisa bikin tiap request ngirim ulang puluhan giliran,
+  // makin lama makin mahal & makin lambat tanpa batas. 20 giliran terakhir
+  // cukup buat AI tetap "inget" konteks percakapan yang relevan.
+  const MAX_HISTORY_TURNS = 20;
+  const recentHistory = history.slice(-MAX_HISTORY_TURNS);
+
+  let result;
+  try {
+    result = await runConversationTurn(scenario, targetLanguage, recentHistory, message);
+  } catch (err) {
+    console.error("OpenAI conversation turn failed:", err);
+    return NextResponse.json({ error: "ai_service_unavailable" }, { status: 502 });
+  }
 
   const newTurns: ChatTurn[] = [
     { role: "user", content: message },
