@@ -1,4 +1,7 @@
-import "dotenv/config";
+// Env vars loaded via `tsx --env-file=.env.local` (see package.json) --
+// NOT via dotenv import here, because ESM imports are hoisted above any
+// top-level code, so a dotenv call in this file would run too late (the
+// db/schema imports below would already have thrown on missing env vars).
 import { createUser, verifyCredentials } from "../src/lib/auth/credentials";
 import { signAuthToken, verifyAuthToken } from "../src/lib/auth/jwt";
 import { db } from "../src/lib/db";
