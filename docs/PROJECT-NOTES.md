@@ -439,6 +439,23 @@ dashboard, streak+reminder, onboarding bahasa native; kategori
 `gender_agreement` dibiarkan (tak merusak, jarang kepilih utk English).
 Bukti: 80/80 suite hijau + register & scenario picker diverifikasi visual.
 
+## ▶ RESUME POINT (jeda 2026-07-03 sore)
+
+Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
+- Expo Go Play Store menolak proyek (SDK 57 lebih baru dari Expo Go rilis).
+- APK dari expo.dev/go 2× "App not installed" — belum tuntas; kemungkinan
+  besar Expo Go lama belum ter-uninstall penuh (cek Settings→Apps) atau
+  blokir MIUI.
+- **Keputusan menggantung (tanya user saat resume): jalur EAS Build —
+  (A) deploy backend ke Vercel dulu → APK shareable ke siapa pun
+  (REKOMENDASI, selaras tujuan rekruter/startup), atau (B) APK lokal
+  ber-IP-LAN dulu.** Prasyarat user: akun expo.dev (gratis) + login
+  `npx eas-cli login`; `.env.local` (gitignored) berisi
+  `EXPO_PUBLIC_API_URL=http://192.168.0.110:3001` — IP bisa berubah, dan
+  utk EAS env harus lewat `eas.json` (bukan .env.local, tak terupload).
+- Nyalakan ulang dev: `npx expo start --port 8081` (root) + `npx next
+  dev -p 3001` (backend/). Utang bukti lama tetap: saldo OpenAI.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
