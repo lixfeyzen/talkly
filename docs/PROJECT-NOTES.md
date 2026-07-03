@@ -152,16 +152,39 @@ proyek kedua.
   (`onConflictDoUpdate`) BUTUH itu di level database — kalau nggak
   ditambahkan, bakal error saat runtime walau tsc lolos. Ditambahkan
   `unique().on(table.userId, table.category)` di skema.
-- ⏳ **BLOCKER GANDA saat ini:** butuh 2 hal dari user buat verifikasi hidup:
-  (1) `DATABASE_URL` (Neon project "Talkly" — user konfirmasi sudah dibuat,
-  belum dikonfirmasi filenya sudah diisi), (2) `OPENAI_API_KEY`
+- ✅ **Hardening `/api/conversations` (2026-07-03, audit sendiri):** riwayat
+  yang dikirim ke OpenAI di-cap 20 giliran terakhir (riwayat penuh tetap
+  disimpan di DB) supaya biaya/latency nggak membengkak tanpa batas di sesi
+  panjang; try/catch di sekitar panggilan AI (502 `ai_service_unavailable`
+  kalau OpenAI down/error, bukan 500 generik).
+- ✅ **Test validasi input — BENERAN DIJALANKAN, bukan cuma tsc/lint statis
+  (2026-07-03).** `scripts/test-validations.mts` (`npm run
+  test:validations`): 11 test buat skema register/login/conversation, NGGAK
+  butuh database/API key sama sekali (murni fungsi). **Hasil nyata: 11 lulus,
+  0 gagal.**
+- ✅ **Layar percakapan/roleplay SELESAI (2026-07-03) — potongan besar
+  terakhir yang belum ada.** `src/app/conversation.tsx`: pilih
+  bahasa+skenario → chat bubble UI, koreksi kesalahan ditampilkan LANGSUNG di
+  bawah pesan user yang salah, indikator "AI sedang mengetik", pesan error
+  kalau AI service down. `src/lib/conversations/api.ts`: client buat
+  `POST /api/conversations`. Tombol "Mulai latihan" di halaman utama. **Ini
+  melengkapi alur produk end-to-end secara KODE** (daftar → login → pilih
+  skenario → latihan → lihat koreksi) — tapi alur ini SENDIRI belum pernah
+  dicoba jalan beneran.
+- ⏳ **BLOCKER GANDA — SATU-SATUNYA yang tersisa sebelum verifikasi hidup
+  penuh:** (1) `DATABASE_URL` (Neon project "Talkly" — user konfirmasi sudah
+  dibuat, belum dikonfirmasi filenya sudah diisi), (2) `OPENAI_API_KEY`
   (platform.openai.com/api-keys, berbayar). Dua-duanya tinggal ditempel ke
-  `backend/.env.local` (sudah disiapkan filenya + `JWT_SECRET` auto-generate).
+  `backend/.env.local` (sudah disiapkan filenya + `JWT_SECRET`
+  auto-generate). **Semua kode fitur MVP (5/5) sudah ditulis & lolos
+  static-check** — yang tersisa murni tinggal verifikasi live, bukan lagi
+  nulis fitur baru.
 
 ## Next step (arah ke depan)
 
 Begitu `DATABASE_URL` + `OPENAI_API_KEY` terisi: jalankan migrasi
-(`db:migrate`) + `test:auth` (verifikasi auth end-to-end) + tes manual
-`POST /api/conversations` (verifikasi AI + deteksi kesalahan beneran jalan).
-Lanjut: layar chat/roleplay di mobile app → aksi notifikasi (Expo
-Notifications, streak harian) → dashboard progres → polish/demo.
+(`db:migrate`) + `test:auth` + `test:validations` ulang buat pastikan semua
+tetap hijau + tes manual alur penuh (daftar → login → ngobrol → cek koreksi
+tersimpan). Setelah itu baru masuk fase polish: aksi notifikasi (Expo
+Notifications, streak harian), dashboard progres (agregat dari
+`user_mistake_stats`), lalu demo/deploy.
