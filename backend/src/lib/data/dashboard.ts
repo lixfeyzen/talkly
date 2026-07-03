@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/db/schema";
 import { getStreak, type StreakData } from "@/lib/data/streaks";
+import { getLatestReport } from "@/lib/data/interview-reports";
 
 export type TopWeakness = {
   category: string;
@@ -23,6 +24,8 @@ export type DashboardData = {
   };
   recentCorrections: RecentCorrection[];
   streak: StreakData;
+  // Skor mock interview terakhir (fitur #6); null = belum pernah interview.
+  latestReadiness: { score: number; sessionId: string; createdAt: string } | null;
 };
 
 export async function getDashboardData(userId: string): Promise<DashboardData> {
@@ -65,8 +68,18 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
 
   const streak = await getStreak(userId);
 
+  const latest = await getLatestReport(userId);
+  const latestReadiness = latest
+    ? {
+        score: latest.score,
+        sessionId: latest.sessionId,
+        createdAt: latest.createdAt.toISOString(),
+      }
+    : null;
+
   return {
     streak,
+    latestReadiness,
     topWeaknesses,
     activity: {
       totalSessions: sessionAgg?.totalSessions ?? 0,

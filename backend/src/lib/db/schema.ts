@@ -43,6 +43,28 @@ export const conversationSessions = pgTable("conversation_sessions", {
   // Disimpan di sesi (bukan dikirim ulang tiap giliran) supaya seluruh
   // percakapan konsisten menargetkan pola yang sama.
   focusCategories: jsonb("focus_categories").notNull().default([]),
+  // Fitur #6 (Interview Readiness): 'free' = latihan biasa,
+  // 'mock_interview' = wawancara terstruktur 5 pertanyaan + rapor.
+  mode: text("mode").notNull().default("free"),
+  // Role yang diwawancarai (hanya terisi utk mock_interview).
+  interviewRole: text("interview_role"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Rapor kesiapan interview (fitur #6) -- satu rapor per sesi mock interview.
+export const interviewReports = pgTable("interview_reports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: uuid("session_id")
+    .notNull()
+    .unique() // satu sesi = satu rapor; generate ulang tak bikin duplikat
+    .references(() => conversationSessions.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(), // 0-100
+  // Isi rapor terstruktur (dimensi, jawaban terkuat/terlemah, fixes,
+  // answer upgrades) -- bentuknya dijaga oleh zod saat generate.
+  report: jsonb("report").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

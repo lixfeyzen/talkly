@@ -9,10 +9,12 @@ export async function createSession(
   scenario: string,
   targetLanguage: string,
   focusCategories: MistakeCategory[] = [],
+  mode: "free" | "mock_interview" = "free",
+  interviewRole: string | null = null,
 ) {
   const [session] = await db
     .insert(conversationSessions)
-    .values({ userId, scenario, targetLanguage, transcript: [], focusCategories })
+    .values({ userId, scenario, targetLanguage, transcript: [], focusCategories, mode, interviewRole })
     .returning();
   return session;
 }

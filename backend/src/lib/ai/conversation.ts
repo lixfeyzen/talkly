@@ -59,13 +59,18 @@ export async function runConversationTurn(
   userMessage: string,
   focusCategories: MistakeCategory[] = [],
   nativeLanguage: string | null = null,
+  // Mode khusus (mis. mock interview) boleh mengganti system prompt
+  // sepenuhnya; skema output terstruktur tetap sama.
+  systemPromptOverride?: string,
 ): Promise<TurnResult> {
   const completion = await openai.chat.completions.parse({
     model: "gpt-4o-2024-08-06",
     messages: [
       {
         role: "system",
-        content: buildSystemPrompt(scenario, targetLanguage, focusCategories, nativeLanguage),
+        content:
+          systemPromptOverride ??
+          buildSystemPrompt(scenario, targetLanguage, focusCategories, nativeLanguage),
       },
       ...history.map((turn) => ({ role: turn.role, content: turn.content })),
       { role: "user", content: userMessage },

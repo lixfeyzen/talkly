@@ -14,7 +14,9 @@
     "test:dashboard": "tsx --env-file=.env.local scripts/test-dashboard.mts",
     "test:streak": "tsx --env-file=.env.local scripts/test-streak.mts",
     "test:adaptive": "tsx --env-file=.env.local scripts/test-adaptive.mts",
+    "test:interview": "tsx --env-file=.env.local scripts/test-interview.mts",
     "test:reset": "tsx --env-file=.env.local scripts/test-reset.mts",
+    "dev:seed-interview": "tsx --env-file=.env.local scripts/dev-seed-interview.mts",
     "dev:seed-stats": "tsx --env-file=.env.local scripts/dev-seed-stats.mts",
     "cleanup:test-users": "tsx --env-file=.env.local scripts/cleanup-test-users.mts"
   },

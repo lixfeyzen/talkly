@@ -2,7 +2,15 @@ import { NextRequest } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { sendMessageSchema } from "@/lib/validations/conversation";
 import { runConversationTurn, type ChatTurn } from "@/lib/ai/conversation";
-import type { MistakeCategory } from "@/lib/ai/mistake-categories";
+import { MISTAKE_CATEGORIES, type MistakeCategory } from "@/lib/ai/mistake-categories";
+import {
+  buildInterviewSystemPrompt,
+  countAnswers,
+  getInterviewQuestions,
+  isInterviewFinished,
+  QUESTIONS_PER_INTERVIEW,
+  type InterviewRole,
+} from "@/lib/ai/interview";
 import {
   createSession,
   getSessionForUser,
@@ -40,6 +48,8 @@ export async function POST(req: NextRequest) {
   let scenario = parsed.data.scenario;
   let targetLanguage = parsed.data.targetLanguage;
   let focusCategories: MistakeCategory[] = parsed.data.focusCategories ?? [];
+  let mode: "free" | "mock_interview" = parsed.data.mode ?? "free";
+  let interviewRole: InterviewRole | null = parsed.data.interviewRole ?? null;
 
   if (sessionId) {
     const session = await getSessionForUser(sessionId, auth.userId);
@@ -49,16 +59,36 @@ export async function POST(req: NextRequest) {
     history = (session.transcript as ChatTurn[]) ?? [];
     scenario = session.scenario;
     targetLanguage = session.targetLanguage;
-    // Sesi lanjutan pakai fokus yang tersimpan -- konsisten sepanjang sesi.
+    // Sesi lanjutan pakai fokus & mode yang tersimpan -- konsisten sepanjang sesi.
     focusCategories = (session.focusCategories as MistakeCategory[] | undefined) ?? [];
+    mode = (session.mode as "free" | "mock_interview") ?? "free";
+    interviewRole = (session.interviewRole as InterviewRole | null) ?? null;
+
+    // Interview sudah selesai (5 jawaban) -> tolak giliran tambahan; client
+    // seharusnya mengarah ke rapor.
+    if (mode === "mock_interview" && isInterviewFinished(history)) {
+      return jsonCors({ error: "interview_finished" }, { status: 409 });
+    }
   } else {
+    if (mode === "mock_interview") {
+      // Skenario & bahasa ditetapkan server utk interview -- konsisten.
+      scenario = `Mock interview: ${interviewRole}`;
+      targetLanguage = "English";
+    }
     if (!scenario || !targetLanguage) {
       return jsonCors(
         { error: "scenario_and_targetLanguage_required_for_new_session" },
         { status: 400 },
       );
     }
-    const session = await createSession(auth.userId, scenario, targetLanguage, focusCategories);
+    const session = await createSession(
+      auth.userId,
+      scenario,
+      targetLanguage,
+      focusCategories,
+      mode,
+      interviewRole,
+    );
     sessionId = session.id;
   }
 
@@ -77,6 +107,20 @@ export async function POST(req: NextRequest) {
     .where(eq(users.id, auth.userId))
     .limit(1);
 
+  // Mode interview: prompt interviewer terstruktur (pertanyaan deterministik
+  // per-sessionId, progress diturunkan dari jumlah jawaban di transkrip).
+  let systemPromptOverride: string | undefined;
+  if (mode === "mock_interview" && interviewRole) {
+    const questions = getInterviewQuestions(interviewRole, sessionId);
+    systemPromptOverride = buildInterviewSystemPrompt(
+      interviewRole,
+      questions,
+      countAnswers(history),
+      userRow?.nativeLanguage ?? null,
+      MISTAKE_CATEGORIES,
+    );
+  }
+
   let result;
   try {
     result = await runConversationTurn(
@@ -86,6 +130,7 @@ export async function POST(req: NextRequest) {
       message,
       focusCategories,
       userRow?.nativeLanguage ?? null,
+      systemPromptOverride,
     );
   } catch (err) {
     console.error("OpenAI conversation turn failed:", err);
@@ -104,10 +149,22 @@ export async function POST(req: NextRequest) {
   // merayakan kenaikan streak tanpa fetch tambahan.
   const streak = await recordPractice(auth.userId);
 
+  // Info progress interview buat UI ("Question 3/5", tombol lihat rapor).
+  const answersAfterThis = countAnswers(history) + 1;
+  const interview =
+    mode === "mock_interview"
+      ? {
+          questionNumber: Math.min(answersAfterThis + 1, QUESTIONS_PER_INTERVIEW),
+          total: QUESTIONS_PER_INTERVIEW,
+          finished: answersAfterThis >= QUESTIONS_PER_INTERVIEW,
+        }
+      : undefined;
+
   return jsonCors({
     sessionId,
     reply: result.reply,
     mistakes: result.mistakes,
     streak,
+    interview,
   });
 }
