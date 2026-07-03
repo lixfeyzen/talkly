@@ -520,6 +520,19 @@ pelajaran: layar approved = beku) → user beri referensi kedua "Lumina"
   dashboard, report. Insiden kecil: 1× NetworkError transien saat dev
   server kompilasi route pertama kali — endpoint diverifikasi 200/0.24s.
 
+## ✅ Brand mark & app icons (2026-07-03, `04f9913`)
+
+Logo dirancang USER di Claude design (proyek "Talkly AI logomark",
+id faa0c7f3-...): **speech bubble + spark 4-titik negative-space** =
+"intelligence inside the conversation"; gradient Iris→Periwinkle
+(#6C5CE7→#8B7BF0) di atas Obsidian #0F0E15; sistem lengkap (4 varian,
+safe area 66%, min 24px). Aset di-render dari PATH SVG ASLI via sharp
+(scratchpad `iconsgen/gen-icons.mjs`): icon 1024, adaptive
+foreground/background/monochrome, splash 512, favicon; app.json
+adaptiveIcon bg → #0F0E15. **Template Expo terakhir (icon/splash) LENYAP
+— app siap tampil bermerek di home screen & boot.** Verifikasi: icon &
+splash dilihat mata; monochrome/foreground via statistik alpha.
+
 ## ▶ RESUME POINT (jeda 2026-07-03 sore)
 
 Berhenti saat mencoba lihat app di HP Android (Xiaomi/MIUI):
