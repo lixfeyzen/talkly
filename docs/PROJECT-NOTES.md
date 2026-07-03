@@ -332,6 +332,40 @@ butuh OpenAI; yang butuh cuma tersisa 1 pass verifikasi saat saldo masuk).
   fisik/emulator; tampilan visual layar baru (badge/kartu/tile) belum
   di-screenshot.
 
+## ✅ AKAR daftar/login "selalu bermasalah" KETEMU & FIX + forgot-password (2026-07-03, commit `c978d21`)
+
+**Akar masalah register/login dari app:** `src/lib/api/client.ts` default ke
+`http://localhost:3000` padahal backend di **3001** — request dari app TIDAK
+PERNAH sampai server (verifikasi curl sebelumnya lolos karena langsung ke
+3001, bukan lewat app). Fix: default → 3001 (override `EXPO_PUBLIC_API_URL`
+tetap ada). Plus: timeout request (AbortController manual — `AbortSignal.timeout`
+tak dijamin ada di Hermes), `NetworkError` kelas terpisah → layar auth kini
+bilang "Tidak bisa terhubung ke server" (bukan pesan generik menyesatkan);
+panggilan AI diberi timeout 60 dtk.
+
+**Forgot password end-to-end (aman):** tabel `password_reset_codes` (migrasi
+0003) — yang disimpan HANYA sha256 hash kode; kode 6 digit dari `crypto.randomInt`
+(CSPRNG); kedaluwarsa 15 mnt; single-use; **kunci brute-force 5 percobaan
+(dihitung DI DB**, tahan restart); cooldown kirim-ulang 60 dtk; respons
+forgot-password SELALU `{ok:true}` & reset gagal selalu `invalid_or_expired`
+(anti email-enumeration / info-leak). Email via **Resend** kalau
+`RESEND_API_KEY` di-set (+`EMAIL_FROM`); tanpa itu = **DEV fallback: kode
+dicetak ke console server berlabel jelas** (bisa uji alur tanpa akun email).
+Mobile: layar `/forgot-password` 2 langkah (email → kode+password baru), link
+"Lupa password?" + banner sukses di login.
+
+**Bug ditemukan test & diperbaiki:** cooldown membandingkan `now` app dengan
+`createdAt` versi jam server DB (defaultNow) → clock skew bikin salah;
+`createdAt` kini ditulis eksplisit dari jam yang sama.
+
+**Bukti (2026-07-03):** `test:reset` **15/15 lawan Neon live** (anti-enum,
+hash-at-rest, cooldown, brute-force lock, single-use, expiry, pw lama ditolak/
+baru diterima). Total suite kini **77/77**. E2E HTTP nyata: register 201 →
+forgot `{ok:true}` (identik utk email hantu) → kode dari dev-fallback → kode
+salah 400 → benar 200 → login pw lama 401 / baru 200 → reuse 400. Bundle web
+Metro diperiksa: hanya berisi `localhost:3001`. **Belum:** kirim email
+sungguhan (butuh RESEND_API_KEY user), tampilan visual layar forgot-password.
+
 ## Next step (arah ke depan)
 
 1. **User buka `http://localhost:8081`**: daftar/login, lihat layar baru
