@@ -11,6 +11,7 @@ import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type DashboardData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
 import { notificationsSupported, configureNotificationHandler } from '@/lib/notifications';
+import { TalklyMark } from '@/components/talkly-mark';
 
 // Font serif utk greeting besar (komponen khas referensi Lumina).
 const SerifFont = Platform.select({ web: 'Georgia, serif', default: 'serif' });
@@ -57,6 +58,7 @@ export default function HomeScreen() {
     return (
       <GradientBackground>
         <View style={styles.centered}>
+          <TalklyMark size={64} />
           <ActivityIndicator color={AccentColor} />
         </View>
       </GradientBackground>
@@ -72,9 +74,12 @@ export default function HomeScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header: wordmark kiri + avatar inisial kanan */}
           <View style={styles.header}>
-            <ThemedText type="smallBold" style={styles.wordmark}>
-              ✦ Talkly
-            </ThemedText>
+            <View style={styles.lockup}>
+              <TalklyMark size={26} />
+              <ThemedText type="smallBold" style={styles.wordmark}>
+                Talkly
+              </ThemedText>
+            </View>
             <Pressable onPress={() => router.push('/settings')} style={styles.avatar}>
               <ThemedText type="smallBold" style={{ color: '#FFFFFF' }}>
                 {initial}
@@ -225,7 +230,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
   safeArea: {
     flex: 1,
     maxWidth: MaxContentWidth,
@@ -239,6 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.five,
   },
+  lockup: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   wordmark: { fontSize: 18 },
   avatar: {
     width: 36,
