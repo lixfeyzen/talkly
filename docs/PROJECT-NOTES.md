@@ -185,11 +185,29 @@ proyek kedua.
   belum ada layar dashboard. Sempat salah tulis "5/5 selesai" di catatan
   ini sebelumnya — itu KELIRU, sudah diperbaiki di sini.
 
+## ✅ VERIFIKASI LIVE PERTAMA (2026-07-03) — auth beneran hidup
+
+Kredensial diisi user. Ketemu & diperbaiki 1 bug nyata:
+**`import "dotenv/config"` cuma baca file bernama persis `.env`, BUKAN
+`.env.local`** — dan taruh `dotenv` config SETELAH import lain di file yang
+sama juga nggak nolong, karena import ES module di-hoist ke atas SEBELUM
+kode lain jalan. Diperbaiki pakai flag native `tsx --env-file=.env.local`.
+
+**Hasil verifikasi nyata terhadap database & AI beneran:**
+- `db:migrate` — 4 tabel berhasil dibuat di Neon
+- `test:auth` — **8/8 lulus** terhadap database live
+- Tes manual `POST /api/auth/register` via curl — user asli dibuat, token asli diterima
+- Tes manual `POST /api/conversations` via curl — request BERHASIL sampai ke
+  OpenAI, gagal dengan error `429 insufficient_quota` (akun belum ada saldo)
+  — **ini bagus**: error-nya ketangkep rapi jadi `ai_service_unavailable`
+  sesuai desain, bukan crash. Artinya KODE integrasinya BENAR, tinggal
+  **user perlu tambah saldo/billing di platform.openai.com** buat lanjut.
+
 ## Next step (arah ke depan)
 
-Begitu `DATABASE_URL` + `OPENAI_API_KEY` terisi: jalankan migrasi
-(`db:migrate`) + `test:auth` + `test:validations` ulang buat pastikan semua
-tetap hijau + tes manual alur penuh (daftar → login → ngobrol → cek koreksi
-tersimpan). Setelah itu baru masuk fase polish: aksi notifikasi (Expo
-Notifications, streak harian), dashboard progres (agregat dari
-`user_mistake_stats`), lalu demo/deploy.
+**Tinggal 1 langkah dari user:** tambah metode pembayaran + isi saldo di
+platform.openai.com (klik "Add credits"). Begitu itu beres, ulang tes manual
+`POST /api/conversations` buat konfirmasi balasan AI + deteksi kesalahan
+beneran keluar. Setelah itu baru masuk fase polish: aksi notifikasi (Expo
+Notifications, streak harian), skenario adaptif (#3), dashboard progres (#5,
+agregat dari `user_mistake_stats`), lalu demo/deploy.
