@@ -50,7 +50,7 @@ export async function enableDailyReminder(): Promise<boolean> {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: 'Time to practice 🔥',
-      body: 'Keep your streak alive — one short session is enough.',
+      body: 'Keep your streak alive. One short session is enough.',
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,

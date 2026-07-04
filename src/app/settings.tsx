@@ -62,7 +62,7 @@ export default function SettingsScreen() {
     setFeedback(null);
     try {
       await setNativeLanguage(value);
-      setFeedback({ kind: 'ok', text: 'Saved — corrections will be explained in this language.' });
+      setFeedback({ kind: 'ok', text: 'Saved. Corrections will be explained in this language.' });
     } catch (err) {
       setSelected(previous); // gagal -> balikin pilihan lama, jangan bohong di UI
       setFeedback({

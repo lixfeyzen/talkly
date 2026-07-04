@@ -134,7 +134,7 @@ export default function DashboardScreen() {
                   Latest interview readiness
                 </ThemedText>
                 <ThemedText type="smallBold" style={{ color: AccentColor }}>
-                  {data.latestReadiness.score}/100 — tap to see the report
+                  {data.latestReadiness.score}/100 · tap to see the report
                 </ThemedText>
               </ThemedView>
             </Pressable>

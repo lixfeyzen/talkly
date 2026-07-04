@@ -130,7 +130,7 @@ export default function TrajectoryScreen() {
           ) : (
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="small" themeColor="textSecondary">
-                No mock interviews yet — your score history will chart here after
+                No mock interviews yet. Your score history will chart here after
                 your first one.
               </ThemedText>
             </ThemedView>

@@ -50,7 +50,7 @@ export function buildPlan(
       daysLeft,
       todayTask: {
         type: "interview_day",
-        title: "Interview day — you've got this!",
+        title: "Interview day. You've got this!",
         description:
           "No heavy practice today. Skim your tracked mistakes once, breathe, and speak a little slower than feels natural.",
       },
@@ -76,7 +76,7 @@ export function buildPlan(
       daysLeft,
       todayTask: {
         type: "mock",
-        title: `Full mock interview — ${role}`,
+        title: `Full mock interview: ${role}`,
         description: `${daysLeft} days out: do a complete 5-question mock and read your readiness report.`,
       },
     };
@@ -91,7 +91,7 @@ export function buildPlan(
       title: "Targeted practice",
       description: suggestion
         ? suggestion.reason
-        : "Build session history first — every conversation teaches the app your weak spots.",
+        : "Build session history first. Every conversation teaches the app your weak spots.",
       scenario: suggestion?.scenario ?? "Tell me about yourself",
       focusCategories: suggestion?.focusCategories,
     },

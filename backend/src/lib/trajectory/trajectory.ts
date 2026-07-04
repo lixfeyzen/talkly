@@ -86,11 +86,11 @@ function buildInsight(
     const delta = last - first;
     if (delta > 0) {
       return bestImproving
-        ? `Readiness up ${delta} points since your first mock — and ${labelOf(bestImproving.category)} mistakes are down ${Math.abs(bestImproving.changePct!)}%.`
+        ? `Readiness up ${delta} points since your first mock. ${labelOf(bestImproving.category)} mistakes are down ${Math.abs(bestImproving.changePct!)}%.`
         : `Readiness up ${delta} points since your first mock interview. Keep going.`;
     }
     if (delta < 0) {
-      return `Latest mock scored ${Math.abs(delta)} below your first — one off day doesn't erase progress. Do a targeted practice today.`;
+      return `Latest mock scored ${Math.abs(delta)} below your first. One off day doesn't erase progress. Do a targeted practice today.`;
     }
     return `Readiness steady at ${last}. Push through with targeted practice on your weak spots.`;
   }
@@ -101,5 +101,5 @@ function buildInsight(
   if (scores.length === 1) {
     return `First readiness score: ${scores[0].score}. Do another mock this week to start your trend line.`;
   }
-  return "Practice a few sessions and do a mock interview — your progress graph starts here.";
+  return "Practice a few sessions and do a mock interview. Your progress graph starts here.";
 }

@@ -23,7 +23,7 @@ const SCENARIO_BY_CATEGORY: Record<MistakeCategory, string> = {
   plural_agreement: "Describe your responsibilities across multiple teams and projects",
   preposition_usage: "Explain a project timeline: deadlines, handoffs, and who reports to whom",
   article_usage: "Describe your role, the company you work for, and the tools you use",
-  word_order: "Interview question: describe a challenge you faced — your opinion + reasons",
+  word_order: "Interview question: describe a challenge you faced, with your opinion and reasons",
   vocabulary_choice: "Explain your proudest project in as much detail as you can",
   other: "Small talk with a colleague about your week",
 };
@@ -69,7 +69,7 @@ export function suggestScenario(stats: WeaknessStat[]): SuggestedScenario | null
     focusCategories,
     reason:
       focusCategories.length === 2
-        ? `Your most frequent mistakes are ${LABELS[primary]} (${primaryCount}×) and ${LABELS[focusCategories[1]]} — this practice targets both.`
-        : `Your most frequent mistake is ${LABELS[primary]} (${primaryCount}×) — this practice targets it.`,
+        ? `Your most frequent mistakes are ${LABELS[primary]} (${primaryCount}×) and ${LABELS[focusCategories[1]]}. This practice targets both.`
+        : `Your most frequent mistake is ${LABELS[primary]} (${primaryCount}×). This practice targets it.`,
   };
 }

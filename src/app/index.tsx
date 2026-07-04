@@ -125,11 +125,11 @@ export default function HomeScreen() {
 
           {/* Interview-Day Countdown */}
           {plan && plan.set && !plan.expired && (
-            <Pressable onPress={openPlanTask}>
+            <Pressable onPress={openPlanTask} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
               <ThemedView type="backgroundElement" style={styles.planCard}>
                 <ThemedText type="smallBold" style={{ color: AccentColor }}>
                   {plan.daysLeft === 0
-                    ? `Interview day — ${plan.role}!`
+                    ? `Interview day: ${plan.role}!`
                     : `${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} until your ${plan.role} interview`}
                 </ThemedText>
                 <ThemedText type="smallBold">Today: {plan.todayTask.title}</ThemedText>
@@ -140,7 +140,9 @@ export default function HomeScreen() {
             </Pressable>
           )}
           {plan && plan.set && plan.expired && (
-            <Pressable onPress={() => router.push('/interview-date')}>
+            <Pressable
+              onPress={() => router.push('/interview-date')}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
               <ThemedView type="backgroundElement" style={styles.planCard}>
                 <ThemedText type="smallBold">Your interview date has passed</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
@@ -150,7 +152,9 @@ export default function HomeScreen() {
             </Pressable>
           )}
           {plan && !plan.set && (
-            <Pressable onPress={() => router.push('/interview-date')}>
+            <Pressable
+              onPress={() => router.push('/interview-date')}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
               <ThemedView type="backgroundElement" style={styles.planCard}>
                 <ThemedText type="smallBold">Have an interview coming up?</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
@@ -192,69 +196,63 @@ export default function HomeScreen() {
 
           {/* Workspace */}
           <ThemedText type="small" themeColor="textSecondary" style={styles.sectionLabel}>
-            Workspace
+            WORKSPACE
           </ThemedText>
           <View style={styles.rows}>
-            <Pressable onPress={() => router.push('/conversation')}>
-              <ThemedView type="backgroundElement" style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#6C5CE7' }]}>
-                  <Feather name="message-circle" size={16} color="#FFFFFF" />
-                </View>
-                <ThemedText type="smallBold" style={styles.rowTitle}>
-                  Conversations
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {dash ? `${dash.activity.totalSessions} sessions` : '…'}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                dash?.latestReadiness
-                  ? router.push({
-                      pathname: '/interview-report',
-                      params: { sessionId: dash.latestReadiness.sessionId },
-                    })
-                  : router.push('/interview')
-              }>
-              <ThemedView type="backgroundElement" style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#2BAE7A' }]}>
-                  <Feather name="mic" size={16} color="#FFFFFF" />
-                </View>
-                <ThemedText type="smallBold" style={styles.rowTitle}>
-                  Interview readiness
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {dash?.latestReadiness ? `${dash.latestReadiness.score}/100` : 'not tested'}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
-            <Pressable onPress={() => router.push('/trajectory')}>
-              <ThemedView type="backgroundElement" style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#E8A33D' }]}>
-                  <Feather name="trending-up" size={16} color="#FFFFFF" />
-                </View>
-                <ThemedText type="smallBold" style={styles.rowTitle}>
-                  Am I getting better?
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  trends
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
-            <Pressable onPress={() => router.push('/dashboard')}>
-              <ThemedView type="backgroundElement" style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#D64B8A' }]}>
-                  <Feather name="zap" size={16} color="#FFFFFF" />
-                </View>
-                <ThemedText type="smallBold" style={styles.rowTitle}>
-                  Streak
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {dash ? `${dash.streak.currentStreak} days` : '…'}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
+            {[
+              {
+                icon: 'message-circle' as const,
+                color: '#6C5CE7',
+                title: 'Conversations',
+                value: dash ? `${dash.activity.totalSessions} sessions` : '…',
+                go: () => router.push('/conversation'),
+              },
+              {
+                icon: 'mic' as const,
+                color: '#2BAE7A',
+                title: 'Interview readiness',
+                value: dash?.latestReadiness ? `${dash.latestReadiness.score}/100` : 'not tested',
+                go: () =>
+                  dash?.latestReadiness
+                    ? router.push({
+                        pathname: '/interview-report',
+                        params: { sessionId: dash.latestReadiness.sessionId },
+                      })
+                    : router.push('/interview'),
+              },
+              {
+                icon: 'trending-up' as const,
+                color: '#E8A33D',
+                title: 'Am I getting better?',
+                value: 'trends',
+                go: () => router.push('/trajectory'),
+              },
+              {
+                icon: 'zap' as const,
+                color: '#D64B8A',
+                title: 'Streak',
+                value: dash ? `${dash.streak.currentStreak} days` : '…',
+                go: () => router.push('/dashboard'),
+              },
+            ].map((item) => (
+              <Pressable
+                key={item.title}
+                onPress={item.go}
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+                <ThemedView type="backgroundElement" style={styles.row}>
+                  <View style={[styles.rowIcon, { backgroundColor: item.color }]}>
+                    <Feather name={item.icon} size={16} color="#FFFFFF" />
+                  </View>
+                  <ThemedText type="smallBold" style={styles.rowTitle}>
+                    {item.title}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {item.value}
+                  </ThemedText>
+                  <Feather name="chevron-right" size={16} color="#5A5670" />
+                </ThemedView>
+              </Pressable>
+            ))}
           </View>
 
           {/* Recent corrections */}
@@ -356,12 +354,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C1A26',
     borderRadius: 999,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
+    paddingVertical: Spacing.three,
+    minHeight: 44,
     borderWidth: 1,
     borderColor: '#2B2839',
   },
   chipAccent: { backgroundColor: AccentColor, borderColor: AccentColor },
-  sectionLabel: { marginBottom: Spacing.two, marginTop: Spacing.two },
+  sectionLabel: {
+    marginBottom: Spacing.two,
+    marginTop: Spacing.two,
+    fontSize: 12,
+    letterSpacing: 1.2,
+  },
   rows: { gap: Spacing.two, marginBottom: Spacing.three },
   row: {
     flexDirection: 'row',
@@ -369,6 +373,7 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     borderRadius: 16,
     padding: Spacing.three,
+    minHeight: 56,
   },
   rowIcon: {
     width: 34,

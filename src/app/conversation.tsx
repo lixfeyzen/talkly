@@ -77,7 +77,7 @@ export default function ConversationScreen() {
       ? [
           {
             role: 'assistant',
-            content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions — answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+            content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
           },
         ]
       : [],
@@ -245,10 +245,10 @@ export default function ConversationScreen() {
             {isInterview
               ? `Mock interview · ${interviewRole}${
                   interviewProgress && !interviewProgress.finished
-                    ? ` — Question ${interviewProgress.questionNumber}/${interviewProgress.total}`
+                    ? ` · Question ${interviewProgress.questionNumber}/${interviewProgress.total}`
                     : interviewProgress?.finished
-                      ? ' — Done!'
-                      : ' — Question 1/5'
+                      ? ' · Done!'
+                      : ' · Question 1/5'
                 }`
               : `${scenario} · ${TARGET_LANGUAGE}`}
           </ThemedText>

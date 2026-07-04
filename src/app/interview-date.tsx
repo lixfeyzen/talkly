@@ -50,9 +50,9 @@ export default function InterviewDateScreen() {
         const code = (err.body as { error?: string } | null)?.error;
         setError(
           code === 'date_in_past'
-            ? 'That date is in the past — pick a future date.'
+            ? 'That date is in the past. Pick a future date.'
             : code === 'date_too_far'
-              ? 'That is more than 90 days away — double-check the date.'
+              ? 'That is more than 90 days away. Double-check the date.'
               : 'Invalid date. Use the format YYYY-MM-DD.',
         );
       } else {

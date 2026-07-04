@@ -27,7 +27,7 @@ export default function InterviewStartScreen() {
             Mock interview
           </ThemedText>
           <ThemedText type="default" themeColor="textSecondary">
-            5 questions, just like a real English interview — no corrections
+            5 questions, just like a real English interview. No corrections
             until the end. You’ll get a readiness report with your score and
             stronger versions of your answers.
           </ThemedText>
