@@ -5,8 +5,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { Card, PrimaryButton, SectionLabel } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius } from '@/constants/theme';
+import { PrimaryButton, SectionLabel, MiniBar } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, HeroBg } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
 
@@ -79,119 +79,142 @@ export default function InterviewReportScreen() {
   }
 
   const { report } = data;
+  // Label satu-kata (gaya mockup) untuk grid dimensi dua kolom.
   const dims = [
     { label: 'Grammar', d: report.dimensions.grammar },
-    { label: 'Answer structure', d: report.dimensions.structure },
-    { label: 'Content strength', d: report.dimensions.content },
+    { label: 'Structure', d: report.dimensions.structure },
+    { label: 'Content', d: report.dimensions.content },
   ];
   const verdict = verdictFor(data.score);
+  const scorePct = Math.max(0, Math.min(100, data.score));
 
   return (
-    <GradientBackground>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <Pressable onPress={() => router.replace('/')} style={styles.backLink} hitSlop={8}>
-            <Feather name="chevron-left" size={20} color={Ink} />
-            <Text style={styles.backText}>Home</Text>
-          </Pressable>
-
-          <Text style={styles.title}>Readiness report</Text>
-
-          {/* Hero skor keseluruhan di tile lilac (lilac = readiness) */}
+    <View style={styles.root}>
+      <SafeAreaView style={styles.flex} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* HERO band gelap: skor readiness besar di atas near-black */}
           <View style={styles.hero}>
-            <Text style={styles.heroLabel}>Overall readiness</Text>
-            <View style={styles.heroScoreRow}>
-              <Text style={styles.heroScore}>{data.score}</Text>
-              <Text style={styles.heroOutOf}>/ 100</Text>
+            <View style={styles.heroGlow} />
+
+            <View style={styles.nav}>
+              <Pressable
+                onPress={() => router.replace('/')}
+                accessibilityRole="button"
+                accessibilityLabel="Back to home"
+                hitSlop={8}
+                style={styles.navBtn}>
+                <Feather name="chevron-left" size={18} color="#FFFFFF" />
+              </Pressable>
+              <Text style={styles.navTitle}>Readiness report</Text>
+              <View style={styles.navSpacer} />
             </View>
-            <Text style={styles.heroVerdict}>{verdict.word}</Text>
-            <Text style={styles.heroSentence}>{verdict.sentence}</Text>
+
+            <View style={styles.scoreBlock}>
+              <Text style={styles.scoreLabel}>Readiness score</Text>
+              <View style={styles.scoreRow}>
+                <Text style={styles.scoreValue}>{data.score}</Text>
+                <Text style={styles.scoreOutOf}>/ 100</Text>
+              </View>
+              <Text style={styles.verdictWord}>{verdict.word}</Text>
+              <View style={styles.heroTrack}>
+                <View style={[styles.heroFill, { width: `${scorePct}%` }]} />
+              </View>
+              <Text style={styles.heroDesc}>{verdict.sentence}</Text>
+            </View>
           </View>
 
-          {/* Dimensi */}
-          <SectionLabel style={styles.sectionSpacing}>By dimension</SectionLabel>
-          <Card style={styles.dimCard}>
-            {dims.map(({ label, d }, i) => (
-              <View key={label} style={[styles.dimRow, i > 0 && styles.dimRowDivider]}>
-                <View style={styles.dimHeader}>
-                  <Text style={styles.dimLabel}>{label}</Text>
-                  <Text style={styles.dimScore}>{d.score}</Text>
-                </View>
-                <View style={styles.barTrack}>
-                  <View
-                    style={[
-                      styles.barFill,
-                      { width: `${Math.min(100, Math.max(0, d.score))}%` },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.dimComment}>{d.comment}</Text>
+          {/* SHEET putih membulat menaungi hero */}
+          <View style={styles.sheet}>
+            {/* By dimension: grid tinted tile + MiniBar + komentar */}
+            <View style={styles.section}>
+              <SectionLabel style={styles.sectionLabel}>By dimension</SectionLabel>
+              <View style={styles.dimGrid}>
+                {dims.map(({ label, d }) => (
+                  <View key={label} style={styles.dimTile}>
+                    <MiniBar label={label} score={d.score} />
+                    <Text style={styles.dimComment}>{d.comment}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </Card>
-
-          {/* Terkuat (mint) / terlemah (pink) */}
-          <SectionLabel style={styles.sectionSpacing}>Highlights</SectionLabel>
-          <Card style={styles.accentCard}>
-            <View style={[styles.accentBar, { backgroundColor: Pastel.mint }]} />
-            <View style={styles.accentBody}>
-              <Text style={[styles.accentLabel, { color: Pastel.mintInk }]}>Strongest answer</Text>
-              <Text style={styles.accentQuestion}>{report.strongestAnswer.question}</Text>
-              <Text style={styles.accentWhy}>{report.strongestAnswer.why}</Text>
             </View>
-          </Card>
-          <Card style={styles.accentCard}>
-            <View style={[styles.accentBar, { backgroundColor: Pastel.pink }]} />
-            <View style={styles.accentBody}>
-              <Text style={[styles.accentLabel, { color: Pastel.pinkInk }]}>Needs the most work</Text>
-              <Text style={styles.accentQuestion}>{report.weakestAnswer.question}</Text>
-              <Text style={styles.accentWhy}>{report.weakestAnswer.why}</Text>
-            </View>
-          </Card>
 
-          {/* Fixes */}
-          <SectionLabel style={styles.sectionSpacing}>Top fixes</SectionLabel>
-          <Card style={styles.fixCard}>
-            {report.topFixes.map((fix, i) => (
-              <View key={i} style={[styles.fixRow, i > 0 && styles.fixRowDivider]}>
-                <View style={styles.fixNum}>
-                  <Text style={styles.fixNumText}>{i + 1}</Text>
+            {/* Strongest (mint) / Needs work (pink) */}
+            <View style={styles.highlightRow}>
+              <View style={[styles.highlightTile, styles.strongTile]}>
+                <View style={styles.highlightHead}>
+                  <Feather name="check" size={14} color="#1F4433" />
+                  <Text style={[styles.highlightKicker, { color: '#1F4433' }]}>Strongest</Text>
                 </View>
-                <Text style={styles.fixText}>{fix}</Text>
+                <Text style={[styles.highlightQ, { color: '#173A2A' }]}>
+                  {report.strongestAnswer.question}
+                </Text>
+                <Text style={[styles.highlightWhy, { color: '#3E6B54' }]}>
+                  {report.strongestAnswer.why}
+                </Text>
               </View>
-            ))}
-          </Card>
+              <View style={[styles.highlightTile, styles.needsTile]}>
+                <View style={styles.highlightHead}>
+                  <Feather name="alert-triangle" size={14} color="#3D2A31" />
+                  <Text style={[styles.highlightKicker, { color: '#3D2A31' }]}>Needs work</Text>
+                </View>
+                <Text style={[styles.highlightQ, { color: '#3D2A31' }]}>
+                  {report.weakestAnswer.question}
+                </Text>
+                <Text style={[styles.highlightWhy, { color: '#7A5560' }]}>
+                  {report.weakestAnswer.why}
+                </Text>
+              </View>
+            </View>
 
-          {/* Answer upgrades */}
-          <SectionLabel style={styles.sectionSpacing}>Answer upgrades</SectionLabel>
-          <View style={styles.upgradeGroup}>
-            {report.answerUpgrades.map((u, i) => (
-              <Card key={i} style={styles.upgradeCard}>
-                <Text style={styles.upgradeQuestion}>{u.question}</Text>
-                <View style={styles.upgradeOriginal}>
-                  <Text style={styles.upgradeTag}>You said</Text>
-                  <Text style={styles.upgradeOriginalText}>{u.original}</Text>
+            {/* Top fixes: daftar bernomor */}
+            <View style={styles.section}>
+              <SectionLabel style={styles.sectionLabel}>Top fixes</SectionLabel>
+              {report.topFixes.map((fix, i) => (
+                <View key={i} style={styles.fixRow}>
+                  <View style={styles.fixNum}>
+                    <Text style={styles.fixNumText}>{i + 1}</Text>
+                  </View>
+                  <Text style={styles.fixText}>{fix}</Text>
                 </View>
-                <View style={styles.upgradeStronger}>
-                  <Text style={[styles.upgradeTag, { color: Pastel.mintInk }]}>Stronger</Text>
-                  <Text style={styles.upgradeStrongerText}>{u.upgraded}</Text>
+              ))}
+            </View>
+
+            {/* Answer upgrade: kartu abu, jawaban asli -> versi lebih kuat */}
+            <View style={styles.section}>
+              <SectionLabel style={styles.sectionLabel}>Answer upgrade</SectionLabel>
+              {report.answerUpgrades.map((u, i) => (
+                <View key={i} style={styles.upgradeCard}>
+                  <Text style={styles.upgradeQuestion}>{u.question}</Text>
+                  <Text style={styles.upgradeYourLabel}>Your answer</Text>
+                  <Text style={styles.upgradeOriginal}>{u.original}</Text>
+                  <View style={styles.upgradeDivider}>
+                    <Feather name="star" size={14} color={Ink} />
+                    <Text style={styles.upgradeStrongerLabel}>Stronger</Text>
+                  </View>
+                  <Text style={styles.upgradeStronger}>{u.upgraded}</Text>
                 </View>
-              </Card>
-            ))}
+              ))}
+            </View>
+
+            {/* Aksi */}
+            <View style={styles.cta}>
+              <PrimaryButton label="Practice the weak spots" onPress={() => router.push('/interview')} />
+              <Pressable
+                onPress={() => router.replace('/')}
+                accessibilityRole="button"
+                style={styles.backHome}>
+                <Text style={styles.backHomeText}>Back to home</Text>
+              </Pressable>
+            </View>
           </View>
-
-          <PrimaryButton
-            label="Back to home"
-            onPress={() => router.replace('/')}
-            style={styles.homeButton}
-          />
         </ScrollView>
       </SafeAreaView>
-    </GradientBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Loading / error (dipertahankan)
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -201,108 +224,163 @@ const styles = StyleSheet.create({
   },
   centerText: { color: '#60646C', fontSize: 14, fontWeight: '500', textAlign: 'center' },
   errorText: { color: '#60646C', fontSize: 15, fontWeight: '500', textAlign: 'center' },
-  safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { padding: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
   backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: Spacing.two },
   backText: { color: Ink, fontSize: 15, fontWeight: '600' },
-  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink, marginBottom: Spacing.three },
 
-  // Hero
-  hero: {
-    backgroundColor: Pastel.lilac,
-    borderRadius: Radius.xl,
-    padding: Spacing.four,
-    gap: Spacing.one,
+  // Shell (dark root + sheet putih, senada Home)
+  root: { flex: 1, backgroundColor: HeroBg },
+  flex: { flex: 1 },
+  scrollContent: { flexGrow: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
+
+  // Hero band gelap
+  hero: { backgroundColor: HeroBg, paddingBottom: 22, overflow: 'hidden' },
+  heroGlow: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 200,
+    height: 200,
+    borderRadius: 999,
+    backgroundColor: 'rgba(205,238,219,0.12)',
   },
-  heroLabel: { color: Pastel.lilacInk, fontSize: 13, fontWeight: '700', opacity: 0.85 },
-  heroScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
-  heroScore: {
-    color: Pastel.lilacInk,
-    fontSize: 64,
-    lineHeight: 70,
+  nav: {
+    height: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    zIndex: 2,
+  },
+  navBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  navSpacer: { width: 38, height: 38 },
+  navTitle: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  scoreBlock: { paddingHorizontal: 24, paddingTop: 12, zIndex: 2 },
+  scoreLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: 'rgba(255,255,255,0.55)',
+  },
+  scoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 8 },
+  scoreValue: {
+    fontSize: 52,
+    lineHeight: 52,
     fontWeight: '800',
+    letterSpacing: -2,
+    color: '#FFFFFF',
     fontVariant: ['tabular-nums'],
   },
-  heroOutOf: { color: Pastel.lilacInk, fontSize: 20, fontWeight: '700', opacity: 0.7 },
-  heroVerdict: { color: Pastel.lilacInk, fontSize: 18, fontWeight: '800', marginTop: Spacing.two },
-  heroSentence: { color: Pastel.lilacInk, fontSize: 14, lineHeight: 20, fontWeight: '500', opacity: 0.9 },
+  scoreOutOf: { fontSize: 22, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  verdictWord: { fontSize: 19, fontWeight: '700', color: '#FFFFFF', marginTop: 14 },
+  heroTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginTop: 14,
+    overflow: 'hidden',
+  },
+  heroFill: { height: '100%', borderRadius: 999, backgroundColor: '#FFFFFF' },
+  heroDesc: { fontSize: 14, lineHeight: 21, color: 'rgba(255,255,255,0.68)', marginTop: 14 },
 
-  sectionSpacing: { marginTop: Spacing.four, marginBottom: Spacing.two },
+  // Sheet putih
+  sheet: {
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -26,
+    paddingTop: 18,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    gap: 11,
+  },
+  section: { gap: 11 },
+  sectionLabel: { paddingLeft: 2 },
 
   // Dimensi
-  dimCard: { gap: 0, padding: Spacing.four },
-  dimRow: { gap: Spacing.two },
-  dimRowDivider: {
-    marginTop: Spacing.three,
-    paddingTop: Spacing.three,
-    borderTopWidth: 1,
-    borderTopColor: HairlineBorder,
+  dimGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  dimTile: {
+    flexGrow: 1,
+    flexBasis: '47%',
+    minWidth: 0,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#F7F8F9',
+    borderWidth: 1,
+    borderColor: HairlineBorder,
   },
-  dimHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  dimLabel: { color: Ink, fontSize: 15, fontWeight: '600' },
-  dimScore: { color: Ink, fontSize: 17, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  barTrack: { height: 8, borderRadius: 4, overflow: 'hidden', backgroundColor: '#F2F3F5' },
-  barFill: { height: 8, borderRadius: 4, backgroundColor: Ink },
-  dimComment: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  dimComment: { fontSize: 11.5, lineHeight: 15, color: '#60646C', marginTop: 7 },
 
-  // Highlights (accent)
-  accentCard: { flexDirection: 'row', padding: 0, overflow: 'hidden' },
-  accentBar: { width: 5 },
-  accentBody: { flex: 1, padding: Spacing.four, gap: Spacing.one },
-  accentLabel: { fontSize: 13, fontWeight: '800' },
-  accentQuestion: { color: Ink, fontSize: 15, lineHeight: 21, fontWeight: '600' },
-  accentWhy: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  // Highlights
+  highlightRow: { flexDirection: 'row', gap: 10 },
+  highlightTile: { flex: 1, paddingVertical: 11, paddingHorizontal: 14, borderRadius: 20 },
+  strongTile: { backgroundColor: Pastel.mint },
+  needsTile: { backgroundColor: Pastel.pink },
+  highlightHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  highlightKicker: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  highlightQ: { fontSize: 14, fontWeight: '700', lineHeight: 18, marginBottom: 4 },
+  highlightWhy: { fontSize: 12.5, lineHeight: 18 },
 
   // Top fixes
-  fixCard: { padding: Spacing.four },
-  fixRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.three },
-  fixRowDivider: {
-    marginTop: Spacing.three,
-    paddingTop: Spacing.three,
-    borderTopWidth: 1,
-    borderTopColor: HairlineBorder,
-  },
+  fixRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 11 },
   fixNum: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: Pastel.cream,
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    backgroundColor: '#F2F3F5',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fixNumText: {
-    color: Pastel.creamInk,
-    fontSize: 14,
-    fontWeight: '800',
-    fontVariant: ['tabular-nums'],
-  },
-  fixText: { flex: 1, color: Ink, fontSize: 15, lineHeight: 21, fontWeight: '500' },
+  fixNumText: { fontSize: 12, fontWeight: '700', color: Ink, fontVariant: ['tabular-nums'] },
+  fixText: { flex: 1, fontSize: 14, lineHeight: 20, color: Ink },
 
-  // Answer upgrades
-  upgradeGroup: { gap: Spacing.three },
-  upgradeCard: { gap: Spacing.three },
-  upgradeQuestion: { color: Ink, fontSize: 15, fontWeight: '700' },
-  upgradeOriginal: {
-    backgroundColor: '#F2F3F5',
-    borderRadius: Radius.md,
-    padding: Spacing.three,
-    gap: Spacing.one,
-  },
-  upgradeStronger: {
-    backgroundColor: Pastel.mint,
-    borderRadius: Radius.md,
-    padding: Spacing.three,
-    gap: Spacing.one,
-  },
-  upgradeTag: {
-    color: '#8B8F98',
+  // Answer upgrade
+  upgradeCard: { padding: 15, borderRadius: 20, backgroundColor: '#F2F3F5' },
+  upgradeQuestion: { fontSize: 14, fontWeight: '700', color: Ink, marginBottom: 12 },
+  upgradeYourLabel: {
     fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.8,
+    fontWeight: '700',
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
+    color: '#8B8F98',
   },
-  upgradeOriginalText: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
-  upgradeStrongerText: { color: Pastel.mintInk, fontSize: 14, lineHeight: 21, fontWeight: '600' },
+  upgradeOriginal: { fontSize: 13.5, lineHeight: 20, color: '#60646C', marginTop: 6, marginBottom: 13 },
+  upgradeDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    borderTopWidth: 1,
+    borderTopColor: '#E4E5E8',
+    paddingTop: 13,
+    marginBottom: 12,
+  },
+  upgradeStrongerLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: Ink,
+  },
+  upgradeStronger: { fontSize: 13.5, lineHeight: 20, color: Ink },
 
-  homeButton: { marginTop: Spacing.five },
+  // Aksi
+  cta: { gap: 8, paddingTop: 2 },
+  backHome: { alignItems: 'center', paddingVertical: 12 },
+  backHomeText: { fontSize: 15, fontWeight: '600', color: Ink },
 });

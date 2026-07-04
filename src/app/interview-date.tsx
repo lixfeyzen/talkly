@@ -33,6 +33,7 @@ export default function InterviewDateScreen() {
   const [dateIso, setDateIso] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
 
   const canSave = role !== null && /^\d{4}-\d{2}-\d{2}$/.test(dateIso);
 
@@ -61,6 +62,8 @@ export default function InterviewDateScreen() {
     }
   }
 
+  const inputBorder = error ? Danger : focused ? Ink : 'transparent';
+
   return (
     <GradientBackground>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -68,10 +71,18 @@ export default function InterviewDateScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
-          <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backLink}>
-            <Feather name="chevron-left" size={20} color={Ink} />
-            <Text style={styles.backText}>Back</Text>
-          </Pressable>
+          <View style={styles.navRow}>
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              style={({ pressed }) => [styles.backTile, { opacity: pressed ? 0.6 : 1 }]}>
+              <Feather name="chevron-left" size={18} color={Ink} />
+            </Pressable>
+            <Text style={styles.navTitle}>Interview date</Text>
+            <View style={styles.navSpacer} />
+          </View>
 
           <Text style={styles.title}>When is your interview?</Text>
           <Text style={styles.subtitle}>
@@ -81,37 +92,62 @@ export default function InterviewDateScreen() {
           <SectionLabel style={styles.sectionLabel}>Role</SectionLabel>
           <View style={styles.chipRow}>
             {INTERVIEW_ROLES.map((r) => (
-              <Chip key={r} label={r} selected={r === role} onPress={() => setRole(r)} />
+              <Chip
+                key={r}
+                label={r}
+                selected={r === role}
+                pastel="lilac"
+                onPress={() => setRole(r)}
+              />
             ))}
           </View>
 
           <SectionLabel style={styles.sectionLabel}>When</SectionLabel>
-          <View style={styles.chipRow}>
+          <View style={styles.whenGrid}>
             {QUICK_OPTIONS.map((opt) => {
               const iso = isoPlusDays(opt.days);
+              const selected = iso === dateIso;
               return (
-                <Chip
+                <Pressable
                   key={opt.label}
-                  label={opt.label}
-                  selected={iso === dateIso}
                   onPress={() => setDateIso(iso)}
-                />
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  style={({ pressed }) => [
+                    styles.whenCard,
+                    selected && styles.whenCardSelected,
+                    { opacity: pressed ? 0.85 : 1 },
+                  ]}>
+                  <Text style={[styles.whenText, selected && styles.whenTextSelected]}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
               );
             })}
           </View>
 
-          <View style={styles.field}>
+          <SectionLabel style={styles.sectionLabel}>Or pick an exact date</SectionLabel>
+          <View style={[styles.inputRow, { borderColor: inputBorder }]}>
+            <Feather name="calendar" size={18} color="#60646C" />
             <TextInput
-              placeholder="Or pick an exact date (YYYY-MM-DD)"
+              placeholder="YYYY-MM-DD"
               placeholderTextColor={Placeholder}
               value={dateIso}
               onChangeText={setDateIso}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
               autoCapitalize="none"
               style={styles.input}
             />
+            {error && <Feather name="alert-circle" size={18} color={Danger} />}
           </View>
 
-          {error && <Text style={styles.error}>{error}</Text>}
+          {error && (
+            <View style={styles.alertRow}>
+              <Feather name="alert-circle" size={14} color={Danger} />
+              <Text style={styles.alertText}>{error}</Text>
+            </View>
+          )}
 
           <PrimaryButton
             label="Start my countdown"
@@ -138,31 +174,78 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingBottom: Spacing.five,
   },
-  backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: Spacing.two },
-  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
-  title: { fontSize: 26, fontWeight: '800', color: Ink, marginTop: Spacing.three },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.one,
+  },
+  backTile: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.sm,
+    backgroundColor: '#F2F3F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navTitle: { flex: 1, textAlign: 'center', fontSize: 15, fontWeight: '700', color: Ink },
+  navSpacer: { width: 38, height: 38 },
+  title: {
+    fontSize: 26,
+    lineHeight: 29,
+    fontWeight: '800',
+    letterSpacing: -0.7,
+    color: Ink,
+    marginTop: Spacing.three,
+  },
   subtitle: {
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 22,
     color: '#60646C',
     fontWeight: '500',
     marginTop: Spacing.two,
   },
   sectionLabel: { marginTop: Spacing.four, marginBottom: Spacing.two },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  field: {
-    backgroundColor: '#F2F3F5',
+  whenGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  whenCard: {
+    flexGrow: 1,
+    flexBasis: '46%',
+    alignItems: 'center',
+    paddingVertical: 14,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: HairlineBorder,
-    marginTop: Spacing.two,
+    backgroundColor: '#FFFFFF',
+  },
+  whenCardSelected: { backgroundColor: Ink, borderColor: Ink },
+  whenText: { fontSize: 14, fontWeight: '600', color: Ink },
+  whenTextSelected: { color: '#FFFFFF', fontWeight: '700' },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    height: 50,
+    paddingHorizontal: 15,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    backgroundColor: '#F2F3F5',
   },
   input: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    fontSize: 16,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
     color: Ink,
+    fontVariant: ['tabular-nums'],
+    padding: 0,
   },
-  error: { color: Danger, fontSize: 14, fontWeight: '500', marginTop: Spacing.three },
+  alertRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: Spacing.two,
+    paddingLeft: 2,
+  },
+  alertText: { fontSize: 13, fontWeight: '600', color: Danger },
   saveButton: { marginTop: Spacing.four },
 });

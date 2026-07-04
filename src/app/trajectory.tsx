@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View, Text } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import Svg, { Polyline, Circle, Line, Text as SvgText } from 'react-native-svg';
+import Svg, { Polyline, Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, SectionLabel } from '@/components/ui';
@@ -15,6 +15,7 @@ import {
   Placeholder,
   Success,
   Danger,
+  Pastel,
 } from '@/constants/theme';
 import { fetchTrajectory, type Trajectory } from '@/lib/trajectory/api';
 import { categoryLabel } from '@/lib/dashboard/api';
@@ -43,18 +44,30 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
           y1={toY(v)}
           x2={CHART_W - PAD}
           y2={toY(v)}
-          stroke={HairlineBorder}
+          stroke={v === 50 ? '#F2F3F5' : HairlineBorder}
           strokeWidth={1}
-          strokeDasharray={v === 50 ? '4 4' : undefined}
         />
       ))}
       {[0, 50, 100].map((v) => (
-        <SvgText key={v} x={4} y={toY(v) + 4} fill={Placeholder} fontSize={10}>
+        <SvgText
+          key={v}
+          x={PAD - 6}
+          y={toY(v) + 3.5}
+          fill={Placeholder}
+          fontSize={10}
+          textAnchor="end">
           {v}
         </SvgText>
       ))}
       {scores.length > 1 && (
-        <Polyline points={points} fill="none" stroke={Ink} strokeWidth={2.5} />
+        <Polyline
+          points={points}
+          fill="none"
+          stroke={Ink}
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       )}
       {scores.map((p, i) => (
         <Circle key={i} cx={toX(i)} cy={toY(p.score)} r={4} fill={Ink} />
@@ -110,11 +123,25 @@ export default function TrajectoryScreen() {
 
           <Text style={styles.title}>Am I getting better?</Text>
 
-          {/* Insight — jawaban satu kalimat */}
-          <Card style={styles.insightCard}>
-            <SectionLabel>The trend</SectionLabel>
-            <Text style={styles.insightText}>{data.insight}</Text>
-          </Card>
+          {/* Insight — jawaban satu kalimat (kartu cream, warna fitur Trajectory) */}
+          <View style={styles.insightCard}>
+            <View style={styles.insightIconTile}>
+              <Svg width={18} height={18} viewBox="0 0 24 24">
+                <Path
+                  d="M12 3l2.2 6.5L20 12l-5.8 2.5L12 21l-2.2-6.5L4 12l5.8-2.5z"
+                  fill="none"
+                  stroke={Pastel.creamInk}
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </View>
+            <View style={styles.insightBody}>
+              <Text style={styles.insightLabel}>The trend</Text>
+              <Text style={styles.insightText}>{data.insight}</Text>
+            </View>
+          </View>
 
           {/* Grafik skor */}
           <SectionLabel style={styles.sectionLabel}>Readiness over time</SectionLabel>
@@ -124,7 +151,9 @@ export default function TrajectoryScreen() {
               <View style={styles.chartFooter}>
                 <Text style={styles.axisDate}>{data.scores[0].date}</Text>
                 {data.scores.length > 1 && (
-                  <Text style={styles.axisDate}>{data.scores[data.scores.length - 1].date}</Text>
+                  <Text style={[styles.axisDate, styles.axisDateLast]}>
+                    {data.scores[data.scores.length - 1].date}
+                  </Text>
                 )}
               </View>
             </Card>
@@ -137,27 +166,41 @@ export default function TrajectoryScreen() {
           )}
 
           {/* Tren kesalahan 14 hari vs 14 hari sebelumnya */}
-          <SectionLabel style={styles.sectionLabel}>Mistake trends</SectionLabel>
-          <Text style={styles.subtitle}>2 weeks vs before</Text>
+          <View style={styles.trendsHeader}>
+            <SectionLabel>Mistake trends</SectionLabel>
+            <Text style={styles.trendsCaption}>2 weeks vs before</Text>
+          </View>
           {data.trends.length > 0 ? (
             <View style={styles.trendList}>
               {data.trends.map((t) => {
-                const improving = t.changePct !== null && t.changePct < 0;
-                const worsening = t.changePct !== null && t.changePct > 0;
+                const pct = t.changePct;
+                let icon: 'arrow-down' | 'arrow-up' | 'minus' | null = null;
+                let color = '#60646C';
+                let text: string;
+                if (pct === null) {
+                  // Kategori baru: belum ada pembanding 14 hari sebelumnya.
+                  text = `New (${t.recentCount})`;
+                } else if (pct < 0) {
+                  icon = 'arrow-down';
+                  color = Success;
+                  text = `${Math.abs(pct)}% fewer`;
+                } else if (pct > 0) {
+                  icon = 'arrow-up';
+                  color = Danger;
+                  text = `${pct}% more`;
+                } else {
+                  icon = 'minus';
+                  text = 'Steady';
+                }
                 return (
                   <View key={t.category} style={styles.trendRow}>
                     <Text style={styles.trendLabel} numberOfLines={1}>
                       {categoryLabel(t.category)}
                     </Text>
-                    <Text
-                      style={[
-                        styles.trendChange,
-                        { color: improving ? Success : worsening ? Danger : '#60646C' },
-                      ]}>
-                      {t.changePct === null
-                        ? `new · ${t.recentCount} times`
-                        : `${improving ? 'down' : worsening ? 'up' : 'steady'} ${Math.abs(t.changePct)}% (${t.previousCount} to ${t.recentCount})`}
-                    </Text>
+                    <View style={styles.trendChange}>
+                      {icon && <Feather name={icon} size={14} color={color} />}
+                      <Text style={[styles.trendChangeText, { color }]}>{text}</Text>
+                    </View>
                   </View>
                 );
               })}
@@ -183,28 +226,65 @@ const styles = StyleSheet.create({
   backLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   backText: { color: Ink, fontSize: 15, fontWeight: '600' },
   title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink, marginTop: Spacing.one },
-  insightCard: { gap: Spacing.two },
-  insightText: { fontSize: 17, lineHeight: 24, fontWeight: '700', color: Ink },
-  sectionLabel: { marginTop: Spacing.two },
-  chartCard: { gap: Spacing.three },
+
+  // Insight card (cream) — "The trend"
+  insightCard: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: Pastel.cream,
+  },
+  insightIconTile: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  insightBody: { flex: 1 },
+  insightLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: '#7A6B3A',
+  },
+  insightText: { fontSize: 15, lineHeight: 21, fontWeight: '700', color: Pastel.creamInk, marginTop: 5 },
+
+  sectionLabel: { marginTop: Spacing.two, paddingLeft: 2 },
+
+  chartCard: { gap: 10 },
   chartFooter: { flexDirection: 'row', justifyContent: 'space-between' },
-  axisDate: { fontSize: 12, fontWeight: '500', color: Placeholder, fontVariant: ['tabular-nums'] },
+  axisDate: { fontSize: 11, fontWeight: '500', color: Placeholder, fontVariant: ['tabular-nums'] },
+  axisDateLast: { color: Ink, fontWeight: '700' },
+
   emptyText: { fontSize: 14, lineHeight: 20, color: '#60646C', fontWeight: '500' },
-  subtitle: { fontSize: 14, color: '#60646C', fontWeight: '500', marginTop: -Spacing.two },
+
+  trendsHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+    marginTop: Spacing.two,
+    paddingLeft: 2,
+  },
+  trendsCaption: { fontSize: 12, fontWeight: '500', color: '#8B8F98' },
+
   trendList: { gap: Spacing.two },
   trendRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: Spacing.three,
+    gap: Spacing.two,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: HairlineBorder,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    minHeight: 60,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
   },
-  trendLabel: { flex: 1, fontSize: 15, fontWeight: '600', color: Ink },
-  trendChange: { fontSize: 14, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  trendLabel: { flex: 1, fontSize: 14.5, fontWeight: '600', color: Ink },
+  trendChange: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  trendChangeText: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
 });

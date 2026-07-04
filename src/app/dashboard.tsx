@@ -5,9 +5,18 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { Card, StatTile, SectionLabel, GhostButton, BottomNav } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius } from '@/constants/theme';
+import { Card, StatTile, SectionLabel, GhostButton, BottomNav, EmptyState } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius, Success } from '@/constants/theme';
 import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboard/api';
+
+// Tone lilac-dalam untuk kartu readiness (dari mockup) — lebih pekat dari
+// Pastel.lilacInk supaya angka besar & verdict kontras di atas lilac.
+const LILAC_DEEP = '#2A1D45';
+const LILAC_MUTED = '#6E5C93';
+// Abu redup untuk label mini & teks coret (dari mockup, senada ui.tsx).
+const MUTED = '#8B8F98';
+// Tone cream sekunder (subtitle kartu trajectory / chevron) — dari mockup.
+const CREAM_MUTED = '#7A6B3A';
 
 function formatLastPracticed(iso: string | null): string {
   if (!iso) return 'Never';
@@ -20,11 +29,12 @@ function formatLastPracticed(iso: string | null): string {
   return `${diffDays} days ago`;
 }
 
-// Verdict tenang dari skor readiness (presentasi saja, tidak mengubah data).
+// Verdict tenang & ringkas dari skor readiness (presentasi saja, tidak mengubah
+// data). Ambang 80/60 dipertahankan; teks dipendekkan agar sebaris dgn skor.
 function readinessVerdict(score: number): string {
-  if (score >= 80) return 'Strong. You are close to interview ready.';
-  if (score >= 60) return 'Getting there. Keep practicing.';
-  return 'Early days. A few more sessions will help.';
+  if (score >= 80) return 'Interview ready';
+  if (score >= 60) return 'Nearly ready';
+  return 'Getting started';
 }
 
 export default function DashboardScreen() {
@@ -70,106 +80,117 @@ export default function DashboardScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Your progress</Text>
 
-          {!hasData && (
-            <Card>
-              <Text style={styles.emptyText}>
-                No practice data yet. Finish one conversation and your weak spots and progress
-                will show up here.
-              </Text>
-            </Card>
-          )}
+          {!hasData ? (
+            <EmptyState
+              title="No progress yet"
+              subtitle="Finish one conversation and your streak, weak spots, and corrections show up here."
+              ctaLabel="Start practicing"
+              onCta={() => router.push('/')}
+            />
+          ) : (
+            <>
+              {/* Ringkasan aktivitas */}
+              <View style={styles.statRow}>
+                <StatTile pastel="pink" icon="zap" value={data.streak.currentStreak} label="Day streak" />
+                <StatTile pastel="ice" icon="message-circle" value={data.activity.totalSessions} label="Sessions" />
+                <StatTile pastel="cream" icon="edit-3" value={data.activity.totalCorrections} label="Corrections" />
+              </View>
 
-          {/* Ringkasan aktivitas */}
-          <View style={styles.statRow}>
-            <StatTile pastel="pink" value={data.streak.currentStreak} label="Day streak" />
-            <StatTile pastel="ice" value={data.activity.totalSessions} label="Sessions" />
-            <StatTile pastel="lilac" value={data.activity.totalCorrections} label="Corrections" />
-          </View>
-
-          {/* Last practiced */}
-          <Card style={styles.lastCard}>
-            <SectionLabel>Last practiced</SectionLabel>
-            <Text style={styles.lastValue}>{formatLastPracticed(data.activity.lastPracticedAt)}</Text>
-          </Card>
-
-          {/* Skor mock interview terakhir (fitur #6) */}
-          {data.latestReadiness && (
-            <Pressable
-              onPress={() =>
-                router.push({
-                  pathname: '/interview-report',
-                  params: { sessionId: data.latestReadiness!.sessionId },
-                })
-              }
-              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
-              <Card style={styles.lilacCard}>
-                <View style={styles.readinessHead}>
-                  <SectionLabel style={styles.lilacLabel}>Latest readiness</SectionLabel>
-                  <Feather name="chevron-right" size={18} color={Pastel.lilacInk} />
+              {/* Last practiced */}
+              <Card style={styles.infoCard}>
+                <View style={styles.infoTile}>
+                  <Feather name="clock" size={18} color={Ink} />
                 </View>
-                <View style={styles.readinessScoreRow}>
-                  <Text style={styles.readinessScore}>{data.latestReadiness.score}</Text>
-                  <Text style={styles.readinessOutOf}>/ 100</Text>
+                <View style={styles.flex1}>
+                  <Text style={[styles.miniLabel, styles.mutedLabel]}>Last practiced</Text>
+                  <Text style={styles.infoValue}>{formatLastPracticed(data.activity.lastPracticedAt)}</Text>
                 </View>
-                <Text style={styles.readinessVerdict}>
-                  {readinessVerdict(data.latestReadiness.score)}
-                </Text>
               </Card>
-            </Pressable>
-          )}
 
-          {/* Readiness Trajectory */}
-          <Pressable
-            onPress={() => router.push('/trajectory')}
-            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
-            <Card style={styles.creamCard}>
-              <View style={styles.readinessHead}>
-                <SectionLabel style={styles.creamLabel}>Am I getting better?</SectionLabel>
-                <Feather name="trending-up" size={18} color={Pastel.creamInk} />
-              </View>
-              <Text style={styles.creamText}>See your trajectory over time.</Text>
-            </Card>
-          </Pressable>
-
-          {/* Kelemahan utama */}
-          {data.topWeaknesses.length > 0 && (
-            <View style={styles.section}>
-              <SectionLabel>Top weaknesses</SectionLabel>
-              <View style={styles.rows}>
-                {data.topWeaknesses.map((w) => (
-                  <View key={w.category} style={styles.weaknessRow}>
-                    <Text style={styles.weaknessTitle} numberOfLines={1}>
-                      {categoryLabel(w.category)}
-                    </Text>
-                    <View style={styles.countBadge}>
-                      <Text style={styles.countText}>{w.occurrenceCount}x</Text>
+              {/* Skor mock interview terakhir (fitur #6) */}
+              {data.latestReadiness && (
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: '/interview-report',
+                      params: { sessionId: data.latestReadiness!.sessionId },
+                    })
+                  }
+                  style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+                  <Card style={styles.readinessCard}>
+                    <View style={styles.flex1}>
+                      <Text style={[styles.miniLabel, styles.lilacLabel]}>Latest readiness</Text>
+                      <View style={styles.readinessScoreRow}>
+                        <Text style={styles.readinessScore}>{data.latestReadiness.score}</Text>
+                        <Text style={styles.readinessOutOf}>/ 100</Text>
+                        <Text style={styles.readinessVerdict} numberOfLines={1}>
+                          {readinessVerdict(data.latestReadiness.score)}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* Contoh koreksi terbaru */}
-          {data.recentCorrections.length > 0 && (
-            <View style={styles.section}>
-              <SectionLabel>Recent corrections</SectionLabel>
-              <View style={styles.rows}>
-                {data.recentCorrections.map((c, i) => (
-                  <Card key={i} style={styles.correctionCard}>
-                    <Text style={styles.correctionCategory}>{categoryLabel(c.category)}</Text>
-                    <Text style={styles.correctionOriginal}>{c.originalText}</Text>
-                    <View style={styles.correctionFixedRow}>
-                      <Feather name="arrow-right" size={14} color={Pastel.mintInk} />
-                      <Text style={styles.correctionFixed}>{c.correctedText}</Text>
+                    <View style={styles.readinessChevron}>
+                      <Feather name="chevron-right" size={16} color={Pastel.lilacInk} />
                     </View>
                   </Card>
-                ))}
-              </View>
-            </View>
+                </Pressable>
+              )}
+
+              {/* Readiness Trajectory */}
+              <Pressable
+                onPress={() => router.push('/trajectory')}
+                style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+                <Card style={styles.trajectoryCard}>
+                  <View style={styles.trajectoryTile}>
+                    <Feather name="trending-up" size={18} color={Pastel.creamInk} />
+                  </View>
+                  <View style={styles.flex1}>
+                    <Text style={styles.trajectoryTitle}>Am I getting better?</Text>
+                    <Text style={styles.trajectorySub}>See your trajectory over time</Text>
+                  </View>
+                  <Feather name="chevron-right" size={18} color={CREAM_MUTED} />
+                </Card>
+              </Pressable>
+
+              {/* Kelemahan utama */}
+              {data.topWeaknesses.length > 0 && (
+                <View style={styles.section}>
+                  <SectionLabel style={styles.sectionPad}>Top weaknesses</SectionLabel>
+                  {data.topWeaknesses.map((w) => (
+                    <View key={w.category} style={styles.weaknessRow}>
+                      <Text style={styles.weaknessTitle} numberOfLines={1}>
+                        {categoryLabel(w.category)}
+                      </Text>
+                      <View style={styles.weaknessBadge}>
+                        <Text style={styles.weaknessBadgeText}>{w.occurrenceCount}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Contoh koreksi terbaru */}
+              {data.recentCorrections.length > 0 && (
+                <View style={styles.section}>
+                  <SectionLabel style={styles.sectionPad}>Recent corrections</SectionLabel>
+                  {data.recentCorrections.map((c, i) => (
+                    <View key={i} style={styles.correctionRow}>
+                      <Text style={styles.correctionOriginal} numberOfLines={1}>
+                        {c.originalText}
+                      </Text>
+                      <Feather name="arrow-right" size={15} color={MUTED} />
+                      <Text style={styles.correctionFixed} numberOfLines={1}>
+                        {c.correctedText}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </>
           )}
         </ScrollView>
+      </SafeAreaView>
 
+      <SafeAreaView edges={['bottom']} style={styles.navSafe}>
         <BottomNav
           active="progress"
           onHome={() => router.push('/')}
@@ -181,69 +202,143 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three, padding: Spacing.four },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.four,
+  },
   errorText: { color: Ink, fontSize: 15, fontWeight: '500', textAlign: 'center', lineHeight: 21 },
   safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { padding: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
-  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink, marginBottom: Spacing.one },
-  emptyText: { fontSize: 15, lineHeight: 21, color: '#60646C', fontWeight: '500' },
-  statRow: { flexDirection: 'row', gap: Spacing.two },
-  lastCard: { gap: Spacing.two },
-  lastValue: { fontSize: 20, fontWeight: '700', color: Ink },
-  lilacCard: { backgroundColor: Pastel.lilac, borderColor: 'transparent', gap: Spacing.two },
-  lilacLabel: { color: Pastel.lilacInk },
-  readinessHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  readinessScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.one },
+  navSafe: { backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: Spacing.four, paddingTop: Spacing.two, paddingBottom: Spacing.four, gap: 10 },
+  title: { fontSize: 23, lineHeight: 28, fontWeight: '800', letterSpacing: -0.6, color: Ink },
+
+  flex1: { flex: 1 },
+
+  // Stat tiles (grid 3, ikon + angka + label — via kit StatTile)
+  statRow: { flexDirection: 'row', gap: 10 },
+
+  // Label mini di dalam kartu (11px, dari mockup)
+  miniLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
+  mutedLabel: { color: MUTED },
+  lilacLabel: { color: LILAC_MUTED },
+
+  // Last practiced (kartu putih + tile ikon jam)
+  infoCard: { flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 10, paddingHorizontal: 14 },
+  infoTile: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    backgroundColor: '#F2F3F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoValue: { fontSize: 14.5, fontWeight: '600', color: Ink, marginTop: 2 },
+
+  // Latest readiness (kartu lilac datar, skor + verdict sebaris, chevron bulat)
+  readinessCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    backgroundColor: Pastel.lilac,
+    borderColor: 'transparent',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  readinessScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 5 },
   readinessScore: {
-    fontSize: 44,
-    lineHeight: 48,
+    fontSize: 30,
+    lineHeight: 30,
     fontWeight: '800',
-    color: Pastel.lilacInk,
+    letterSpacing: -1,
+    color: LILAC_DEEP,
     fontVariant: ['tabular-nums'],
   },
-  readinessOutOf: { fontSize: 16, fontWeight: '700', color: Pastel.lilacInk, opacity: 0.7 },
-  readinessVerdict: { fontSize: 14, lineHeight: 20, fontWeight: '500', color: Pastel.lilacInk },
-  creamCard: { backgroundColor: Pastel.cream, borderColor: 'transparent', gap: Spacing.two },
-  creamLabel: { color: Pastel.creamInk },
-  creamText: { fontSize: 14, lineHeight: 20, fontWeight: '500', color: Pastel.creamInk },
-  section: { gap: Spacing.two, marginTop: Spacing.one },
-  rows: { gap: Spacing.two },
+  readinessOutOf: { fontSize: 14, fontWeight: '600', color: LILAC_MUTED },
+  readinessVerdict: { flexShrink: 1, fontSize: 15, fontWeight: '700', color: LILAC_DEEP, marginLeft: 4 },
+  readinessChevron: {
+    width: 30,
+    height: 30,
+    borderRadius: Radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // "Am I getting better?" (kartu cream datar + tile ikon + chevron)
+  trajectoryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+    backgroundColor: Pastel.cream,
+    borderColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  trajectoryTile: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trajectoryTitle: { fontSize: 15, fontWeight: '700', color: Pastel.creamInk },
+  trajectorySub: { fontSize: 13, color: CREAM_MUTED, marginTop: 1 },
+
+  // Seksi daftar (label + baris, gap 9 spt mockup)
+  section: { gap: 9 },
+  sectionPad: { paddingLeft: 2 },
+
+  // Top weaknesses row
   weaknessRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: Spacing.three,
+    gap: 10,
     backgroundColor: '#FFFFFF',
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: HairlineBorder,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    minHeight: 56,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
   },
-  weaknessTitle: { flex: 1, color: Ink, fontSize: 15, fontWeight: '600' },
-  countBadge: {
-    backgroundColor: '#F2F3F5',
+  weaknessTitle: { flex: 1, fontSize: 14.5, fontWeight: '600', color: Ink },
+  weaknessBadge: {
+    minWidth: 26,
+    alignItems: 'center',
+    paddingVertical: 3,
+    paddingHorizontal: 9,
     borderRadius: Radius.pill,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
+    backgroundColor: '#F2F3F5',
   },
-  countText: { color: Ink, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  correctionCard: { gap: Spacing.one },
-  correctionCategory: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    color: '#8B8F98',
-    marginBottom: 2,
+  weaknessBadgeText: { fontSize: 13, fontWeight: '700', color: '#60646C', fontVariant: ['tabular-nums'] },
+
+  // Recent corrections row (sebaris: coret -> panah -> hijau)
+  correctionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
   },
   correctionOriginal: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#8B8F98',
+    flexShrink: 1,
+    fontSize: 13,
+    color: MUTED,
     textDecorationLine: 'line-through',
+    textDecorationColor: 'rgba(217,45,32,0.5)',
   },
-  correctionFixedRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
-  correctionFixed: { flex: 1, fontSize: 14, lineHeight: 20, color: Pastel.mintInk, fontWeight: '700' },
+  correctionFixed: { flexShrink: 1, fontSize: 13, fontWeight: '600', color: Success },
 });
