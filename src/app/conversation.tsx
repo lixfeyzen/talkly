@@ -8,16 +8,28 @@ import {
   KeyboardAvoidingView,
   Platform,
   View,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from '@/constants/theme';
+import {
+  Chip,
+  MessageBubble,
+  BubbleTextColor,
+  PrimaryButton,
+} from '@/components/ui';
+import {
+  Spacing,
+  MaxContentWidth,
+  Ink,
+  Placeholder,
+  HairlineBorder,
+  Danger,
+  Pastel,
+} from '@/constants/theme';
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { INTERVIEW_OPENER } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
@@ -47,7 +59,6 @@ const TARGET_LANGUAGE = 'English';
 type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[] };
 
 export default function ConversationScreen() {
-  const theme = useTheme();
   const scrollRef = useRef<ScrollView>(null);
 
   // Latihan terarah (fitur #3): home bisa membuka layar ini dengan skenario
@@ -199,181 +210,153 @@ export default function ConversationScreen() {
     }
   }
 
+  // ---- Layar pemilihan skenario (belum mulai) ----
   if (!started) {
     return (
       <GradientBackground>
-        <SafeAreaView style={styles.safeArea}>
-          <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <ThemedText type="link">← Back</ThemedText>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <Pressable onPress={() => router.back()} style={styles.backLink} hitSlop={8}>
+            <Feather name="chevron-left" size={20} color={Ink} />
+            <Text style={styles.backText}>Back</Text>
           </Pressable>
 
-          <ThemedText type="title" style={styles.title}>
-            What do you want to practice?
-          </ThemedText>
+          <Text style={styles.pickTitle}>What do you want to practice?</Text>
+          <Text style={styles.pickSub}>Pick a scenario and we will start a calm, low-stakes chat.</Text>
 
-          <ThemedText type="smallBold">Scenario</ThemedText>
-          <ThemedView style={styles.optionRow}>
-            {(scenario && !SCENARIOS.includes(scenario)
-              ? [scenario, ...SCENARIOS]
-              : SCENARIOS
-            ).map((s) => (
-              <Pressable
-                key={s}
-                onPress={() => setScenario(s)}
-                style={[
-                  styles.optionChip,
-                  { backgroundColor: s === scenario ? AccentColor : theme.backgroundElement },
-                ]}>
-                <ThemedText type="small" style={s === scenario ? { color: AccentColorOn } : undefined}>
-                  {s}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </ThemedView>
+          <View style={styles.optionRow}>
+            {(scenario && !SCENARIOS.includes(scenario) ? [scenario, ...SCENARIOS] : SCENARIOS).map(
+              (s) => (
+                <Chip key={s} label={s} selected={s === scenario} onPress={() => setScenario(s)} />
+              ),
+            )}
+          </View>
         </SafeAreaView>
       </GradientBackground>
     );
   }
 
+  // ---- Layar chat ----
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <GradientBackground>
-        <SafeAreaView style={styles.safeArea}>
-          <ThemedText type="subtitle" style={styles.title}>
-            {isInterview
-              ? `Mock interview · ${interviewRole}${
-                  interviewProgress && !interviewProgress.finished
-                    ? ` · Question ${interviewProgress.questionNumber}/${interviewProgress.total}`
-                    : interviewProgress?.finished
-                      ? ' · Done!'
-                      : ' · Question 1/5'
-                }`
-              : `${scenario} · ${TARGET_LANGUAGE}`}
-          </ThemedText>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <View style={styles.chatHeader}>
+            <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backLink}>
+              <Feather name="chevron-left" size={20} color={Ink} />
+            </Pressable>
+            <Text style={styles.chatTitle} numberOfLines={1}>
+              {isInterview
+                ? `Mock interview · ${interviewRole}${
+                    interviewProgress && !interviewProgress.finished
+                      ? ` · Q${interviewProgress.questionNumber}/${interviewProgress.total}`
+                      : interviewProgress?.finished
+                        ? ' · Done'
+                        : ' · Q1/5'
+                  }`
+                : `${scenario}`}
+            </Text>
+          </View>
 
           <ScrollView
             ref={scrollRef}
             style={styles.messages}
-            contentContainerStyle={styles.messagesContent}>
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}>
             {messages.map((msg, i) => (
-              <ThemedView
-                key={i}
-                type={msg.role === 'assistant' ? 'backgroundElement' : undefined}
-                style={[
-                  styles.bubble,
-                  msg.role === 'user'
-                    ? [styles.bubbleUser, { backgroundColor: AccentColor }]
-                    : styles.bubbleAssistant,
-                ]}>
-                <ThemedText type="default" style={msg.role === 'user' ? { color: AccentColorOn } : undefined}>
-                  {msg.content}
-                </ThemedText>
+              <View key={i} style={styles.msgGroup}>
+                <MessageBubble role={msg.role}>
+                  <Text style={[styles.bubbleText, { color: BubbleTextColor[msg.role] }]}>
+                    {msg.content}
+                  </Text>
+                </MessageBubble>
                 {msg.role === 'assistant' && (
                   <Pressable
                     onPress={() => playReply(i, msg.content)}
                     disabled={speakingIndex !== null}
                     style={styles.speakerButton}
                     hitSlop={8}>
-                    <Feather name="volume-2" size={13} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                      {speakingIndex === i ? 'Playing…' : 'Listen'}
-                    </ThemedText>
+                    <Feather name="volume-2" size={13} color="#60646C" />
+                    <Text style={styles.speakerText}>
+                      {speakingIndex === i ? 'Playing...' : 'Listen'}
+                    </Text>
                   </Pressable>
                 )}
                 {!isInterview && msg.mistakes && msg.mistakes.length > 0 && (
-                  <ThemedView style={styles.mistakeNote}>
+                  <View style={styles.correctionCard}>
+                    <Text style={styles.correctionLabel}>Correction</Text>
                     {msg.mistakes.map((m, mi) => (
-                      <View key={mi} style={styles.mistakeItem}>
-                        <ThemedText
-                          type="small"
-                          style={msg.role === 'user' ? styles.mistakeTextOnAccent : { color: theme.textSecondary }}>
-                          {m.originalText} → {m.correctedText}
-                        </ThemedText>
-                        {m.note ? (
-                          <ThemedText
-                            type="small"
-                            style={
-                              msg.role === 'user'
-                                ? styles.mistakeNoteOnAccent
-                                : { color: theme.textSecondary }
-                            }>
-                            {m.note}
-                          </ThemedText>
-                        ) : null}
+                      <View key={mi} style={styles.correctionItem}>
+                        <Text style={styles.correctionOriginal}>{m.originalText}</Text>
+                        <Text style={styles.correctionFixed}>{m.correctedText}</Text>
+                        {m.note ? <Text style={styles.correctionNote}>{m.note}</Text> : null}
                       </View>
                     ))}
-                  </ThemedView>
+                  </View>
                 )}
-              </ThemedView>
+              </View>
             ))}
-            {sending && <ActivityIndicator style={styles.typingIndicator} />}
+            {sending && (
+              <View style={styles.typingBubble}>
+                <ActivityIndicator size="small" color="#60646C" />
+              </View>
+            )}
           </ScrollView>
 
-          {error && (
-            <ThemedText type="small" style={styles.error}>
-              {error}
-            </ThemedText>
-          )}
+          {error && <Text style={styles.error}>{error}</Text>}
 
           {interviewProgress?.finished ? (
-            <Pressable
+            <PrimaryButton
+              label="View my readiness report"
               onPress={() =>
                 router.push({ pathname: '/interview-report', params: { sessionId: sessionId ?? '' } })
               }
-              style={({ pressed }) => [
-                styles.reportButton,
-                { backgroundColor: AccentColor, opacity: pressed ? 0.85 : 1 },
-              ]}>
-              <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                View my readiness report
-              </ThemedText>
-            </Pressable>
+              style={styles.reportButton}
+            />
           ) : (
-          <ThemedView style={styles.inputRow}>
-            <Pressable
-              onPress={toggleRecord}
-              disabled={sending || transcribing}
-              style={({ pressed }) => [
-                styles.micButton,
-                {
-                  backgroundColor: recording ? '#E5484D' : theme.backgroundElement,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}>
-              {transcribing ? (
-                <ActivityIndicator size="small" />
-              ) : (
-                <Feather
-                  name={recording ? 'square' : 'mic'}
-                  size={18}
-                  color={recording ? '#fff' : theme.text}
+            <View style={styles.inputRow}>
+              <Pressable
+                onPress={toggleRecord}
+                disabled={sending || transcribing}
+                accessibilityRole="button"
+                accessibilityLabel={recording ? 'Stop recording' : 'Record voice'}
+                style={({ pressed }) => [
+                  styles.micButton,
+                  {
+                    backgroundColor: recording ? Danger : '#FFFFFF',
+                    borderColor: recording ? Danger : HairlineBorder,
+                    opacity: pressed ? 0.85 : 1,
+                  },
+                ]}>
+                {transcribing ? (
+                  <ActivityIndicator size="small" color={Ink} />
+                ) : (
+                  <Feather name={recording ? 'square' : 'mic'} size={18} color={recording ? '#fff' : Ink} />
+                )}
+              </Pressable>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  placeholder={recording ? 'Recording... tap stop when done' : 'Message'}
+                  placeholderTextColor={Placeholder}
+                  value={input}
+                  onChangeText={setInput}
+                  onSubmitEditing={handleSend}
+                  style={styles.input}
                 />
-              )}
-            </Pressable>
-            <ThemedView type="backgroundElement" style={styles.inputWrapper}>
-              <TextInput
-                placeholder={recording ? 'Recording… tap stop when done' : 'Type your message...'}
-                placeholderTextColor={theme.textSecondary}
-                value={input}
-                onChangeText={setInput}
-                onSubmitEditing={handleSend}
-                style={[styles.input, { color: theme.text }]}
-              />
-            </ThemedView>
-            <Pressable
-              onPress={handleSend}
-              disabled={sending || !input.trim()}
-              style={({ pressed }) => [
-                styles.sendButton,
-                { backgroundColor: AccentColor, opacity: !input.trim() ? 0.5 : pressed ? 0.85 : 1 },
-              ]}>
-              <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                Send
-              </ThemedText>
-            </Pressable>
-          </ThemedView>
+              </View>
+              <Pressable
+                onPress={handleSend}
+                disabled={sending || !input.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="Send"
+                style={({ pressed }) => [
+                  styles.sendButton,
+                  { opacity: !input.trim() ? 0.4 : pressed ? 0.85 : 1 },
+                ]}>
+                <Feather name="arrow-up" size={20} color="#FFFFFF" />
+              </Pressable>
+            </View>
           )}
         </SafeAreaView>
       </GradientBackground>
@@ -383,38 +366,89 @@ export default function ConversationScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: { flex: 1, paddingHorizontal: Spacing.three, gap: Spacing.two, maxWidth: MaxContentWidth, alignSelf: 'center', width: '100%' },
-  backLink: { marginTop: Spacing.two },
-  title: { marginVertical: Spacing.two },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
-  optionChip: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, borderRadius: Spacing.five },
-  messages: { flex: 1 },
-  messagesContent: { gap: Spacing.two, paddingBottom: Spacing.three },
-  bubble: { ...CardShadow, padding: Spacing.three, borderRadius: 20, maxWidth: '85%' },
-  bubbleUser: { alignSelf: 'flex-end' },
-  bubbleAssistant: { alignSelf: 'flex-start' },
-  mistakeNote: { marginTop: Spacing.two, gap: 2 },
-  mistakeItem: { gap: 1, marginBottom: Spacing.one },
-  mistakeTextOnAccent: { color: 'rgba(255,255,255,0.85)' },
-  mistakeNoteOnAccent: { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' },
-  typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
-  error: { color: '#FF7A70' },
-  inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three, backgroundColor: 'transparent' },
-  micButton: { borderRadius: 999, width: 48, alignItems: 'center', justifyContent: 'center' },
-  speakerButton: {
-    marginTop: Spacing.one,
-    alignSelf: 'flex-start',
+  safeArea: {
+    flex: 1,
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.two,
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: Spacing.two },
+  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
+  pickTitle: { fontSize: 26, fontWeight: '800', color: Ink, marginTop: Spacing.three },
+  pickSub: { fontSize: 15, lineHeight: 21, color: '#60646C', fontWeight: '500', marginBottom: Spacing.two },
+  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.one,
+    marginTop: Spacing.two,
+    marginBottom: Spacing.one,
+  },
+  chatTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: Ink },
+  messages: { flex: 1 },
+  messagesContent: { gap: Spacing.three, paddingVertical: Spacing.two },
+  msgGroup: { gap: Spacing.one },
+  bubbleText: { fontSize: 15, lineHeight: 21, fontWeight: '500' },
+  speakerButton: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', marginLeft: 4 },
+  speakerText: { color: '#60646C', fontSize: 13, fontWeight: '600' },
+  correctionCard: {
+    alignSelf: 'flex-end',
+    maxWidth: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    padding: Spacing.three,
     gap: 4,
   },
-  inputWrapper: { flex: 1, borderRadius: 999 },
-  input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
-  sendButton: { borderRadius: 999, paddingHorizontal: Spacing.four, justifyContent: 'center' },
-  reportButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginVertical: Spacing.three,
+  correctionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: Pastel.mintInk,
+    marginBottom: 2,
   },
+  correctionItem: { gap: 2, marginBottom: Spacing.one },
+  correctionOriginal: {
+    fontSize: 14,
+    color: '#8B8F98',
+    textDecorationLine: 'line-through',
+  },
+  correctionFixed: { fontSize: 14, color: Pastel.mintInk, fontWeight: '700' },
+  correctionNote: { fontSize: 13, color: '#60646C', fontStyle: 'italic', lineHeight: 18 },
+  typingBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F2F3F5',
+    borderRadius: 20,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+  },
+  error: { color: Danger, fontSize: 14, fontWeight: '500' },
+  inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.two, alignItems: 'center' },
+  micButton: {
+    borderRadius: 999,
+    width: 48,
+    height: 48,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputWrapper: {
+    flex: 1,
+    backgroundColor: '#F2F3F5',
+    borderRadius: 999,
+  },
+  input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16, color: Ink },
+  sendButton: {
+    borderRadius: 999,
+    width: 48,
+    height: 48,
+    backgroundColor: Ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportButton: { marginVertical: Spacing.two },
 });

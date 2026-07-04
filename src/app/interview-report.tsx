@@ -1,20 +1,33 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View } from 'react-native';
+import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, CardShadow } from '@/constants/theme';
+import { Card, PrimaryButton, SectionLabel } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
+
+// Kata + kalimat vonis diturunkan dari skor (presentasi murni; data tak punya
+// field verdict). Warm, tenang, tanpa emoji/em-dash.
+function verdictFor(score: number): { word: string; sentence: string } {
+  if (score >= 85) {
+    return { word: 'Interview ready', sentence: 'You are in strong shape. Keep your answers sharp.' };
+  }
+  if (score >= 70) {
+    return { word: 'Nearly ready', sentence: 'You are close. A little polish and you will walk in calm.' };
+  }
+  if (score >= 50) {
+    return { word: 'Getting there', sentence: 'Solid base. Work the fixes below to lift your score.' };
+  }
+  return { word: 'Early days', sentence: 'Good start. Try the fixes and run a few more rounds.' };
+}
 
 // Rapor kesiapan interview (fitur #6). POST idempoten: rapor yang sudah ada
 // dikembalikan server tanpa panggilan AI kedua.
 export default function InterviewReportScreen() {
-  const theme = useTheme();
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
   const [data, setData] = useState<InterviewReportResponse | null>(null);
   // Tanpa sessionId = kondisi TURUNAN (bukan state) -- hindari setState
@@ -42,25 +55,26 @@ export default function InterviewReportScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator color={AccentColor} />
-        <ThemedText type="small" themeColor="textSecondary">
-          Preparing your readiness report…
-        </ThemedText>
-      </ThemedView>
+      <GradientBackground>
+        <View style={styles.centered}>
+          <ActivityIndicator color={Ink} />
+          <Text style={styles.centerText}>Preparing your readiness report…</Text>
+        </View>
+      </GradientBackground>
     );
   }
 
   if (error || !data) {
     return (
-      <ThemedView style={styles.centered}>
-        <ThemedText type="default" themeColor="textSecondary" style={styles.centerText}>
-          {error ?? 'Something went wrong.'}
-        </ThemedText>
-        <Pressable onPress={() => router.back()} style={styles.backLink}>
-          <ThemedText type="link">← Back</ThemedText>
-        </Pressable>
-      </ThemedView>
+      <GradientBackground>
+        <View style={styles.centered}>
+          <Text style={styles.errorText}>{error ?? 'Something went wrong.'}</Text>
+          <Pressable onPress={() => router.back()} style={styles.backLink} hitSlop={8}>
+            <Feather name="chevron-left" size={20} color={Ink} />
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
+        </View>
+      </GradientBackground>
     );
   }
 
@@ -70,105 +84,107 @@ export default function InterviewReportScreen() {
     { label: 'Answer structure', d: report.dimensions.structure },
     { label: 'Content strength', d: report.dimensions.content },
   ];
+  const verdict = verdictFor(data.score);
 
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Pressable onPress={() => router.replace('/')} style={styles.backLink}>
-            <ThemedText type="link">← Home</ThemedText>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Pressable onPress={() => router.replace('/')} style={styles.backLink} hitSlop={8}>
+            <Feather name="chevron-left" size={20} color={Ink} />
+            <Text style={styles.backText}>Home</Text>
           </Pressable>
 
-          <ThemedText type="title" style={styles.title}>
-            Readiness report
-          </ThemedText>
+          <Text style={styles.title}>Readiness report</Text>
 
-          {/* Skor keseluruhan */}
-          <ThemedView type="backgroundElement" style={styles.scoreCard}>
-            <ThemedText style={[styles.scoreNumber, { color: AccentColor }]}>
-              {data.score}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              out of 100
-            </ThemedText>
-          </ThemedView>
+          {/* Hero skor keseluruhan di tile lilac (lilac = readiness) */}
+          <View style={styles.hero}>
+            <Text style={styles.heroLabel}>Overall readiness</Text>
+            <View style={styles.heroScoreRow}>
+              <Text style={styles.heroScore}>{data.score}</Text>
+              <Text style={styles.heroOutOf}>/ 100</Text>
+            </View>
+            <Text style={styles.heroVerdict}>{verdict.word}</Text>
+            <Text style={styles.heroSentence}>{verdict.sentence}</Text>
+          </View>
 
           {/* Dimensi */}
-          <ThemedView style={styles.section}>
-            {dims.map(({ label, d }) => (
-              <ThemedView key={label} type="backgroundElement" style={styles.dimCard}>
+          <SectionLabel style={styles.sectionSpacing}>By dimension</SectionLabel>
+          <Card style={styles.dimCard}>
+            {dims.map(({ label, d }, i) => (
+              <View key={label} style={[styles.dimRow, i > 0 && styles.dimRowDivider]}>
                 <View style={styles.dimHeader}>
-                  <ThemedText type="smallBold">{label}</ThemedText>
-                  <ThemedText type="smallBold" style={{ color: AccentColor }}>
-                    {d.score}
-                  </ThemedText>
+                  <Text style={styles.dimLabel}>{label}</Text>
+                  <Text style={styles.dimScore}>{d.score}</Text>
                 </View>
-                <View style={[styles.barTrack, { backgroundColor: theme.backgroundSelected }]}>
+                <View style={styles.barTrack}>
                   <View
                     style={[
                       styles.barFill,
-                      { width: `${Math.min(100, Math.max(0, d.score))}%`, backgroundColor: AccentColor },
+                      { width: `${Math.min(100, Math.max(0, d.score))}%` },
                     ]}
                   />
                 </View>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {d.comment}
-                </ThemedText>
-              </ThemedView>
+                <Text style={styles.dimComment}>{d.comment}</Text>
+              </View>
             ))}
-          </ThemedView>
+          </Card>
 
-          {/* Terkuat / terlemah */}
-          <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="smallBold" style={styles.ok}>
-              Strongest answer
-            </ThemedText>
-            <ThemedText type="small">{report.strongestAnswer.question}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {report.strongestAnswer.why}
-            </ThemedText>
-          </ThemedView>
-          <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="smallBold" style={styles.warn}>
-              Needs the most work
-            </ThemedText>
-            <ThemedText type="small">{report.weakestAnswer.question}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {report.weakestAnswer.why}
-            </ThemedText>
-          </ThemedView>
+          {/* Terkuat (mint) / terlemah (pink) */}
+          <SectionLabel style={styles.sectionSpacing}>Highlights</SectionLabel>
+          <Card style={styles.accentCard}>
+            <View style={[styles.accentBar, { backgroundColor: Pastel.mint }]} />
+            <View style={styles.accentBody}>
+              <Text style={[styles.accentLabel, { color: Pastel.mintInk }]}>Strongest answer</Text>
+              <Text style={styles.accentQuestion}>{report.strongestAnswer.question}</Text>
+              <Text style={styles.accentWhy}>{report.strongestAnswer.why}</Text>
+            </View>
+          </Card>
+          <Card style={styles.accentCard}>
+            <View style={[styles.accentBar, { backgroundColor: Pastel.pink }]} />
+            <View style={styles.accentBody}>
+              <Text style={[styles.accentLabel, { color: Pastel.pinkInk }]}>Needs the most work</Text>
+              <Text style={styles.accentQuestion}>{report.weakestAnswer.question}</Text>
+              <Text style={styles.accentWhy}>{report.weakestAnswer.why}</Text>
+            </View>
+          </Card>
 
           {/* Fixes */}
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Fix these first
-            </ThemedText>
+          <SectionLabel style={styles.sectionSpacing}>Top fixes</SectionLabel>
+          <Card style={styles.fixCard}>
             {report.topFixes.map((fix, i) => (
-              <ThemedView key={i} type="backgroundElement" style={styles.card}>
-                <ThemedText type="small">
-                  {i + 1}. {fix}
-                </ThemedText>
-              </ThemedView>
+              <View key={i} style={[styles.fixRow, i > 0 && styles.fixRowDivider]}>
+                <View style={styles.fixNum}>
+                  <Text style={styles.fixNumText}>{i + 1}</Text>
+                </View>
+                <Text style={styles.fixText}>{fix}</Text>
+              </View>
             ))}
-          </ThemedView>
+          </Card>
 
           {/* Answer upgrades */}
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Stronger versions of your answers
-            </ThemedText>
+          <SectionLabel style={styles.sectionSpacing}>Answer upgrades</SectionLabel>
+          <View style={styles.upgradeGroup}>
             {report.answerUpgrades.map((u, i) => (
-              <ThemedView key={i} type="backgroundElement" style={styles.card}>
-                <ThemedText type="smallBold">{u.question}</ThemedText>
-                <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  You said: {u.original}
-                </ThemedText>
-                <ThemedText type="small" style={{ color: AccentColor }}>
-                  Stronger: {u.upgraded}
-                </ThemedText>
-              </ThemedView>
+              <Card key={i} style={styles.upgradeCard}>
+                <Text style={styles.upgradeQuestion}>{u.question}</Text>
+                <View style={styles.upgradeOriginal}>
+                  <Text style={styles.upgradeTag}>You said</Text>
+                  <Text style={styles.upgradeOriginalText}>{u.original}</Text>
+                </View>
+                <View style={styles.upgradeStronger}>
+                  <Text style={[styles.upgradeTag, { color: Pastel.mintInk }]}>Stronger</Text>
+                  <Text style={styles.upgradeStrongerText}>{u.upgraded}</Text>
+                </View>
+              </Card>
             ))}
-          </ThemedView>
+          </View>
+
+          <PrimaryButton
+            label="Back to home"
+            onPress={() => router.replace('/')}
+            style={styles.homeButton}
+          />
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -176,22 +192,117 @@ export default function InterviewReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three, padding: Spacing.four },
-  centerText: { textAlign: 'center' },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.four,
+  },
+  centerText: { color: '#60646C', fontSize: 14, fontWeight: '500', textAlign: 'center' },
+  errorText: { color: '#60646C', fontSize: 15, fontWeight: '500', textAlign: 'center' },
   safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { padding: Spacing.four, gap: Spacing.three },
-  backLink: { marginBottom: Spacing.one },
-  title: { marginBottom: Spacing.two },
-  scoreCard: { ...CardShadow, borderRadius: 24, padding: Spacing.four, alignItems: 'center', gap: Spacing.one },
-  scoreNumber: { fontSize: 64, lineHeight: 72, fontWeight: '800' },
-  section: { gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
-  sectionTitle: { marginBottom: Spacing.half },
-  dimCard: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.two },
-  dimHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  barTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: 8, borderRadius: 4 },
-  card: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
-  ok: { color: '#34C88A' },
-  warn: { color: '#FF7A70' },
+  content: { padding: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.two },
+  backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: Spacing.two },
+  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
+  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink, marginBottom: Spacing.three },
+
+  // Hero
+  hero: {
+    backgroundColor: Pastel.lilac,
+    borderRadius: Radius.xl,
+    padding: Spacing.four,
+    gap: Spacing.one,
+  },
+  heroLabel: { color: Pastel.lilacInk, fontSize: 13, fontWeight: '700', opacity: 0.85 },
+  heroScoreRow: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
+  heroScore: {
+    color: Pastel.lilacInk,
+    fontSize: 64,
+    lineHeight: 70,
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+  },
+  heroOutOf: { color: Pastel.lilacInk, fontSize: 20, fontWeight: '700', opacity: 0.7 },
+  heroVerdict: { color: Pastel.lilacInk, fontSize: 18, fontWeight: '800', marginTop: Spacing.two },
+  heroSentence: { color: Pastel.lilacInk, fontSize: 14, lineHeight: 20, fontWeight: '500', opacity: 0.9 },
+
+  sectionSpacing: { marginTop: Spacing.four, marginBottom: Spacing.two },
+
+  // Dimensi
+  dimCard: { gap: 0, padding: Spacing.four },
+  dimRow: { gap: Spacing.two },
+  dimRowDivider: {
+    marginTop: Spacing.three,
+    paddingTop: Spacing.three,
+    borderTopWidth: 1,
+    borderTopColor: HairlineBorder,
+  },
+  dimHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  dimLabel: { color: Ink, fontSize: 15, fontWeight: '600' },
+  dimScore: { color: Ink, fontSize: 17, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  barTrack: { height: 8, borderRadius: 4, overflow: 'hidden', backgroundColor: '#F2F3F5' },
+  barFill: { height: 8, borderRadius: 4, backgroundColor: Ink },
+  dimComment: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+
+  // Highlights (accent)
+  accentCard: { flexDirection: 'row', padding: 0, overflow: 'hidden' },
+  accentBar: { width: 5 },
+  accentBody: { flex: 1, padding: Spacing.four, gap: Spacing.one },
+  accentLabel: { fontSize: 13, fontWeight: '800' },
+  accentQuestion: { color: Ink, fontSize: 15, lineHeight: 21, fontWeight: '600' },
+  accentWhy: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+
+  // Top fixes
+  fixCard: { padding: Spacing.four },
+  fixRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.three },
+  fixRowDivider: {
+    marginTop: Spacing.three,
+    paddingTop: Spacing.three,
+    borderTopWidth: 1,
+    borderTopColor: HairlineBorder,
+  },
+  fixNum: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: Pastel.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fixNumText: {
+    color: Pastel.creamInk,
+    fontSize: 14,
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+  },
+  fixText: { flex: 1, color: Ink, fontSize: 15, lineHeight: 21, fontWeight: '500' },
+
+  // Answer upgrades
+  upgradeGroup: { gap: Spacing.three },
+  upgradeCard: { gap: Spacing.three },
+  upgradeQuestion: { color: Ink, fontSize: 15, fontWeight: '700' },
+  upgradeOriginal: {
+    backgroundColor: '#F2F3F5',
+    borderRadius: Radius.md,
+    padding: Spacing.three,
+    gap: Spacing.one,
+  },
+  upgradeStronger: {
+    backgroundColor: Pastel.mint,
+    borderRadius: Radius.md,
+    padding: Spacing.three,
+    gap: Spacing.one,
+  },
+  upgradeTag: {
+    color: '#8B8F98',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  upgradeOriginalText: { color: '#60646C', fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  upgradeStrongerText: { color: Pastel.mintInk, fontSize: 14, lineHeight: 21, fontWeight: '600' },
+
+  homeButton: { marginTop: Spacing.five },
 });

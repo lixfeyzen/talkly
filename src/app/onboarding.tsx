@@ -1,20 +1,17 @@
 import { useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { Chip, PrimaryButton } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Danger } from '@/constants/theme';
 import { setNativeLanguage, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
 
 // Onboarding sekali setelah daftar: pilih bahasa sehari-hari. Nilainya
 // dipakai AI buat menulis penjelasan koreksi dalam bahasa user.
 export default function OnboardingScreen() {
-  const theme = useTheme();
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,60 +37,32 @@ export default function OnboardingScreen() {
   return (
     <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <ThemedText type="title" style={styles.title}>
-            What language do you speak every day?
-          </ThemedText>
-          <ThemedText type="default" themeColor="textSecondary" style={styles.subtitle}>
-            The AI will explain your corrections in this language. You can
-            change it anytime.
-          </ThemedText>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>What language do you speak every day?</Text>
+          <Text style={styles.subtitle}>
+            I will explain your corrections in this language. You can change it anytime.
+          </Text>
 
-          <ThemedView style={styles.optionGrid}>
+          <View style={styles.optionGrid}>
             {NATIVE_LANGUAGE_OPTIONS.map((opt) => (
-              <Pressable
+              <Chip
                 key={opt.value}
+                label={opt.label}
+                selected={opt.value === selected}
                 onPress={() => setSelected(opt.value)}
-                style={[
-                  styles.optionChip,
-                  {
-                    backgroundColor:
-                      opt.value === selected ? AccentColor : theme.backgroundElement,
-                  },
-                ]}>
-                <ThemedText
-                  type="small"
-                  style={opt.value === selected ? { color: AccentColorOn } : undefined}>
-                  {opt.label}
-                </ThemedText>
-              </Pressable>
+              />
             ))}
-          </ThemedView>
+          </View>
 
-          {error && (
-            <ThemedText type="small" style={styles.error}>
-              {error}
-            </ThemedText>
-          )}
+          {error && <Text style={styles.error}>{error}</Text>}
 
-          <Pressable
+          <PrimaryButton
+            label="Continue"
             onPress={handleContinue}
-            disabled={!selected || loading}
-            style={({ pressed }) => [
-              styles.button,
-              {
-                backgroundColor: AccentColor,
-                opacity: !selected ? 0.4 : loading ? 0.6 : pressed ? 0.85 : 1,
-              },
-            ]}>
-            {loading ? (
-              <ActivityIndicator color={AccentColorOn} />
-            ) : (
-              <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                Continue
-              </ThemedText>
-            )}
-          </Pressable>
+            disabled={!selected}
+            loading={loading}
+            style={styles.button}
+          />
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -101,38 +70,23 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: {
-    flex: 1,
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: MaxContentWidth,
+  safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
+  content: { flexGrow: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
+  title: { fontSize: 26, lineHeight: 32, fontWeight: '800', color: Ink, textAlign: 'center' },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: '500',
+    color: '#60646C',
+    textAlign: 'center',
+    marginBottom: Spacing.two,
   },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: Spacing.four,
-    gap: Spacing.three,
-  },
-  title: { textAlign: 'center' },
-  subtitle: { textAlign: 'center', marginBottom: Spacing.two },
   optionGrid: {
-    backgroundColor: 'transparent',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: Spacing.two,
   },
-  optionChip: {
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
-  },
-  error: { color: '#FF7A70', textAlign: 'center' },
-  button: {
-    borderRadius: 999,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.three,
-  },
+  error: { color: Danger, textAlign: 'center', fontSize: 14, fontWeight: '500' },
+  button: { marginTop: Spacing.three },
 });

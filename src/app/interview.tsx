@@ -1,70 +1,68 @@
 import { useState } from 'react';
-import { StyleSheet, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, Pressable, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { Card, Chip, PrimaryButton, SectionLabel, PastelTile } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink } from '@/constants/theme';
 import { INTERVIEW_ROLES } from '@/lib/interviews/api';
+
+// Cara kerja mock (3 baris di kartu putih). Tile pastel = identitas fitur:
+// ice=Conversations, lilac=Interview/readiness, cream=Trajectory, mint=success.
+const HOW_IT_WORKS = [
+  { pastel: 'lilac', icon: 'help-circle', text: 'Five questions, like a real interview' },
+  { pastel: 'ice', icon: 'pause-circle', text: 'No corrections until the very end' },
+  { pastel: 'mint', icon: 'check-circle', text: 'A readiness report when you finish' },
+] as const;
 
 // Mulai mock interview (fitur #6): pilih role -> 5 pertanyaan -> rapor.
 export default function InterviewStartScreen() {
-  const theme = useTheme();
   const [role, setRole] = useState<string | null>(null);
 
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <ThemedText type="link">← Back</ThemedText>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Pressable onPress={() => router.back()} style={styles.backLink} hitSlop={8}>
+            <Feather name="chevron-left" size={20} color={Ink} />
+            <Text style={styles.backText}>Back</Text>
           </Pressable>
 
-          <ThemedText type="title" style={styles.title}>
-            Mock interview
-          </ThemedText>
-          <ThemedText type="default" themeColor="textSecondary">
-            5 questions, just like a real English interview. No corrections
-            until the end. You’ll get a readiness report with your score and
-            stronger versions of your answers.
-          </ThemedText>
+          <Text style={styles.title}>A calm practice run.</Text>
+          <Text style={styles.subtitle}>
+            Five questions, like the real thing. I hold every correction until the end.
+          </Text>
 
-          <ThemedText type="smallBold" style={styles.label}>
-            What role are you interviewing for?
-          </ThemedText>
-          <ThemedView style={styles.optionGrid}>
+          <Card style={styles.howCard}>
+            <SectionLabel>How it works</SectionLabel>
+            <View style={styles.howRows}>
+              {HOW_IT_WORKS.map((row) => (
+                <View key={row.text} style={styles.howRow}>
+                  <PastelTile pastel={row.pastel} icon={row.icon} size={34} />
+                  <Text style={styles.howText}>{row.text}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
+
+          <SectionLabel style={styles.roleLabel}>Choose a role</SectionLabel>
+          <View style={styles.rolesWrap}>
             {INTERVIEW_ROLES.map((r) => (
-              <Pressable
-                key={r}
-                onPress={() => setRole(r)}
-                style={[
-                  styles.optionChip,
-                  { backgroundColor: r === role ? AccentColor : theme.backgroundElement },
-                ]}>
-                <ThemedText type="small" style={r === role ? { color: AccentColorOn } : undefined}>
-                  {r}
-                </ThemedText>
-              </Pressable>
+              <Chip key={r} label={r} selected={r === role} onPress={() => setRole(r)} />
             ))}
-          </ThemedView>
+          </View>
 
-          <Pressable
+          <PrimaryButton
+            label="Start interview"
+            disabled={!role}
             onPress={() =>
               role &&
               router.push({ pathname: '/conversation', params: { mode: 'interview', role } })
             }
-            disabled={!role}
-            style={({ pressed }) => [
-              styles.startButton,
-              { backgroundColor: AccentColor, opacity: !role ? 0.4 : pressed ? 0.85 : 1 },
-            ]}>
-            <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-              Start interview
-            </ThemedText>
-          </Pressable>
+            style={styles.startButton}
+          />
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -72,22 +70,23 @@ export default function InterviewStartScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { flexGrow: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
-  backLink: { marginBottom: Spacing.one },
-  title: { marginBottom: Spacing.half },
-  label: { marginTop: Spacing.two },
-  optionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, backgroundColor: 'transparent' },
-  optionChip: {
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
+  content: { flexGrow: 1, padding: Spacing.four, paddingBottom: Spacing.five },
+  backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: Spacing.three },
+  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
+  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#60646C',
+    fontWeight: '500',
+    marginTop: Spacing.two,
   },
-  startButton: {
-    borderRadius: 999,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.three,
-  },
+  howCard: { marginTop: Spacing.four, gap: Spacing.three },
+  howRows: { gap: Spacing.three },
+  howRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  howText: { flex: 1, fontSize: 15, lineHeight: 20, color: Ink, fontWeight: '500' },
+  roleLabel: { marginTop: Spacing.four, marginBottom: Spacing.three },
+  rolesWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  startButton: { marginTop: Spacing.five },
 });

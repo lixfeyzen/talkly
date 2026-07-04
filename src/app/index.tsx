@@ -1,22 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, ScrollView, View, Platform } from 'react-native';
+import { StyleSheet, Pressable, ActivityIndicator, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { Spacing, MaxContentWidth, AccentColor } from '@/constants/theme';
+import { TalklyMark } from '@/components/talkly-mark';
+import { Card, Chip, ListRow, SectionLabel, BottomNav } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Pastel, Radius, HairlineBorder } from '@/constants/theme';
 import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type DashboardData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
 import { fetchInterviewPlan, type InterviewPlanResponse } from '@/lib/interview-plan/api';
 import { notificationsSupported, configureNotificationHandler } from '@/lib/notifications';
-import { TalklyMark } from '@/components/talkly-mark';
-
-// Font serif utk greeting besar (komponen khas referensi Lumina).
-const SerifFont = Platform.select({ web: 'Georgia, serif', default: 'serif' });
 
 export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
@@ -40,7 +35,6 @@ export default function HomeScreen() {
         },
       });
     } else {
-      // review & interview_day: lihat kelemahan di dashboard
       router.push('/dashboard');
     }
   }
@@ -51,7 +45,6 @@ export default function HomeScreen() {
         router.replace('/login');
         return;
       }
-      // Belum pilih bahasa native (akun baru) -> onboarding sekali.
       if (!user.nativeLanguage) {
         router.replace('/onboarding');
         return;
@@ -64,8 +57,7 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Refresh tiap kali home KEMBALI fokus -- pulang dari sesi latihan, angka
-  // workspace & saran latihan langsung update. Gagal fetch tidak memblokir.
+  // Refresh tiap kali home KEMBALI fokus -- angka & saran langsung update.
   useFocusEffect(
     useCallback(() => {
       fetchDashboard()
@@ -85,7 +77,7 @@ export default function HomeScreen() {
       <GradientBackground>
         <View style={styles.centered}>
           <TalklyMark size={64} />
-          <ActivityIndicator color={AccentColor} />
+          <ActivityIndicator color={Ink} />
         </View>
       </GradientBackground>
     );
@@ -96,86 +88,90 @@ export default function HomeScreen() {
 
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Header: wordmark kiri + avatar inisial kanan */}
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Header */}
           <View style={styles.header}>
             <View style={styles.lockup}>
               <TalklyMark size={26} />
-              <ThemedText type="smallBold" style={styles.wordmark}>
-                Talkly
-              </ThemedText>
+              <Text style={styles.wordmark}>Talkly</Text>
             </View>
-            <Pressable onPress={() => router.push('/settings')} style={styles.avatar}>
-              <ThemedText type="smallBold" style={{ color: '#FFFFFF' }}>
-                {initial}
-              </ThemedText>
+            <Pressable
+              onPress={() => router.push('/settings')}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+              style={styles.avatar}>
+              <Text style={styles.avatarText}>{initial}</Text>
             </Pressable>
           </View>
 
-          {/* Greeting serif */}
+          {/* Greeting */}
           <View style={styles.greeting}>
-            <ThemedText style={styles.greetingTitle}>
-              Hi {name}, ready{'\n'}to practice?
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.greetingCaption}>
-              Sharpen your English conversations{'\n'}and nail your next interview
-            </ThemedText>
+            <Text style={styles.greetingTitle}>Hi {name},{'\n'}ready to practice?</Text>
+            <Text style={styles.greetingCaption}>
+              A few quiet minutes now, steadier nerves later.
+            </Text>
           </View>
 
-          {/* Interview-Day Countdown */}
+          {/* Interview-Day Countdown (kartu hero) */}
           {plan && plan.set && !plan.expired && (
-            <Pressable onPress={openPlanTask} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-              <ThemedView type="backgroundElement" style={styles.planCard}>
-                <ThemedText type="smallBold" style={{ color: AccentColor }}>
-                  {plan.daysLeft === 0
-                    ? `Interview day: ${plan.role}!`
-                    : `${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} until your ${plan.role} interview`}
-                </ThemedText>
-                <ThemedText type="smallBold">Today: {plan.todayTask.title}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {plan.todayTask.description}
-                </ThemedText>
-              </ThemedView>
+            <Pressable onPress={openPlanTask} style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+              <Card glow style={styles.countdownCard}>
+                <View style={styles.countdownAccent} />
+                <View style={styles.countdownBody}>
+                  <SectionLabel>Countdown</SectionLabel>
+                  <View style={styles.countdownNumRow}>
+                    <Text style={styles.countdownNum}>{plan.daysLeft}</Text>
+                    <Text style={styles.countdownUnit}>
+                      {plan.daysLeft === 1 ? 'day until your' : 'days until your'}
+                      {'\n'}
+                      <Text style={styles.countdownRole}>{plan.role} interview</Text>
+                    </Text>
+                  </View>
+                  <View style={styles.countdownTaskRow}>
+                    <Text style={styles.countdownTaskLabel}>Today</Text>
+                    <Text style={styles.countdownTaskText} numberOfLines={2}>
+                      {plan.todayTask.title}
+                    </Text>
+                  </View>
+                </View>
+              </Card>
             </Pressable>
           )}
           {plan && plan.set && plan.expired && (
             <Pressable
               onPress={() => router.push('/interview-date')}
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-              <ThemedView type="backgroundElement" style={styles.planCard}>
-                <ThemedText type="smallBold">Your interview date has passed</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+              <Card style={styles.planPrompt}>
+                <Text style={styles.planPromptTitle}>Your interview date has passed</Text>
+                <Text style={styles.planPromptSub}>
                   How did it go? Set your next interview date to keep prepping.
-                </ThemedText>
-              </ThemedView>
+                </Text>
+              </Card>
             </Pressable>
           )}
           {plan && !plan.set && (
             <Pressable
               onPress={() => router.push('/interview-date')}
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-              <ThemedView type="backgroundElement" style={styles.planCard}>
-                <ThemedText type="smallBold">Have an interview coming up?</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Set the date and get a day-by-day prep plan counting down to it.
-                </ThemedText>
-              </ThemedView>
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+              <Card style={styles.planPrompt}>
+                <Text style={styles.planPromptTitle}>Have an interview coming up?</Text>
+                <Text style={styles.planPromptSub}>
+                  Set the date and I will shape each day&apos;s practice around it.
+                </Text>
+              </Card>
             </Pressable>
           )}
 
           {/* Chip aksi cepat */}
           <View style={styles.chipsWrap}>
-            <Pressable onPress={() => router.push('/conversation')} style={styles.chip}>
-              <Feather name="message-circle" size={13} color="#F4F2FA" />
-              <ThemedText type="small">Free chat</ThemedText>
-            </Pressable>
-            <Pressable onPress={() => router.push('/interview')} style={styles.chip}>
-              <Feather name="mic" size={13} color="#F4F2FA" />
-              <ThemedText type="small">Mock interview</ThemedText>
-            </Pressable>
+            <Chip label="Free chat" icon="message-circle" onPress={() => router.push('/conversation')} />
+            <Chip label="Mock interview" icon="mic" onPress={() => router.push('/interview')} />
             {suggestion && (
-              <Pressable
+              <Chip
+                label="Targeted"
+                icon="target"
+                selected
                 onPress={() =>
                   router.push({
                     pathname: '/conversation',
@@ -185,116 +181,56 @@ export default function HomeScreen() {
                     },
                   })
                 }
-                style={[styles.chip, styles.chipAccent]}>
-                <Feather name="crosshair" size={13} color="#FFFFFF" />
-                <ThemedText type="small" style={{ color: '#FFFFFF' }}>
-                  Targeted practice
-                </ThemedText>
-              </Pressable>
+              />
             )}
           </View>
 
           {/* Workspace */}
-          <ThemedText type="small" themeColor="textSecondary" style={styles.sectionLabel}>
-            WORKSPACE
-          </ThemedText>
+          <SectionLabel style={styles.sectionSpacing}>Workspace</SectionLabel>
           <View style={styles.rows}>
-            {[
-              {
-                icon: 'message-circle' as const,
-                color: '#6C5CE7',
-                title: 'Conversations',
-                value: dash ? `${dash.activity.totalSessions} sessions` : '…',
-                go: () => router.push('/conversation'),
-              },
-              {
-                icon: 'mic' as const,
-                color: '#2BAE7A',
-                title: 'Interview readiness',
-                value: dash?.latestReadiness ? `${dash.latestReadiness.score}/100` : 'not tested',
-                go: () =>
-                  dash?.latestReadiness
-                    ? router.push({
-                        pathname: '/interview-report',
-                        params: { sessionId: dash.latestReadiness.sessionId },
-                      })
-                    : router.push('/interview'),
-              },
-              {
-                icon: 'trending-up' as const,
-                color: '#E8A33D',
-                title: 'Am I getting better?',
-                value: 'trends',
-                go: () => router.push('/trajectory'),
-              },
-              {
-                icon: 'zap' as const,
-                color: '#D64B8A',
-                title: 'Streak',
-                value: dash ? `${dash.streak.currentStreak} days` : '…',
-                go: () => router.push('/dashboard'),
-              },
-            ].map((item) => (
-              <Pressable
-                key={item.title}
-                onPress={item.go}
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-                <ThemedView type="backgroundElement" style={styles.row}>
-                  <View style={[styles.rowIcon, { backgroundColor: item.color }]}>
-                    <Feather name={item.icon} size={16} color="#FFFFFF" />
-                  </View>
-                  <ThemedText type="smallBold" style={styles.rowTitle}>
-                    {item.title}
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {item.value}
-                  </ThemedText>
-                  <Feather name="chevron-right" size={16} color="#5A5670" />
-                </ThemedView>
-              </Pressable>
-            ))}
+            <ListRow
+              pastel="ice"
+              icon="message-circle"
+              title="Conversations"
+              value={dash ? `${dash.activity.totalSessions} sessions` : '...'}
+              onPress={() => router.push('/conversation')}
+            />
+            <ListRow
+              pastel="lilac"
+              icon="mic"
+              title="Interview readiness"
+              value={dash?.latestReadiness ? `${dash.latestReadiness.score} / 100` : 'not tested'}
+              onPress={() =>
+                dash?.latestReadiness
+                  ? router.push({
+                      pathname: '/interview-report',
+                      params: { sessionId: dash.latestReadiness.sessionId },
+                    })
+                  : router.push('/interview')
+              }
+            />
+            <ListRow
+              pastel="cream"
+              icon="trending-up"
+              title="Am I getting better?"
+              value="trends"
+              onPress={() => router.push('/trajectory')}
+            />
+            <ListRow
+              pastel="pink"
+              icon="zap"
+              title="Streak"
+              value={dash ? `${dash.streak.currentStreak} days` : '...'}
+              onPress={() => router.push('/dashboard')}
+            />
           </View>
-
-          {/* Recent corrections */}
-          {dash && dash.recentCorrections.length > 0 && (
-            <>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.sectionLabel}>
-                Recent corrections
-              </ThemedText>
-              <View style={styles.rows}>
-                {dash.recentCorrections.slice(0, 2).map((c, i) => (
-                  <ThemedView key={i} type="backgroundElement" style={styles.row}>
-                    <ThemedText type="small" numberOfLines={1} style={styles.rowTitle}>
-                      {c.originalText} → {c.correctedText}
-                    </ThemedText>
-                  </ThemedView>
-                ))}
-              </View>
-            </>
-          )}
         </ScrollView>
 
-        {/* Bottom bar ala referensi */}
-        <View style={styles.bottomBar}>
-          <View style={styles.tabItem}>
-            <Feather name="home" size={18} color={AccentColor} />
-            <ThemedText type="small" style={{ color: AccentColor }}>
-              Home
-            </ThemedText>
-          </View>
-          <Pressable onPress={() => router.push('/dashboard')} style={styles.tabItem}>
-            <Feather name="bar-chart-2" size={18} color="#8B87A0" />
-            <ThemedText type="small" themeColor="textSecondary">
-              Progress
-            </ThemedText>
-          </Pressable>
-          <Pressable onPress={() => router.push('/settings')} style={styles.tabItem}>
-            <Feather name="settings" size={18} color="#8B87A0" />
-            <ThemedText type="small" themeColor="textSecondary">
-              Settings
-            </ThemedText>
-          </Pressable>
-        </View>
+        <BottomNav
+          active="home"
+          onProgress={() => router.push('/dashboard')}
+          onSettings={() => router.push('/settings')}
+        />
       </SafeAreaView>
     </GradientBackground>
   );
@@ -302,93 +238,65 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
-  safeArea: {
-    flex: 1,
-    maxWidth: MaxContentWidth,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  scrollContent: { flexGrow: 1, padding: Spacing.four, paddingBottom: Spacing.six },
+  safeArea: { flex: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
+  scrollContent: { flexGrow: 1, padding: Spacing.four, paddingBottom: Spacing.five },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.five,
-  },
-  lockup: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  wordmark: { fontSize: 18 },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: AccentColor,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  greeting: { alignItems: 'center', gap: Spacing.two, marginBottom: Spacing.four },
-  greetingTitle: {
-    fontFamily: SerifFont,
-    fontSize: 30,
-    lineHeight: 38,
-    textAlign: 'center',
-    color: '#F4F2FA',
-  },
-  greetingCaption: { textAlign: 'center', lineHeight: 18 },
-  planCard: {
-    borderRadius: 16,
-    padding: Spacing.three,
-    gap: Spacing.one,
     marginBottom: Spacing.four,
   },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  lockup: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  wordmark: { fontSize: 18, fontWeight: '800', color: Ink },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: Pastel.lilac,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarText: { color: Pastel.lilacInk, fontSize: 14, fontWeight: '800' },
+  greeting: { gap: Spacing.two, marginBottom: Spacing.four },
+  greetingTitle: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink },
+  greetingCaption: { fontSize: 15, lineHeight: 21, color: '#60646C', fontWeight: '500' },
+  countdownCard: { padding: 0, overflow: 'hidden', marginBottom: Spacing.four },
+  countdownAccent: { width: 5, backgroundColor: Pastel.lilac },
+  countdownBody: { flex: 1, padding: Spacing.four, gap: Spacing.two },
+  countdownNumRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  countdownNum: {
+    fontSize: 52,
+    lineHeight: 56,
+    fontWeight: '800',
+    color: Ink,
+    fontVariant: ['tabular-nums'],
+  },
+  countdownUnit: { flex: 1, fontSize: 15, lineHeight: 20, color: '#60646C', fontWeight: '500' },
+  countdownRole: { color: Ink, fontWeight: '700' },
+  countdownTaskRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
-    marginBottom: Spacing.five,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#1C1A26',
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.three,
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: '#2B2839',
-  },
-  chipAccent: { backgroundColor: AccentColor, borderColor: AccentColor },
-  sectionLabel: {
-    marginBottom: Spacing.two,
-    marginTop: Spacing.two,
-    fontSize: 12,
-    letterSpacing: 1.2,
-  },
-  rows: { gap: Spacing.two, marginBottom: Spacing.three },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    borderRadius: 16,
-    padding: Spacing.three,
-    minHeight: 56,
-  },
-  rowIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowTitle: { flex: 1 },
-  bottomBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: Spacing.two,
+    marginTop: Spacing.one,
+    paddingTop: Spacing.three,
     borderTopWidth: 1,
-    borderTopColor: '#211E2E',
+    borderTopColor: HairlineBorder,
   },
-  tabItem: { alignItems: 'center', gap: 2, padding: Spacing.two },
+  countdownTaskLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Pastel.lilacInk,
+    backgroundColor: Pastel.lilac,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 3,
+    borderRadius: Radius.sm,
+    overflow: 'hidden',
+  },
+  countdownTaskText: { flex: 1, fontSize: 14, color: Ink, fontWeight: '600' },
+  planPrompt: { marginBottom: Spacing.four, gap: Spacing.one },
+  planPromptTitle: { fontSize: 16, fontWeight: '700', color: Ink },
+  planPromptSub: { fontSize: 14, lineHeight: 20, color: '#60646C', fontWeight: '500' },
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginBottom: Spacing.two },
+  sectionSpacing: { marginTop: Spacing.three, marginBottom: Spacing.two },
+  rows: { gap: Spacing.two },
 });

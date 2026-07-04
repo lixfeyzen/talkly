@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, ScrollView, Switch, View } from 'react-native';
+import { StyleSheet, Pressable, ActivityIndicator, ScrollView, Switch, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from '@/constants/theme';
+import { Card, Chip, ListRow, SectionLabel, PastelTile, BottomNav } from '@/components/ui';
+import {
+  Spacing,
+  MaxContentWidth,
+  Ink,
+  Danger,
+  Success,
+  HairlineBorder,
+  Pastel,
+  Radius,
+} from '@/constants/theme';
 import {
   fetchCurrentUser,
   logout,
@@ -23,7 +31,6 @@ import {
 } from '@/lib/notifications';
 
 export default function SettingsScreen() {
-  const theme = useTheme();
   const [email, setEmail] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -82,149 +89,172 @@ export default function SettingsScreen() {
     router.replace('/login');
   }
 
+  const name = email ? email.split('@')[0] : 'there';
+  const initial = (email?.[0] ?? 'T').toUpperCase();
+  const currentLanguage =
+    NATIVE_LANGUAGE_OPTIONS.find((opt) => opt.value === selected)?.label ?? 'Not set';
+
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <ThemedText type="link">← Back</ThemedText>
-          </Pressable>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Pressable
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.6 : 1 }]}>
+              <Feather name="chevron-left" size={22} color={Ink} />
+            </Pressable>
+            <Text style={styles.title}>Settings</Text>
+          </View>
 
-          <ThemedText type="title" style={styles.title}>
-            Settings
-          </ThemedText>
+          {/* Profile block */}
+          <Card style={styles.profileCard}>
+            <View style={styles.avatarTile}>
+              <Text style={styles.avatarText}>{initial}</Text>
+            </View>
+            <View style={styles.profileText}>
+              <Text style={styles.profileName} numberOfLines={1}>
+                {name}
+              </Text>
+              <Text style={styles.profileEmail} numberOfLines={1}>
+                {email ?? '…'}
+              </Text>
+            </View>
+          </Card>
 
-          {/* Akun */}
-          <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="small" themeColor="textSecondary">
-              Signed in as
-            </ThemedText>
-            <ThemedText type="smallBold">{email ?? '…'}</ThemedText>
-          </ThemedView>
+          {/* Account */}
+          <SectionLabel style={styles.sectionSpacing}>Account</SectionLabel>
 
-          {/* Bahasa native */}
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              My everyday language
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
+          <Card style={styles.languageCard}>
+            <View style={styles.rowHead}>
+              <PastelTile pastel="lilac" icon="globe" size={40} />
+              <View style={styles.rowHeadText}>
+                <Text style={styles.rowTitle}>Native language</Text>
+                <Text style={styles.rowValue}>{currentLanguage}</Text>
+              </View>
+            </View>
+            <Text style={styles.rowCaption}>
               The AI explains your corrections in this language.
-            </ThemedText>
-            <ThemedView style={styles.optionGrid}>
+            </Text>
+            <View style={styles.chipsWrap}>
               {NATIVE_LANGUAGE_OPTIONS.map((opt) => (
-                <Pressable
+                <Chip
                   key={opt.value}
+                  label={opt.label}
+                  selected={opt.value === selected}
                   onPress={() => handlePickLanguage(opt.value)}
-                  disabled={saving}
-                  style={[
-                    styles.optionChip,
-                    {
-                      backgroundColor:
-                        opt.value === selected ? AccentColor : theme.backgroundElement,
-                      opacity: saving ? 0.6 : 1,
-                    },
-                  ]}>
-                  <ThemedText
-                    type="small"
-                    style={opt.value === selected ? { color: AccentColorOn } : undefined}>
-                    {opt.label}
-                  </ThemedText>
-                </Pressable>
+                />
               ))}
-            </ThemedView>
-            {saving && <ActivityIndicator color={AccentColor} />}
+            </View>
+            {saving && <ActivityIndicator color={Ink} style={styles.savingSpinner} />}
             {feedback && (
-              <ThemedText
-                type="small"
-                style={feedback.kind === 'ok' ? styles.ok : styles.error}>
-                {feedback.text}
-              </ThemedText>
+              <Text style={feedback.kind === 'ok' ? styles.ok : styles.error}>{feedback.text}</Text>
             )}
-          </ThemedView>
+          </Card>
 
-          {/* Reminder harian (native saja; web tak didukung expo-notifications) */}
+          <ListRow
+            pastel="ice"
+            icon="lock"
+            title="Change password"
+            onPress={() => router.push('/forgot-password')}
+          />
+
+          {/* Notifications */}
           {notificationsSupported && (
-            <ThemedView style={styles.section}>
-              <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Reminder
-              </ThemedText>
-              <ThemedView type="backgroundElement" style={[styles.rowButton, styles.reminderRow]}>
+            <>
+              <SectionLabel style={styles.sectionSpacing}>Notifications</SectionLabel>
+              <Card style={styles.reminderCard}>
+                <PastelTile pastel="pink" icon="bell" size={40} />
                 <View style={styles.reminderText}>
-                  <ThemedText type="smallBold">Daily practice reminder</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    Every day at 7 PM
-                  </ThemedText>
+                  <Text style={styles.rowTitle}>Daily practice reminder</Text>
+                  <Text style={styles.rowValue}>Every day at 7 PM</Text>
                 </View>
                 <Switch
                   value={reminderOn}
                   onValueChange={handleReminderToggle}
-                  trackColor={{ true: AccentColor }}
+                  trackColor={{ true: Ink }}
                 />
-              </ThemedView>
-            </ThemedView>
+              </Card>
+            </>
           )}
 
-          {/* Password */}
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Password
-            </ThemedText>
-            <Pressable
-              onPress={() => router.push('/forgot-password')}
-              style={({ pressed }) => [
-                styles.rowButton,
-                { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
-              ]}>
-              <ThemedText type="smallBold">Change password</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                We’ll email you a 6-digit code to set a new one.
-              </ThemedText>
-            </Pressable>
-          </ThemedView>
-
-          <Pressable onPress={handleLogout} style={styles.logout}>
-            <ThemedText type="smallBold" style={styles.logoutText}>
-              Log out
-            </ThemedText>
+          {/* Sign out */}
+          <Pressable
+            onPress={handleLogout}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.signOutRow, { opacity: pressed ? 0.7 : 1 }]}>
+            <Feather name="log-out" size={18} color={Danger} />
+            <Text style={styles.signOutText}>Sign out</Text>
           </Pressable>
         </ScrollView>
+
+        <BottomNav
+          active="settings"
+          onHome={() => router.push('/')}
+          onProgress={() => router.push('/dashboard')}
+        />
       </SafeAreaView>
     </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { padding: Spacing.four, gap: Spacing.three },
-  backLink: { marginBottom: Spacing.one },
-  title: { marginBottom: Spacing.two },
-  card: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
-  section: { gap: Spacing.two, marginTop: Spacing.two, backgroundColor: 'transparent' },
-  sectionTitle: { marginBottom: Spacing.half },
-  optionGrid: {
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-    marginTop: Spacing.one,
+  safeArea: { flex: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
+  scrollContent: { flexGrow: 1, padding: Spacing.four, paddingBottom: Spacing.five },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginBottom: Spacing.four },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -Spacing.two,
   },
-  optionChip: {
-    borderRadius: 999,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
-  },
-  rowButton: { ...CardShadow, borderRadius: 20, padding: Spacing.three, gap: Spacing.one },
-  reminderRow: {
+  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink },
+  profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
+    gap: Spacing.three,
   },
-  reminderText: { gap: 2, flexShrink: 1 },
-  // Warna status di latar gelap: versi terang biar terbaca.
-  ok: { color: '#34C88A' },
-  error: { color: '#FF7A70' },
-  logout: { alignItems: 'center', paddingVertical: Spacing.three, marginTop: Spacing.four },
-  logoutText: { color: '#FF7A70' },
+  avatarTile: {
+    width: 56,
+    height: 56,
+    borderRadius: Radius.md,
+    backgroundColor: Pastel.lilac,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { color: Pastel.lilacInk, fontSize: 22, fontWeight: '800' },
+  profileText: { flex: 1, gap: 2 },
+  profileName: { fontSize: 18, fontWeight: '700', color: Ink, textTransform: 'capitalize' },
+  profileEmail: { fontSize: 14, fontWeight: '500', color: '#60646C' },
+  sectionSpacing: { marginTop: Spacing.four, marginBottom: Spacing.two },
+  languageCard: { gap: Spacing.two, marginBottom: Spacing.two },
+  rowHead: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  rowHeadText: { flex: 1, gap: 2 },
+  rowTitle: { fontSize: 15, fontWeight: '600', color: Ink },
+  rowValue: { fontSize: 14, fontWeight: '500', color: '#60646C' },
+  rowCaption: { fontSize: 13, lineHeight: 18, fontWeight: '500', color: '#8B8F98' },
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: Spacing.one },
+  savingSpinner: { alignSelf: 'flex-start' },
+  ok: { fontSize: 14, fontWeight: '600', color: Success },
+  error: { fontSize: 14, fontWeight: '600', color: Danger },
+  reminderCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  reminderText: { flex: 1, gap: 2 },
+  signOutRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    marginTop: Spacing.five,
+    paddingVertical: Spacing.three,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    backgroundColor: '#FFFFFF',
+  },
+  signOutText: { fontSize: 15, fontWeight: '700', color: Danger },
 });

@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, ScrollView, Pressable, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { GradientBackground } from '@/components/gradient-background';
-import { useTheme } from '@/hooks/use-theme';
-import { Spacing, MaxContentWidth, AccentColor, AccentColorOn } from '@/constants/theme';
+import { Chip, PrimaryButton, SectionLabel, Placeholder } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, HairlineBorder, Danger, Radius } from '@/constants/theme';
 import { INTERVIEW_ROLES, type InterviewRole } from '@/lib/interviews/api';
 import { setInterviewPlan } from '@/lib/interview-plan/api';
 import { ApiError } from '@/lib/api/client';
@@ -30,7 +29,6 @@ function isoPlusDays(days: number): string {
 }
 
 export default function InterviewDateScreen() {
-  const theme = useTheme();
   const [role, setRole] = useState<InterviewRole | null>(null);
   const [dateIso, setDateIso] = useState('');
   const [saving, setSaving] = useState(false);
@@ -65,95 +63,64 @@ export default function InterviewDateScreen() {
 
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <Pressable onPress={() => router.back()} style={styles.backLink}>
-          <ThemedText type="link">← Back</ThemedText>
-        </Pressable>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
+          <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backLink}>
+            <Feather name="chevron-left" size={20} color={Ink} />
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
 
-        <ThemedText type="title" style={styles.title}>
-          When is your interview?
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Talkly builds a day-by-day prep plan counting down to the real thing.
-        </ThemedText>
+          <Text style={styles.title}>When is your interview?</Text>
+          <Text style={styles.subtitle}>
+            I will set a gentle countdown and shape each day&apos;s practice around it.
+          </Text>
 
-        <ThemedText type="smallBold" style={styles.label}>
-          Role you&apos;re interviewing for
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {INTERVIEW_ROLES.map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRole(r)}
-              style={[
-                styles.chip,
-                { backgroundColor: r === role ? AccentColor : theme.backgroundElement },
-              ]}>
-              <ThemedText type="small" style={r === role ? { color: AccentColorOn } : undefined}>
-                {r}
-              </ThemedText>
-            </Pressable>
-          ))}
-        </View>
+          <SectionLabel style={styles.sectionLabel}>Role</SectionLabel>
+          <View style={styles.chipRow}>
+            {INTERVIEW_ROLES.map((r) => (
+              <Chip key={r} label={r} selected={r === role} onPress={() => setRole(r)} />
+            ))}
+          </View>
 
-        <ThemedText type="smallBold" style={styles.label}>
-          Interview date
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {QUICK_OPTIONS.map((opt) => {
-            const iso = isoPlusDays(opt.days);
-            return (
-              <Pressable
-                key={opt.label}
-                onPress={() => setDateIso(iso)}
-                style={[
-                  styles.chip,
-                  { backgroundColor: iso === dateIso ? AccentColor : theme.backgroundElement },
-                ]}>
-                <ThemedText
-                  type="small"
-                  style={iso === dateIso ? { color: AccentColorOn } : undefined}>
-                  {opt.label}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
-        <ThemedView type="backgroundElement" style={styles.inputWrapper}>
-          <TextInput
-            placeholder="or type: YYYY-MM-DD"
-            placeholderTextColor={theme.textSecondary}
-            value={dateIso}
-            onChangeText={setDateIso}
-            autoCapitalize="none"
-            style={[styles.input, { color: theme.text }]}
+          <SectionLabel style={styles.sectionLabel}>When</SectionLabel>
+          <View style={styles.chipRow}>
+            {QUICK_OPTIONS.map((opt) => {
+              const iso = isoPlusDays(opt.days);
+              return (
+                <Chip
+                  key={opt.label}
+                  label={opt.label}
+                  selected={iso === dateIso}
+                  onPress={() => setDateIso(iso)}
+                />
+              );
+            })}
+          </View>
+
+          <View style={styles.field}>
+            <TextInput
+              placeholder="Or pick an exact date (YYYY-MM-DD)"
+              placeholderTextColor={Placeholder}
+              value={dateIso}
+              onChangeText={setDateIso}
+              autoCapitalize="none"
+              style={styles.input}
+            />
+          </View>
+
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          <PrimaryButton
+            label="Start my countdown"
+            onPress={handleSave}
+            disabled={!canSave}
+            loading={saving}
+            style={styles.saveButton}
           />
-        </ThemedView>
-
-        {error && (
-          <ThemedText type="small" style={styles.error}>
-            {error}
-          </ThemedText>
-        )}
-
-        <Pressable
-          onPress={handleSave}
-          disabled={!canSave || saving}
-          style={({ pressed }) => [
-            styles.saveButton,
-            {
-              backgroundColor: AccentColor,
-              opacity: !canSave ? 0.5 : pressed ? 0.85 : 1,
-            },
-          ]}>
-          {saving ? (
-            <ActivityIndicator color={AccentColorOn} />
-          ) : (
-            <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-              Start my countdown
-            </ThemedText>
-          )}
-        </Pressable>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -162,28 +129,40 @@ export default function InterviewDateScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.three,
-    gap: Spacing.two,
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     width: '100%',
   },
-  backLink: { marginTop: Spacing.two },
-  title: { marginTop: Spacing.two },
-  label: { marginTop: Spacing.three },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.five,
+  },
+  backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: Spacing.two },
+  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
+  title: { fontSize: 26, fontWeight: '800', color: Ink, marginTop: Spacing.three },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: '#60646C',
+    fontWeight: '500',
+    marginTop: Spacing.two,
+  },
+  sectionLabel: { marginTop: Spacing.four, marginBottom: Spacing.two },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
-  chip: {
+  field: {
+    backgroundColor: '#F2F3F5',
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    marginTop: Spacing.two,
+  },
+  input: {
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-  },
-  inputWrapper: { borderRadius: 999, marginTop: Spacing.one },
-  input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
-  error: { color: '#FF7A70' },
-  saveButton: {
-    borderRadius: Spacing.three,
     paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.three,
+    fontSize: 16,
+    color: Ink,
   },
+  error: { color: Danger, fontSize: 14, fontWeight: '500', marginTop: Spacing.three },
+  saveButton: { marginTop: Spacing.four },
 });
