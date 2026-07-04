@@ -19,7 +19,8 @@
     "dev:seed-interview": "tsx --env-file=.env.local scripts/dev-seed-interview.mts",
     "dev:seed-stats": "tsx --env-file=.env.local scripts/dev-seed-stats.mts",
     "cleanup:test-users": "tsx --env-file=.env.local scripts/cleanup-test-users.mts",
-    "test:interview-plan": "tsx --env-file=.env.local scripts/test-interview-plan.mts"
+    "test:interview-plan": "tsx --env-file=.env.local scripts/test-interview-plan.mts",
+    "test:trajectory": "tsx --env-file=.env.local scripts/test-trajectory.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

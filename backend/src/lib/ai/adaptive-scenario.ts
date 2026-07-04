@@ -44,6 +44,12 @@ function isKnownCategory(category: string): category is MistakeCategory {
   return category in SCENARIO_BY_CATEGORY;
 }
 
+// Label ramah-manusia utk kategori; kategori tak dikenal balik apa adanya.
+// Dipakai juga oleh trajectory (kalimat insight).
+export function categoryLabel(category: string): string {
+  return isKnownCategory(category) ? LABELS[category] : category;
+}
+
 // stats boleh dalam urutan apa pun; yang dipakai = 1-2 kategori dengan
 // occurrenceCount tertinggi. Return null kalau belum ada data (user baru)
 // -- pemanggil yang menentukan fallback-nya.

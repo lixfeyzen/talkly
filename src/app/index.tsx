@@ -225,6 +225,19 @@ export default function HomeScreen() {
                 </ThemedText>
               </ThemedView>
             </Pressable>
+            <Pressable onPress={() => router.push('/trajectory')}>
+              <ThemedView type="backgroundElement" style={styles.row}>
+                <View style={[styles.rowIcon, { backgroundColor: '#E8A33D' }]}>
+                  <ThemedText type="small">📈</ThemedText>
+                </View>
+                <ThemedText type="smallBold" style={styles.rowTitle}>
+                  Am I getting better?
+                </ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  trends
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
             <Pressable onPress={() => router.push('/dashboard')}>
               <ThemedView type="backgroundElement" style={styles.row}>
                 <View style={[styles.rowIcon, { backgroundColor: '#D64B8A' }]}>

@@ -140,6 +140,18 @@ export default function DashboardScreen() {
             </Pressable>
           )}
 
+          {/* Readiness Trajectory */}
+          <Pressable onPress={() => router.push('/trajectory')}>
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText type="small" themeColor="textSecondary">
+                📈 Am I getting better?
+              </ThemedText>
+              <ThemedText type="smallBold" style={{ color: AccentColor }}>
+                See your scores & mistake trends over time
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
+
           {/* Kelemahan utama */}
           {data.topWeaknesses.length > 0 && (
             <ThemedView style={styles.section}>
