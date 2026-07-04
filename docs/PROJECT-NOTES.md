@@ -622,3 +622,19 @@ Prinsip: JANGAN bangun #1-#4 sebelum ada user nyata memakai loop yg ada.
 **Sisa utk fitur ini hidup di produksi:** deploy backend ke Vercel (route
 speech + interview-plan belum ada di production) + rebuild APK via EAS
 (expo-audio = native module, APK lama tak punya) + uji mic/TTS di HP.
+
+## ✅ READINESS TRAJECTORY (2026-07-04, `8c2cc45`) — roadmap #2 BERES
+
+- Logika murni `lib/trajectory/trajectory.ts`: skor mock kronologis + hitung
+  kesalahan per-kategori di 2 jendela 14-hari bersebelahan (negatif=membaik)
+  + insight 1 kalimat deterministik. NOL biaya AI.
+- `GET /api/trajectory` (user baru → empty-state jujur). Mobile: layar
+  `/trajectory` (line chart SVG skala tetap 0-100, tren ▼hijau/▲merah) +
+  kartu masuk di home & dashboard. `categoryLabel` diekspor dari
+  adaptive-scenario (reuse).
+- Tes 13/13 vs Neon live; guard HTTP + empty-state dibuktikan curl.
+- **Backend produksi Vercel SUDAH berisi SEMUA route (14+trajectory=15).**
+- Roadmap #1-#3 SELESAI SEMUA. APK final (voice+countdown+trajectory) =
+  build EAS `c961208c` (yg `07a3491c`/skWIdcSW... = interim, tanpa trajectory).
+- CTO call: SETELAH ini STOP nambah fitur — gap berikutnya user nyata +
+  monetisasi (tugas founder, bukan kode).
