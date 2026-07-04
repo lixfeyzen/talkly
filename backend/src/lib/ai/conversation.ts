@@ -2,6 +2,7 @@ import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/ai/openai";
 import { MISTAKE_CATEGORIES, type MistakeCategory } from "@/lib/ai/mistake-categories";
+import { HUMAN_STYLE_INSTRUCTION } from "@/lib/ai/style";
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -38,6 +39,7 @@ function buildSystemPrompt(
     `Current scenario: "${scenario}".`,
     `The user's native language is ${native} -- consider mistake patterns typical of ${native} speakers when detecting mistakes.`,
     `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat.`,
+    HUMAN_STYLE_INSTRUCTION,
     `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
     `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
     `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}.`,

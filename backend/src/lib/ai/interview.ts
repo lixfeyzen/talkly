@@ -1,4 +1,5 @@
 import type { ChatTurn } from "@/lib/ai/conversation";
+import { HUMAN_STYLE_INSTRUCTION } from "@/lib/ai/style";
 
 // Fitur #6 (Interview Readiness): wawancara terstruktur 5 pertanyaan.
 // Pertanyaan dari bank TERKURASI (bukan AI ngarang bebas) supaya kualitas
@@ -106,6 +107,7 @@ export function buildInterviewSystemPrompt(
     `Silently, in the structured output, detect grammar/vocabulary mistakes in the candidate's LAST answer. If there are none, return an empty mistakes array -- never invent mistakes.`,
     `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
     `The mistake category MUST be one of: ${mistakeCategories.join(", ")}.`,
+    HUMAN_STYLE_INSTRUCTION,
   ];
   return parts.join(" ");
 }

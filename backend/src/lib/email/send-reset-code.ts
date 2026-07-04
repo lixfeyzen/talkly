@@ -29,7 +29,7 @@ export async function sendResetCodeEmail(to: string, code: string): Promise<void
     body: JSON.stringify({
       from,
       to: [to],
-      subject: `${code} — kode reset password Talkly`,
+      subject: `${code} kode reset password Talkly`,
       text: [
         `Kode reset password Talkly kamu: ${code}`,
         "",

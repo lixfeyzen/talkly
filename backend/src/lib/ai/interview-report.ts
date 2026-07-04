@@ -3,6 +3,7 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/ai/openai";
 import type { ChatTurn } from "@/lib/ai/conversation";
 import type { InterviewRole } from "@/lib/ai/interview";
+import { HUMAN_STYLE_INSTRUCTION } from "@/lib/ai/style";
 
 // Rapor kesiapan interview (fitur #6). Bentuk dijaga zod -- yang tersimpan
 // di kolom jsonb selalu valid terhadap skema ini.
@@ -57,6 +58,7 @@ export async function generateInterviewReport(
     `All comments, "why" fields, and topFixes must be written in ${native}.`,
     `"upgraded" answers must be written in ENGLISH, concrete and natural (use the STAR structure where it fits), based on what the candidate actually said -- do not invent a different person.`,
     `Pick the strongest and weakest answers from the actual questions asked.`,
+    HUMAN_STYLE_INSTRUCTION,
   ].join(" ");
 
   const conversationText = transcript
