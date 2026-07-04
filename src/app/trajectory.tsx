@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View, Text } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import Svg, { Polyline, Circle, Line, Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Polyline, Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, SectionLabel } from '@/components/ui';
@@ -34,6 +34,13 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
   const toX = (i: number) => PAD + i * xStep;
   const toY = (score: number) => PAD + (1 - score / 100) * (CHART_H - PAD * 2);
   const points = scores.map((p, i) => `${toX(i)},${toY(p.score)}`).join(' ');
+  // Titik terakhir + selisih vs skor pertama (data turunan, bukan math chart baru).
+  const li = scores.length - 1;
+  const last = li >= 0 ? scores[li] : null;
+  const lx = last ? toX(li) : 0;
+  const ly = last ? toY(last.score) : 0;
+  const delta = scores.length >= 2 ? scores[li].score - scores[0].score : null;
+  const pillY = Math.max(2, ly - 34); // jangan keluar atas chart
 
   return (
     <Svg width="100%" height={CHART_H} viewBox={`0 0 ${CHART_W} ${CHART_H}`}>
@@ -72,6 +79,28 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
       {scores.map((p, i) => (
         <Circle key={i} cx={toX(i)} cy={toY(p.score)} r={4} fill={Ink} />
       ))}
+      {/* Emphasis titik terakhir: halo lilac + value pill + badge delta */}
+      {last && (
+        <>
+          <Circle cx={lx} cy={ly} r={9} fill={Pastel.lilac} opacity={0.55} />
+          <Circle cx={lx} cy={ly} r={4.5} fill={Ink} />
+          <Rect x={lx - 17} y={pillY} width={34} height={20} rx={6} fill={Ink} />
+          <SvgText x={lx} y={pillY + 14} fill="#FFFFFF" fontSize={12} fontWeight="700" textAnchor="middle">
+            {last.score}
+          </SvgText>
+          {delta !== null && (
+            <SvgText
+              x={lx - 22}
+              y={ly + 4}
+              fill={delta >= 0 ? Success : Danger}
+              fontSize={11}
+              fontWeight="700"
+              textAnchor="end">
+              {delta >= 0 ? `+${delta}` : `${delta}`}
+            </SvgText>
+          )}
+        </>
+      )}
     </Svg>
   );
 }

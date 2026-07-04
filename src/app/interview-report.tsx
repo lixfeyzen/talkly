@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { PrimaryButton, SectionLabel, MiniBar } from '@/components/ui';
+import { PrimaryButton, SectionLabel } from '@/components/ui';
 import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, HeroBg } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
@@ -131,7 +131,13 @@ export default function InterviewReportScreen() {
               <View style={styles.dimGrid}>
                 {dims.map(({ label, d }) => (
                   <View key={label} style={styles.dimTile}>
-                    <MiniBar label={label} score={d.score} />
+                    <View style={styles.dimHead}>
+                      <Text style={styles.dimLabel}>{label}</Text>
+                      <Text style={styles.dimScore}>{d.score}</Text>
+                    </View>
+                    <View style={styles.dimTrack}>
+                      <View style={[styles.dimFill, { width: `${Math.max(0, Math.min(100, d.score))}%` }]} />
+                    </View>
                     <Text style={styles.dimComment}>{d.comment}</Text>
                   </View>
                 ))}
@@ -320,7 +326,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HairlineBorder,
   },
-  dimComment: { fontSize: 11.5, lineHeight: 15, color: '#60646C', marginTop: 7 },
+  dimHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  dimLabel: { fontSize: 13.5, fontWeight: '700', color: '#111114' },
+  dimScore: { fontSize: 15, fontWeight: '800', color: '#111114', fontVariant: ['tabular-nums'] },
+  dimTrack: {
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#E7E8EB',
+    overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 7,
+  },
+  dimFill: { height: '100%', borderRadius: 999, backgroundColor: '#111114' },
+  dimComment: { fontSize: 11.5, lineHeight: 15, color: '#60646C', marginTop: 0 },
 
   // Highlights
   highlightRow: { flexDirection: 'row', gap: 10 },
