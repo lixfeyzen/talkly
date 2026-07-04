@@ -1,0 +1,5 @@
+# File yang tak dibutuhkan build cloud EAS (memangkas ukuran upload).
+*.apk
+backend/
+docs/
+.next/
