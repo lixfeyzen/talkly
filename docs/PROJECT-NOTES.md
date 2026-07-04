@@ -596,3 +596,29 @@ Prinsip: JANGAN bangun #1-#4 sebelum ada user nyata memakai loop yg ada.
 3. Uji notifikasi di HP/emulator Android (Expo Go / dev build).
 4. Deploy publik (Vercel backend + Expo) → link hidup buat portfolio.
 5. (V2) grafik tren perbaikan lintas-waktu; timezone per-user buat streak.
+
+## ✅ VOICE MODE + INTERVIEW-DAY COUNTDOWN (2026-07-04)
+
+**Voice mode (`b345a04`)** — roadmap #1, prasyarat kredibilitas kategori:
+- Backend: `POST /api/speech/transcribe` (whisper-1, guard auth/2MB/type) +
+  `POST /api/speech/tts` (tts-1 alloy, pagar 1000 char, cacheable).
+- Mobile: tombol 🎤 di chat (rekam via expo-audio → transkrip masuk kotak
+  input, BUKAN auto-kirim — user koreksi dulu sebelum bayar 1 call GPT);
+  "🔊 Listen" di bubble AI (TTS, di-cache per pesan).
+- TERBUKTI live: round-trip TTS→Whisper balikin kalimat persis. Biaya ~$0.01.
+- BELUM: uji mic di HP nyata (butuh rebuild APK — expo-audio native module).
+
+**Interview-Day Countdown (`fbfcf58`)** — roadmap #3 dipromosikan di atas #2
+(trajectory kosong utk user baru; countdown bernilai di 60 detik pertama):
+- `users.interview_date` + `interview_plan_role` (migrasi 0006, applied Neon).
+- Logika murni `lib/interview-plan/plan.ts`: rencana mundur dari hari-H —
+  latihan terarah (>3 hari, pakai mesin adaptif), full mock (H-3/H-2),
+  review ringan (H-1), pesan hari-H. NOL biaya AI.
+- API GET/POST/DELETE `/api/interview-plan` (tanggal lampau/`>90 hari`/
+  kalender ngaco → 400). Mobile: kartu countdown di home (deep-link per jenis
+  tugas) + layar `interview-date.tsx` (chip role + quick date).
+- Tes 15/15 vs Neon live + semua cabang HTTP dibuktikan curl.
+
+**Sisa utk fitur ini hidup di produksi:** deploy backend ke Vercel (route
+speech + interview-plan belum ada di production) + rebuild APK via EAS
+(expo-audio = native module, APK lama tak punya) + uji mic/TTS di HP.
