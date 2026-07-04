@@ -24,7 +24,7 @@ export default function InterviewStartScreen() {
           </Pressable>
 
           <ThemedText type="title" style={styles.title}>
-            🎤 Mock interview
+            Mock interview
           </ThemedText>
           <ThemedText type="default" themeColor="textSecondary">
             5 questions, just like a real English interview — no corrections

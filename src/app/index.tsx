@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Pressable, ActivityIndicator, ScrollView, View, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -128,8 +129,8 @@ export default function HomeScreen() {
               <ThemedView type="backgroundElement" style={styles.planCard}>
                 <ThemedText type="smallBold" style={{ color: AccentColor }}>
                   {plan.daysLeft === 0
-                    ? `🗓 Interview day — ${plan.role}!`
-                    : `🗓 ${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} until your ${plan.role} interview`}
+                    ? `Interview day — ${plan.role}!`
+                    : `${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} until your ${plan.role} interview`}
                 </ThemedText>
                 <ThemedText type="smallBold">Today: {plan.todayTask.title}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
@@ -141,7 +142,7 @@ export default function HomeScreen() {
           {plan && plan.set && plan.expired && (
             <Pressable onPress={() => router.push('/interview-date')}>
               <ThemedView type="backgroundElement" style={styles.planCard}>
-                <ThemedText type="smallBold">🗓 Your interview date has passed</ThemedText>
+                <ThemedText type="smallBold">Your interview date has passed</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   How did it go? Set your next interview date to keep prepping.
                 </ThemedText>
@@ -151,7 +152,7 @@ export default function HomeScreen() {
           {plan && !plan.set && (
             <Pressable onPress={() => router.push('/interview-date')}>
               <ThemedView type="backgroundElement" style={styles.planCard}>
-                <ThemedText type="smallBold">🗓 Have an interview coming up?</ThemedText>
+                <ThemedText type="smallBold">Have an interview coming up?</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   Set the date and get a day-by-day prep plan counting down to it.
                 </ThemedText>
@@ -162,10 +163,12 @@ export default function HomeScreen() {
           {/* Chip aksi cepat */}
           <View style={styles.chipsWrap}>
             <Pressable onPress={() => router.push('/conversation')} style={styles.chip}>
-              <ThemedText type="small">💬 Free chat</ThemedText>
+              <Feather name="message-circle" size={13} color="#F4F2FA" />
+              <ThemedText type="small">Free chat</ThemedText>
             </Pressable>
             <Pressable onPress={() => router.push('/interview')} style={styles.chip}>
-              <ThemedText type="small">🎤 Mock interview</ThemedText>
+              <Feather name="mic" size={13} color="#F4F2FA" />
+              <ThemedText type="small">Mock interview</ThemedText>
             </Pressable>
             {suggestion && (
               <Pressable
@@ -179,8 +182,9 @@ export default function HomeScreen() {
                   })
                 }
                 style={[styles.chip, styles.chipAccent]}>
+                <Feather name="crosshair" size={13} color="#FFFFFF" />
                 <ThemedText type="small" style={{ color: '#FFFFFF' }}>
-                  🎯 Targeted practice
+                  Targeted practice
                 </ThemedText>
               </Pressable>
             )}
@@ -194,7 +198,7 @@ export default function HomeScreen() {
             <Pressable onPress={() => router.push('/conversation')}>
               <ThemedView type="backgroundElement" style={styles.row}>
                 <View style={[styles.rowIcon, { backgroundColor: '#6C5CE7' }]}>
-                  <ThemedText type="small">💬</ThemedText>
+                  <Feather name="message-circle" size={16} color="#FFFFFF" />
                 </View>
                 <ThemedText type="smallBold" style={styles.rowTitle}>
                   Conversations
@@ -215,7 +219,7 @@ export default function HomeScreen() {
               }>
               <ThemedView type="backgroundElement" style={styles.row}>
                 <View style={[styles.rowIcon, { backgroundColor: '#2BAE7A' }]}>
-                  <ThemedText type="small">🎤</ThemedText>
+                  <Feather name="mic" size={16} color="#FFFFFF" />
                 </View>
                 <ThemedText type="smallBold" style={styles.rowTitle}>
                   Interview readiness
@@ -228,7 +232,7 @@ export default function HomeScreen() {
             <Pressable onPress={() => router.push('/trajectory')}>
               <ThemedView type="backgroundElement" style={styles.row}>
                 <View style={[styles.rowIcon, { backgroundColor: '#E8A33D' }]}>
-                  <ThemedText type="small">📈</ThemedText>
+                  <Feather name="trending-up" size={16} color="#FFFFFF" />
                 </View>
                 <ThemedText type="smallBold" style={styles.rowTitle}>
                   Am I getting better?
@@ -241,7 +245,7 @@ export default function HomeScreen() {
             <Pressable onPress={() => router.push('/dashboard')}>
               <ThemedView type="backgroundElement" style={styles.row}>
                 <View style={[styles.rowIcon, { backgroundColor: '#D64B8A' }]}>
-                  <ThemedText type="small">🔥</ThemedText>
+                  <Feather name="zap" size={16} color="#FFFFFF" />
                 </View>
                 <ThemedText type="smallBold" style={styles.rowTitle}>
                   Streak
@@ -263,7 +267,7 @@ export default function HomeScreen() {
                 {dash.recentCorrections.slice(0, 2).map((c, i) => (
                   <ThemedView key={i} type="backgroundElement" style={styles.row}>
                     <ThemedText type="small" numberOfLines={1} style={styles.rowTitle}>
-                      💬 {c.originalText} → {c.correctedText}
+                      {c.originalText} → {c.correctedText}
                     </ThemedText>
                   </ThemedView>
                 ))}
@@ -275,25 +279,19 @@ export default function HomeScreen() {
         {/* Bottom bar ala referensi */}
         <View style={styles.bottomBar}>
           <View style={styles.tabItem}>
-            <ThemedText type="smallBold" style={{ color: AccentColor }}>
-              ⌂
-            </ThemedText>
+            <Feather name="home" size={18} color={AccentColor} />
             <ThemedText type="small" style={{ color: AccentColor }}>
               Home
             </ThemedText>
           </View>
           <Pressable onPress={() => router.push('/dashboard')} style={styles.tabItem}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              ◔
-            </ThemedText>
+            <Feather name="bar-chart-2" size={18} color="#8B87A0" />
             <ThemedText type="small" themeColor="textSecondary">
               Progress
             </ThemedText>
           </Pressable>
           <Pressable onPress={() => router.push('/settings')} style={styles.tabItem}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
-              ⚙
-            </ThemedText>
+            <Feather name="settings" size={18} color="#8B87A0" />
             <ThemedText type="small" themeColor="textSecondary">
               Settings
             </ThemedText>
@@ -352,6 +350,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.five,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: '#1C1A26',
     borderRadius: 999,
     paddingHorizontal: Spacing.three,

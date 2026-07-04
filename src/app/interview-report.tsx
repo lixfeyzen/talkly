@@ -121,7 +121,7 @@ export default function InterviewReportScreen() {
           {/* Terkuat / terlemah */}
           <ThemedView type="backgroundElement" style={styles.card}>
             <ThemedText type="smallBold" style={styles.ok}>
-              💪 Strongest answer
+              Strongest answer
             </ThemedText>
             <ThemedText type="small">{report.strongestAnswer.question}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
@@ -130,7 +130,7 @@ export default function InterviewReportScreen() {
           </ThemedView>
           <ThemedView type="backgroundElement" style={styles.card}>
             <ThemedText type="smallBold" style={styles.warn}>
-              🎯 Weakest answer
+              Needs the most work
             </ThemedText>
             <ThemedText type="small">{report.weakestAnswer.question}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">

@@ -155,8 +155,8 @@ export default function TrajectoryScreen() {
                       color: improving ? '#2BAE7A' : worsening ? '#FF7A70' : theme.textSecondary,
                     }}>
                     {t.changePct === null
-                      ? `new · ${t.recentCount}×`
-                      : `${improving ? '▼' : worsening ? '▲' : '•'} ${Math.abs(t.changePct)}% (${t.previousCount}→${t.recentCount})`}
+                      ? `new · ${t.recentCount} times`
+                      : `${improving ? 'down' : worsening ? 'up' : 'steady'} ${Math.abs(t.changePct)}% (${t.previousCount} to ${t.recentCount})`}
                   </ThemedText>
                 </ThemedView>
               );

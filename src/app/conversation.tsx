@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -275,8 +276,9 @@ export default function ConversationScreen() {
                     disabled={speakingIndex !== null}
                     style={styles.speakerButton}
                     hitSlop={8}>
+                    <Feather name="volume-2" size={13} color={theme.textSecondary} />
                     <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                      {speakingIndex === i ? '🔊 Playing…' : '🔊 Listen'}
+                      {speakingIndex === i ? 'Playing…' : 'Listen'}
                     </ThemedText>
                   </Pressable>
                 )}
@@ -325,7 +327,7 @@ export default function ConversationScreen() {
                 { backgroundColor: AccentColor, opacity: pressed ? 0.85 : 1 },
               ]}>
               <ThemedText type="smallBold" style={{ color: AccentColorOn }}>
-                View my readiness report →
+                View my readiness report
               </ThemedText>
             </Pressable>
           ) : (
@@ -343,14 +345,16 @@ export default function ConversationScreen() {
               {transcribing ? (
                 <ActivityIndicator size="small" />
               ) : (
-                <ThemedText type="smallBold" style={recording ? { color: '#fff' } : undefined}>
-                  {recording ? '■' : '🎤'}
-                </ThemedText>
+                <Feather
+                  name={recording ? 'square' : 'mic'}
+                  size={18}
+                  color={recording ? '#fff' : theme.text}
+                />
               )}
             </Pressable>
             <ThemedView type="backgroundElement" style={styles.inputWrapper}>
               <TextInput
-                placeholder={recording ? 'Recording… tap ■ to stop' : 'Type your message...'}
+                placeholder={recording ? 'Recording… tap stop when done' : 'Type your message...'}
                 placeholderTextColor={theme.textSecondary}
                 value={input}
                 onChangeText={setInput}
@@ -397,7 +401,13 @@ const styles = StyleSheet.create({
   error: { color: '#FF7A70' },
   inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three, backgroundColor: 'transparent' },
   micButton: { borderRadius: 999, width: 48, alignItems: 'center', justifyContent: 'center' },
-  speakerButton: { marginTop: Spacing.one, alignSelf: 'flex-start' },
+  speakerButton: {
+    marginTop: Spacing.one,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   inputWrapper: { flex: 1, borderRadius: 999 },
   input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
   sendButton: { borderRadius: 999, paddingHorizontal: Spacing.four, justifyContent: 'center' },

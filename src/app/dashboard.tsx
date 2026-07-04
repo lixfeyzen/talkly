@@ -82,7 +82,7 @@ export default function DashboardScreen() {
           <ThemedView style={styles.statRow}>
             <ThemedView type="backgroundElement" style={styles.statBox}>
               <ThemedText type="title" style={styles.statNumber}>
-                {data.streak.currentStreak > 0 ? `🔥${data.streak.currentStreak}` : '0'}
+                {data.streak.currentStreak}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
                 Day streak
@@ -131,7 +131,7 @@ export default function DashboardScreen() {
               }>
               <ThemedView type="backgroundElement" style={styles.card}>
                 <ThemedText type="small" themeColor="textSecondary">
-                  🎤 Latest interview readiness
+                  Latest interview readiness
                 </ThemedText>
                 <ThemedText type="smallBold" style={{ color: AccentColor }}>
                   {data.latestReadiness.score}/100 — tap to see the report
@@ -144,7 +144,7 @@ export default function DashboardScreen() {
           <Pressable onPress={() => router.push('/trajectory')}>
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="small" themeColor="textSecondary">
-                📈 Am I getting better?
+                Am I getting better?
               </ThemedText>
               <ThemedText type="smallBold" style={{ color: AccentColor }}>
                 See your scores & mistake trends over time
