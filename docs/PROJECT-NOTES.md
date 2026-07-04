@@ -658,3 +658,21 @@ speech + interview-plan belum ada di production) + rebuild APK via EAS
 - **Verifikasi:** tsc 0 error, eslint 0, Metro web bundle 200 (1075 modul), nol
   dark-hex/emoji/em-dash sisa. **BELUM diverifikasi mata di sesi login nyata** —
   Metro jalan di :8090 utk preview.
+
+## ✅ REDESIGN PASS 2 — reconcile 1:1 ke mockup (2026-07-04, `3480fc9`)
+- Dibaca HTML mockup PENUH (`Talkly After-Login.dc.html`, 1337 baris) + component
+  sheet + handoff notes (via MCP DesignSync), bukan ringkasan. Kit disetel ke
+  angka PERSIS sheet; tiap layar direkonstruksi dari section HTML-nya.
+- Kit: chip default abu tanpa border, ghost button ber-border, list row r20/tile44,
+  bubble r18 asimetris, section-label tracking 0.5 + HeroCard(pastel+glow+radial),
+  MiniBar, Toggle, ListenPill, TypingDots, EmptyState/ErrorState(motif bubble),
+  BottomNav bar-penuh.
+- Home + Conversation rebuild manual (dark-hero+white-sheet, countdown lilac,
+  correction card X/check/globe). 6 layar lain via 6 subagen dari section eksak.
+- Verifikasi: tsc 0, eslint 0, Metro bundle 200, nol dark-hex/emoji/em-dash.
+- **Delta jujur tersisa (kebanyakan batas DATA, bukan gaya):** rapor STAR tak
+  dipecah (field `upgraded` 1 string), 3 dimensi bukan 4, tak ada badge delta
+  skor / "Today 9:12·topic" / filter "30 days" (tak ada datanya) — sengaja TAK
+  dipalsukan. Visual kecil: tinggi CTA 50 vs 54, chart trajectory tanpa hiasan
+  +delta/target-line, label pastel beda ~1 shade. Font = SISTEM (di-sahkan
+  handoff notes "System/DM Sans/Inter"). **BELUM diverifikasi mata sesi login.**
