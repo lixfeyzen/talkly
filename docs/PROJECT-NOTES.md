@@ -638,3 +638,23 @@ speech + interview-plan belum ada di production) + rebuild APK via EAS
   build EAS `c961208c` (yg `07a3491c`/skWIdcSW... = interim, tanpa trajectory).
 - CTO call: SETELAH ini STOP nambah fitur — gap berikutnya user nyata +
   monetisasi (tugas founder, bukan kode).
+
+## ✅ REDESIGN AFTER-LOGIN (2026-07-04, `51cfb00`) — light+pastel+black dari Claude Design
+
+- **Sumber:** mockup Claude Design `Talkly After-Login.dc.html` (project id
+  7c1b120a..., diimpor via MCP DesignSync). Bahasa visual diturunkan dari layar
+  AUTH (dark hero + sheet PUTIH + pastel + tombol HITAM) supaya after-login satu
+  nafas dengan login/register. BUKAN rebrand — presentasi saja, semua logika utuh.
+- **theme.ts** dibalik ke sistem TERANG (kanvas putih, tinta hitam #111114 utk
+  aksi, pastel per-fitur ice/lilac/cream/pink/mint, hairline #ECEDEF, angka
+  tabular). Nama token lama dipertahankan → ThemedText/ThemedView ikut terbalik.
+- **UI kit baru** `src/components/ui.tsx`: Card, PrimaryButton, GhostButton, Chip,
+  ListRow, StatTile, PastelTile, SectionLabel, MessageBubble, BottomNav.
+- **9 layar diport** (Home + Conversation manual sbg referensi; interview,
+  interview-report, interview-date, dashboard, trajectory, settings via workflow
+  multi-agen 12 agen terverifikasi; onboarding dilebur). Font = SISTEM +
+  fontWeight (DM Sans = follow-up opsional, belum dimuat). Brief lengkap:
+  `docs/DESIGN-BRIEF.md`.
+- **Verifikasi:** tsc 0 error, eslint 0, Metro web bundle 200 (1075 modul), nol
+  dark-hex/emoji/em-dash sisa. **BELUM diverifikasi mata di sesi login nyata** —
+  Metro jalan di :8090 utk preview.
