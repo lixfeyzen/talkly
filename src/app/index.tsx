@@ -10,6 +10,7 @@ import { Spacing, MaxContentWidth, AccentColor } from '@/constants/theme';
 import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type DashboardData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
+import { fetchInterviewPlan, type InterviewPlanResponse } from '@/lib/interview-plan/api';
 import { notificationsSupported, configureNotificationHandler } from '@/lib/notifications';
 import { TalklyMark } from '@/components/talkly-mark';
 
@@ -21,6 +22,27 @@ export default function HomeScreen() {
   const [email, setEmail] = useState<string | null>(null);
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [suggestion, setSuggestion] = useState<SuggestedScenario | null>(null);
+  const [plan, setPlan] = useState<InterviewPlanResponse | null>(null);
+
+  // Tap tugas hari ini -> layar yang tepat utk jenis tugasnya.
+  function openPlanTask() {
+    if (!plan || !plan.set || plan.expired) return;
+    const task = plan.todayTask;
+    if (task.type === 'mock') {
+      router.push('/interview');
+    } else if (task.type === 'practice') {
+      router.push({
+        pathname: '/conversation',
+        params: {
+          scenario: task.scenario ?? '',
+          focus: task.focusCategories?.join(',') ?? '',
+        },
+      });
+    } else {
+      // review & interview_day: lihat kelemahan di dashboard
+      router.push('/dashboard');
+    }
+  }
 
   useEffect(() => {
     fetchCurrentUser().then((user) => {
@@ -50,6 +72,9 @@ export default function HomeScreen() {
         .catch(() => {});
       fetchSuggestedScenario()
         .then(setSuggestion)
+        .catch(() => {});
+      fetchInterviewPlan()
+        .then(setPlan)
         .catch(() => {});
     }, []),
   );
@@ -96,6 +121,43 @@ export default function HomeScreen() {
               Sharpen your English conversations{'\n'}and nail your next interview
             </ThemedText>
           </View>
+
+          {/* Interview-Day Countdown */}
+          {plan && plan.set && !plan.expired && (
+            <Pressable onPress={openPlanTask}>
+              <ThemedView type="backgroundElement" style={styles.planCard}>
+                <ThemedText type="smallBold" style={{ color: AccentColor }}>
+                  {plan.daysLeft === 0
+                    ? `🗓 Interview day — ${plan.role}!`
+                    : `🗓 ${plan.daysLeft} day${plan.daysLeft === 1 ? '' : 's'} until your ${plan.role} interview`}
+                </ThemedText>
+                <ThemedText type="smallBold">Today: {plan.todayTask.title}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {plan.todayTask.description}
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
+          {plan && plan.set && plan.expired && (
+            <Pressable onPress={() => router.push('/interview-date')}>
+              <ThemedView type="backgroundElement" style={styles.planCard}>
+                <ThemedText type="smallBold">🗓 Your interview date has passed</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  How did it go? Set your next interview date to keep prepping.
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
+          {plan && !plan.set && (
+            <Pressable onPress={() => router.push('/interview-date')}>
+              <ThemedView type="backgroundElement" style={styles.planCard}>
+                <ThemedText type="smallBold">🗓 Have an interview coming up?</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Set the date and get a day-by-day prep plan counting down to it.
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
 
           {/* Chip aksi cepat */}
           <View style={styles.chipsWrap}>
@@ -263,6 +325,12 @@ const styles = StyleSheet.create({
     color: '#F4F2FA',
   },
   greetingCaption: { textAlign: 'center', lineHeight: 18 },
+  planCard: {
+    borderRadius: 16,
+    padding: Spacing.three,
+    gap: Spacing.one,
+    marginBottom: Spacing.four,
+  },
   chipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',

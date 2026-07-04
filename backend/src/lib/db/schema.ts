@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   // privasi). NULL = belum memilih -> app menampilkan onboarding sekali.
   // Dipakai AI: penjelasan koreksi ditulis dalam bahasa ini.
   nativeLanguage: text("native_language"),
+  // Interview-Day Countdown: tanggal interview NYATA user + role yang dilamar.
+  // NULL = belum di-set -> dashboard menampilkan ajakan set tanggal.
+  // date (bukan timestamp): yang penting HARI-nya, bebas jebakan timezone.
+  interviewDate: date("interview_date"),
+  interviewPlanRole: text("interview_plan_role"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
