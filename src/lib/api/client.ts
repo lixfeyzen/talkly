@@ -18,7 +18,7 @@ function resolveBaseUrl(): string {
   return env ?? 'http://localhost:3001';
 }
 
-const API_BASE_URL = resolveBaseUrl();
+export const API_BASE_URL = resolveBaseUrl();
 
 // Batas tunggu request -- tanpa ini, server yang hang bikin UI muter selamanya.
 const DEFAULT_TIMEOUT_MS = 15_000;

@@ -20,6 +20,14 @@ import { Spacing, MaxContentWidth, AccentColor, AccentColorOn, CardShadow } from
 import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
 import { INTERVIEW_OPENER } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
+import { transcribeAudio, fetchTtsAudioUri } from '@/lib/speech/api';
+import {
+  useAudioRecorder,
+  RecordingPresets,
+  AudioModule,
+  setAudioModeAsync,
+  createAudioPlayer,
+} from 'expo-audio';
 
 // Skenario di-target ke market: interview kerja & percakapan kantor English.
 const SCENARIOS = [
@@ -76,6 +84,72 @@ export default function ConversationScreen() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // --- Voice mode ---
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  // Cache URI audio TTS per index pesan -- replay tidak bayar ulang.
+  const ttsCache = useRef<Map<number, string>>(new Map());
+  const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+
+  async function toggleRecord() {
+    setError(null);
+    if (recording) {
+      setRecording(false);
+      setTranscribing(true);
+      try {
+        await recorder.stop();
+        const uri = recorder.uri;
+        if (!uri) throw new Error('no recording uri');
+        const mime = Platform.OS === 'web' ? 'audio/webm' : 'audio/m4a';
+        const text = await transcribeAudio(uri, mime);
+        // Transkrip masuk kotak input (bukan langsung kirim) -- user bisa
+        // koreksi salah dengar Whisper sebelum membayar 1 panggilan GPT.
+        setInput((prev) => (prev ? `${prev} ${text}` : text));
+      } catch {
+        setError("Couldn't understand the recording, try again.");
+      } finally {
+        setTranscribing(false);
+      }
+      return;
+    }
+    const perm = await AudioModule.requestRecordingPermissionsAsync();
+    if (!perm.granted) {
+      setError('Microphone permission is needed for voice practice.');
+      return;
+    }
+    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+    await recorder.prepareToRecordAsync();
+    recorder.record();
+    setRecording(true);
+  }
+
+  async function playReply(index: number, text: string) {
+    if (speakingIndex !== null) return; // satu audio pada satu waktu
+    setError(null);
+    setSpeakingIndex(index);
+    try {
+      let uri = ttsCache.current.get(index);
+      if (!uri) {
+        uri = await fetchTtsAudioUri(text);
+        ttsCache.current.set(index, uri);
+      }
+      // Perekaman men-set mode record; kembalikan agar playback keluar speaker.
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+      const player = createAudioPlayer({ uri });
+      player.addListener('playbackStatusUpdate', (status) => {
+        if (status.didJustFinish) {
+          player.remove();
+          setSpeakingIndex(null);
+        }
+      });
+      player.play();
+    } catch {
+      setError("Couldn't play the audio, try again.");
+      setSpeakingIndex(null);
+    }
+  }
   const [interviewProgress, setInterviewProgress] = useState<{
     questionNumber: number;
     total: number;
@@ -195,6 +269,17 @@ export default function ConversationScreen() {
                 <ThemedText type="default" style={msg.role === 'user' ? { color: AccentColorOn } : undefined}>
                   {msg.content}
                 </ThemedText>
+                {msg.role === 'assistant' && (
+                  <Pressable
+                    onPress={() => playReply(i, msg.content)}
+                    disabled={speakingIndex !== null}
+                    style={styles.speakerButton}
+                    hitSlop={8}>
+                    <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                      {speakingIndex === i ? '🔊 Playing…' : '🔊 Listen'}
+                    </ThemedText>
+                  </Pressable>
+                )}
                 {!isInterview && msg.mistakes && msg.mistakes.length > 0 && (
                   <ThemedView style={styles.mistakeNote}>
                     {msg.mistakes.map((m, mi) => (
@@ -245,9 +330,27 @@ export default function ConversationScreen() {
             </Pressable>
           ) : (
           <ThemedView style={styles.inputRow}>
+            <Pressable
+              onPress={toggleRecord}
+              disabled={sending || transcribing}
+              style={({ pressed }) => [
+                styles.micButton,
+                {
+                  backgroundColor: recording ? '#E5484D' : theme.backgroundElement,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}>
+              {transcribing ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <ThemedText type="smallBold" style={recording ? { color: '#fff' } : undefined}>
+                  {recording ? '■' : '🎤'}
+                </ThemedText>
+              )}
+            </Pressable>
             <ThemedView type="backgroundElement" style={styles.inputWrapper}>
               <TextInput
-                placeholder="Type your message..."
+                placeholder={recording ? 'Recording… tap ■ to stop' : 'Type your message...'}
                 placeholderTextColor={theme.textSecondary}
                 value={input}
                 onChangeText={setInput}
@@ -293,6 +396,8 @@ const styles = StyleSheet.create({
   typingIndicator: { alignSelf: 'flex-start', marginVertical: Spacing.two },
   error: { color: '#FF7A70' },
   inputRow: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.three, backgroundColor: 'transparent' },
+  micButton: { borderRadius: 999, width: 48, alignItems: 'center', justifyContent: 'center' },
+  speakerButton: { marginTop: Spacing.one, alignSelf: 'flex-start' },
   inputWrapper: { flex: 1, borderRadius: 999 },
   input: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.three, fontSize: 16 },
   sendButton: { borderRadius: 999, paddingHorizontal: Spacing.four, justifyContent: 'center' },
