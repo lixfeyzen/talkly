@@ -70,43 +70,6 @@ export const CardShadow = {
   elevation: 2,
 } as const;
 
-// Palet tema (terang). Kunci dipertahankan; nilai dibalik ke terang.
-const brandPalette = {
-  text: '#111114', // teks utama near-black
-  background: '#F6F7F9', // kanvas app abu sangat terang
-  backgroundElement: '#FFFFFF', // permukaan kartu putih
-  backgroundSelected: '#F2F3F5', // input / muted / chip terpilih
-  textSecondary: '#60646C', // teks sekunder
-};
-
-export const Colors = {
-  light: brandPalette,
-  dark: brandPalette,
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
-export const Fonts = Platform.select({
-  ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
-
 export const Spacing = {
   half: 2,
   one: 4,

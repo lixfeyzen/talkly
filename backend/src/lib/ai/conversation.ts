@@ -92,7 +92,7 @@ export async function runConversationTurn(
       { role: "user", content: userMessage },
     ],
     response_format: zodResponseFormat(turnResultSchema, "turn_result"),
-  });
+  }, { timeout: 30_000 }); // konsisten dgn speech routes; cegah invocation nyangkut
 
   const parsed = completion.choices[0]?.message.parsed;
   if (!parsed) {

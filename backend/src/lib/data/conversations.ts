@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/db/schema";
 import type { ChatTurn } from "@/lib/ai/conversation";
@@ -22,25 +22,27 @@ export async function createSession(
 // Daftar sesi user untuk layar riwayat: terbaru dulu, ringkas (jumlah pesan +
 // cuplikan pesan terakhir dihitung di server supaya payload kecil).
 export async function listSessionsForUser(userId: string, limit = 50) {
-  const rows = await db
-    .select()
+  // Hitung jumlah pesan & cuplikan pesan terakhir DI SQL -- jangan tarik
+  // transcript jsonb penuh (bisa beberapa KB/sesi) hanya untuk dibuang di JS.
+  // Pakai index conversation_sessions_user_created_idx (user_id, created_at).
+  return db
+    .select({
+      id: conversationSessions.id,
+      scenario: conversationSessions.scenario,
+      mode: conversationSessions.mode,
+      interviewRole: conversationSessions.interviewRole,
+      createdAt: conversationSessions.createdAt,
+      messageCount: sql<number>`jsonb_array_length(${conversationSessions.transcript})`,
+      // Elemen terakhir array (Postgres jsonb mendukung indeks negatif) -> field
+      // content, dipotong 120 char. NULL kalau transcript kosong.
+      lastMessage: sql<
+        string | null
+      >`left(${conversationSessions.transcript} -> -1 ->> 'content', 120)`,
+    })
     .from(conversationSessions)
     .where(eq(conversationSessions.userId, userId))
-    .orderBy(sql`${conversationSessions.createdAt} DESC`)
+    .orderBy(desc(conversationSessions.createdAt))
     .limit(limit);
-  return rows.map((s) => {
-    const transcript = (s.transcript as ChatTurn[]) ?? [];
-    const last = transcript[transcript.length - 1];
-    return {
-      id: s.id,
-      scenario: s.scenario,
-      mode: s.mode,
-      interviewRole: s.interviewRole,
-      createdAt: s.createdAt,
-      messageCount: transcript.length,
-      lastMessage: last ? String(last.content).slice(0, 120) : null,
-    };
-  });
 }
 
 export async function getSessionForUser(sessionId: string, userId: string) {
@@ -53,17 +55,14 @@ export async function getSessionForUser(sessionId: string, userId: string) {
 }
 
 export async function appendTurns(sessionId: string, newTurns: ChatTurn[]) {
-  const [session] = await db
-    .select({ transcript: conversationSessions.transcript })
-    .from(conversationSessions)
-    .where(eq(conversationSessions.id, sessionId))
-    .limit(1);
-
-  const existing = (session?.transcript as ChatTurn[] | undefined) ?? [];
-
+  // Append di level SQL (jsonb `||`), bukan read-modify-write di JS. Dua
+  // keuntungan: (1) atomic -> dua request paralel utk sesi yang sama tak
+  // saling menimpa (lost update); (2) hemat 1 round-trip SELECT tiap giliran.
   await db
     .update(conversationSessions)
-    .set({ transcript: [...existing, ...newTurns] })
+    .set({
+      transcript: sql`${conversationSessions.transcript} || ${JSON.stringify(newTurns)}::jsonb`,
+    })
     .where(eq(conversationSessions.id, sessionId));
 }
 

@@ -1,4 +1,4 @@
-import { date, pgTable, text, timestamp, uuid, integer, jsonb, unique } from "drizzle-orm/pg-core";
+import { date, pgTable, text, timestamp, uuid, integer, jsonb, unique, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -57,7 +57,12 @@ export const conversationSessions = pgTable("conversation_sessions", {
   // Role yang diwawancarai (hanya terisi utk mock_interview).
   interviewRole: text("interview_role"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  // FK userId tak auto-index di Postgres. Query panas: riwayat/dashboard
+  // "WHERE user_id=? ORDER BY created_at DESC" -> index komposit = ambil
+  // baris milik user tanpa full scan (skala ke jutaan baris).
+  index("conversation_sessions_user_created_idx").on(table.userId, table.createdAt.desc()),
+]);
 
 // Rapor kesiapan interview (fitur #6) -- satu rapor per sesi mock interview.
 export const interviewReports = pgTable("interview_reports", {
@@ -74,7 +79,11 @@ export const interviewReports = pgTable("interview_reports", {
   // answer upgrades) -- bentuknya dijaga oleh zod saat generate.
   report: jsonb("report").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  // getLatestReport/getPreviousScore/trajectory: "WHERE user_id=? ORDER BY
+  // created_at DESC". (sessionId sudah ter-index via unique().)
+  index("interview_reports_user_created_idx").on(table.userId, table.createdAt.desc()),
+]);
 
 // Satu baris = satu jenis kesalahan yang terdeteksi di sesi tertentu.
 // INI fondasi fitur pembeda utama: pelacakan pola kesalahan lintas sesi.
@@ -94,7 +103,13 @@ export const mistakePatterns = pgTable("mistake_patterns", {
   originalText: text("original_text").notNull(),
   correctedText: text("corrected_text").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  // dashboard "recent corrections" + trajectory: "WHERE user_id=? ORDER BY
+  // created_at DESC". Tabel ini tumbuh PALING cepat (tiap koreksi = 1 baris).
+  index("mistake_patterns_user_created_idx").on(table.userId, table.createdAt.desc()),
+  // FK cascade delete by session + query per-sesi.
+  index("mistake_patterns_session_idx").on(table.sessionId),
+]);
 
 // Ringkasan agregat per-user per-kategori kesalahan -- dihitung ulang tiap
 // sesi selesai, dibaca cepat buat dashboard & pemilihan skenario adaptif

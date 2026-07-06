@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/db/schema";
 import { getStreak, type StreakData } from "@/lib/data/streaks";
@@ -29,46 +29,47 @@ export type DashboardData = {
 };
 
 export async function getDashboardData(userId: string): Promise<DashboardData> {
-  // Top weaknesses: kategori kesalahan paling sering, dari tabel agregat yang
-  // sudah di-maintain tiap sesi (bukan hitung ulang dari mistake_patterns).
-  const topWeaknesses = await db
-    .select({
-      category: userMistakeStats.category,
-      occurrenceCount: userMistakeStats.occurrenceCount,
-    })
-    .from(userMistakeStats)
-    .where(eq(userMistakeStats.userId, userId))
-    .orderBy(desc(userMistakeStats.occurrenceCount))
-    .limit(5);
+  // 6 query INDEPENDEN dijalankan paralel (bukan sequential await): untuk
+  // user global yang jauh dari region DB, ini memangkas 6x round-trip jadi 1x
+  // wall-clock. Dashboard = layar paling sering dibuka -> dampak terasa.
+  const [topWeaknesses, [sessionAgg], [correctionAgg], recentCorrections, streak, latest] =
+    await Promise.all([
+      // Top weaknesses: dari tabel agregat yg di-maintain tiap sesi.
+      db
+        .select({
+          category: userMistakeStats.category,
+          occurrenceCount: userMistakeStats.occurrenceCount,
+        })
+        .from(userMistakeStats)
+        .where(eq(userMistakeStats.userId, userId))
+        .orderBy(desc(userMistakeStats.occurrenceCount))
+        .limit(5),
+      // Ringkasan aktivitas: 2 angka dalam 1 query agregat.
+      db
+        .select({
+          totalSessions: sql<number>`count(*)::int`,
+          lastPracticedAt: sql<string | null>`max(${conversationSessions.createdAt})`,
+        })
+        .from(conversationSessions)
+        .where(eq(conversationSessions.userId, userId)),
+      db
+        .select({ totalCorrections: sql<number>`count(*)::int` })
+        .from(mistakePatterns)
+        .where(eq(mistakePatterns.userId, userId)),
+      db
+        .select({
+          category: mistakePatterns.category,
+          originalText: mistakePatterns.originalText,
+          correctedText: mistakePatterns.correctedText,
+        })
+        .from(mistakePatterns)
+        .where(eq(mistakePatterns.userId, userId))
+        .orderBy(desc(mistakePatterns.createdAt))
+        .limit(5),
+      getStreak(userId),
+      getLatestReport(userId),
+    ]);
 
-  // Ringkasan aktivitas: 3 angka dalam 1 query agregat, hindari N+1.
-  const [sessionAgg] = await db
-    .select({
-      totalSessions: sql<number>`count(*)::int`,
-      lastPracticedAt: sql<string | null>`max(${conversationSessions.createdAt})`,
-    })
-    .from(conversationSessions)
-    .where(eq(conversationSessions.userId, userId));
-
-  const [correctionAgg] = await db
-    .select({ totalCorrections: sql<number>`count(*)::int` })
-    .from(mistakePatterns)
-    .where(eq(mistakePatterns.userId, userId));
-
-  const recentCorrections = await db
-    .select({
-      category: mistakePatterns.category,
-      originalText: mistakePatterns.originalText,
-      correctedText: mistakePatterns.correctedText,
-    })
-    .from(mistakePatterns)
-    .where(eq(mistakePatterns.userId, userId))
-    .orderBy(desc(mistakePatterns.createdAt))
-    .limit(5);
-
-  const streak = await getStreak(userId);
-
-  const latest = await getLatestReport(userId);
   const latestReadiness = latest
     ? {
         score: latest.score,
@@ -88,13 +89,4 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
     },
     recentCorrections,
   };
-}
-
-// Dipakai test isolasi: pastikan user lain nggak kebawa. Tidak diekspos ke API.
-export async function _countUserSessions(userId: string): Promise<number> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(conversationSessions)
-    .where(and(eq(conversationSessions.userId, userId)));
-  return row?.n ?? 0;
 }

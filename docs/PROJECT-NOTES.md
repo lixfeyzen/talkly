@@ -794,3 +794,26 @@ Audit keamanan (skor per komponen di chat; gap terbesar = abuse/biaya AI 3/10):
   Limits) — pagar dompet terakhir, tak bisa diatur dari kode.
 - Sisa V2 keamanan: revocation JWT (token 30 hari tak bisa dicabut), log
   gagal-login, cleanup berkala usage_counters.
+
+## ✅ AUDIT 3-sudut + hardening performa/kebersihan (2026-07-07)
+Audit multi-agen (UI mobile / performa backend global / kebersihan kode):
+UI 0 bug (0 tombol mati, 0 dead link, alur async solid); kebersihan 0 CRITICAL.
+5 fix performa (untuk SaaS global tak berat) — semua VERIFIED:
+- **Index DB** (migrasi 0009, applied Neon): conversation_sessions/interview_
+  reports/mistake_patterns (user_id, created_at DESC) + mistake_patterns
+  (session_id). FK userId tak auto-index Postgres -> tanpa ini full scan saat
+  data tumbuh.
+- **Dashboard 6 query sequential -> Promise.all** (getDashboardData): user
+  global jauh dari DB region hemat 6x round-trip jadi 1x wall-clock.
+- **appendTurns -> jsonb `||` atomic** (SQL append, bukan read-modify-write):
+  hilangkan race lost-update + 1 round-trip/giliran. Bukti throwaway 5/5 live.
+- **listSessionsForUser**: hitung count + last-message DI SQL (jsonb_array_
+  length + `-> -1 ->> content`), jangan tarik transcript penuh. test:history 12/12.
+- **Timeout OpenAI** 30s (conversation) + 45s (report) — cegah invocation
+  nyangkut (konsisten dgn speech routes).
+Kebersihan: hapus cluster mati ThemedText/ThemedView/useTheme/useColorScheme
+(5 file) + Colors/Fonts/ThemeColor di theme.ts + `_countUserSessions` +
+`MiniBar` + fix komentar menyesatkan. **Bukti: tsc+lint 0 dua proyek;
+test dashboard 13 + history 12 + interview 22 + adaptive 15 = 62/62 live.**
+GAP FITUR (bukan dihapus): `clearInterviewPlan` — backend DELETE siap, UI
+belum ada tombol batalkan rencana interview -> spawned task.

@@ -72,7 +72,7 @@ export async function generateInterviewReport(
       { role: "user", content: `Here is the full interview transcript:\n\n${conversationText}` },
     ],
     response_format: zodResponseFormat(interviewReportSchema, "interview_report"),
-  });
+  }, { timeout: 45_000 }); // rapor lebih besar; cegah invocation nyangkut
 
   const parsed = completion.choices[0]?.message.parsed;
   if (!parsed) {

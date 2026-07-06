@@ -200,7 +200,7 @@ export default function InterviewReportScreen() {
 
           {/* SHEET putih membulat menaungi hero */}
           <View style={styles.sheet}>
-            {/* By dimension: grid tinted tile + MiniBar + komentar */}
+            {/* By dimension: grid tinted tile (skor + bar) + komentar */}
             <View style={styles.section}>
               <SectionLabel style={styles.sectionLabel}>By dimension</SectionLabel>
               <View style={styles.dimGrid}>

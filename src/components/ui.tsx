@@ -258,22 +258,6 @@ export function StatTile({
   );
 }
 
-// ---- Mini bar (dimensi readiness): label + skor + track r999 ----
-export function MiniBar({ label, score }: { label: string; score: number }) {
-  const pct = Math.max(0, Math.min(100, score));
-  return (
-    <View style={styles.miniBar}>
-      <View style={styles.miniBarHead}>
-        <Text style={styles.miniBarLabel}>{label}</Text>
-        <Text style={styles.miniBarScore}>{score}</Text>
-      </View>
-      <View style={styles.miniBarTrack}>
-        <View style={[styles.miniBarFill, { width: `${pct}%` }]} />
-      </View>
-    </View>
-  );
-}
-
 // ---- Toggle (settings): pill 46x28 ----
 export function Toggle({ on, onToggle }: { on: boolean; onToggle?: () => void }) {
   return (
