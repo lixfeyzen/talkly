@@ -42,7 +42,8 @@ function buildSystemPrompt(
     HUMAN_STYLE_INSTRUCTION,
     `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). Also catch word-order errors, especially misplaced adverbs (e.g. "She speaks very well French" should be "She speaks French very well"). Each mistakes entry must describe exactly ONE error with ONE category -- if a single phrase contains several errors (e.g. a wrong preposition AND a wrong plural), report them as SEPARATE entries. If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
     `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
-    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}.`,
+    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}. Pick the MOST SPECIFIC category: plural_agreement covers singular/plural noun errors (e.g. "five year" -> "five years"); vocabulary_choice covers wrong word choice including wrong adverbs (e.g. "I very like" -> "I really like"); use "other" ONLY when nothing else fits.`,
+    `Every "correctedText" must be natural, correct ${targetLanguage} exactly as a fluent speaker would phrase it -- never output a correction that is itself ungrammatical.`,
   ];
   if (focusCategories.length > 0) {
     // Fitur #3 (skenario adaptif): sesi ini menargetkan kelemahan spesifik
@@ -64,9 +65,11 @@ export async function runConversationTurn(
   // Mode khusus (mis. mock interview) boleh mengganti system prompt
   // sepenuhnya; skema output terstruktur tetap sama.
   systemPromptOverride?: string,
+  // Dipakai eval harness utk benchmark antar-model (default = model produksi).
+  modelOverride?: string,
 ): Promise<TurnResult> {
   const completion = await openai.chat.completions.parse({
-    model: "gpt-4o-2024-08-06",
+    model: modelOverride ?? "gpt-4o-2024-08-06",
     messages: [
       {
         role: "system",

@@ -751,3 +751,21 @@ halusinasi selalu 0 ("sempurna" mutlak tidak ada — bar terus dinaikkan).
   correctedText "I like very" = English SALAH lolos pengecek otomatis
   (putaran 1 benar "I really like") — harness perlu LLM-judge kualitas
   correctedText, bukan cuma cek kategori+bahasa note.
+
+## ✅ EVAL TOOL BENCHMARK + PUTARAN 3 (2026-07-06): 17/18 (94%), judge 19/19
+Harness naik kelas jadi TOOL benchmark niche (keputusan: internal tool YA,
+platform benchmark publik = nanti setelah validasi):
+- `eval:model [-- --model=X]` — uji model apa pun (runConversationTurn kini
+  punya param modelOverride; produksi tetap gpt-4o-2024-08-06), tiap run
+  DISIMPAN ke backend/eval-runs/*.json (riwayat eksperimen).
+- LLM-JUDGE (model tetap) menilai kualitas TIAP correctedText — pelajaran
+  putaran 2 ("I like very" lolos heuristik) kini terkawal otomatis.
+- `eval:report` — tabel semua run (skor/%/judge), per-dimensi, deteksi REGRESI.
+Putaran 3 (18 kasus: +B8 artikel, +D4 Portuguese — dua2nya unseen & PASS):
+B3 kategori FIXED (glossary kategori di prompt), D2 koreksi kini BENAR
+("I really like", vocabulary_choice) & judge 19/19 OK.
+PR putaran 4 (jujur): (1) BUG BARU D2 — note keluar bahasa INDONESIA padahal
+native Vietnamese (kemarin benar; instruksi bahasa note perlu dipertegas
+"never any other language"); (2) TAINT — contoh glossary di prompt memakai
+kalimat uji D2 verbatim ("I very like"->"I really like") = mengajari soal
+ujian; ganti contoh lain agar D2 jadi tes adil lagi.
