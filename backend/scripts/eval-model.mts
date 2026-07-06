@@ -22,6 +22,10 @@ const DEFAULT_MODEL = "gpt-4o-2024-08-06";
 const JUDGE_MODEL = "gpt-4o-2024-08-06"; // hakim TETAP, walau model uji berganti
 const modelArg = process.argv.find((a) => a.startsWith("--model="));
 const MODEL = modelArg ? modelArg.split("=")[1] : DEFAULT_MODEL;
+// Eksperimen jitter (entri #19): --temp=0.2 menurunkan keacakan panggilan
+// deteksi. Tanpa flag = default API (perilaku produksi).
+const tempArg = process.argv.find((a) => a.startsWith("--temp="));
+const TEMP = tempArg ? Number(tempArg.split("=")[1]) : undefined;
 
 type Case = {
   id: string;
@@ -416,6 +420,7 @@ async function evaluateCase(c: Case): Promise<CaseRecord> {
       c.native,
       undefined,
       MODEL,
+      TEMP,
     );
     const ms = Date.now() - t0;
     console.log(`AI   : ${r.reply}`);
@@ -489,7 +494,7 @@ const repeatArg = process.argv.find((a) => a.startsWith("--repeat="));
 const REPEAT = repeatArg ? Math.max(1, parseInt(repeatArg.split("=")[1], 10) || 1) : 1;
 const selected = ONLY ? CASES.filter((c) => ONLY.includes(c.id)) : CASES;
 
-console.log(`MODEL DIUJI : ${MODEL}`);
+console.log(`MODEL DIUJI : ${MODEL}${TEMP != null ? ` @temp=${TEMP}` : " (temp default)"}`);
 console.log(`JUDGE       : ${JUDGE_MODEL} (tetap)`);
 
 // ══ MODE FLAKINESS: tiap kasus dijalankan N kali, ukur konsistensinya ══
@@ -555,6 +560,7 @@ if (ONLY) {
 const runRecord = {
   runAt: new Date().toISOString(),
   model: MODEL,
+  temperature: TEMP ?? null,
   judgeModel: JUDGE_MODEL,
   totals: { pass, fail, cases: selected.length, judgeOk, judgeTotal },
   byDim,
@@ -562,7 +568,10 @@ const runRecord = {
 };
 const dir = path.join(process.cwd(), "eval-runs");
 await mkdir(dir, { recursive: true });
-const file = path.join(dir, `run-${Date.now()}-${MODEL.replace(/[^a-z0-9.-]/gi, "_")}.json`);
+const file = path.join(
+  dir,
+  `run-${Date.now()}-${MODEL.replace(/[^a-z0-9.-]/gi, "_")}${TEMP != null ? `-t${TEMP}` : ""}.json`,
+);
 await writeFile(file, JSON.stringify(runRecord, null, 2));
 console.log(`\nRun tersimpan: ${path.relative(process.cwd(), file)} (bandingkan: npm run eval:report)`);
 process.exit(fail > 0 ? 1 : 0);

@@ -233,9 +233,16 @@ Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:repo
   kadang bocor) & E4-panjang 3/5 (label kategori s-v agreement kadang
   vocabulary_choice, bukan verb_conjugation). Kualitas KOREKSI-nya tetap
   benar di semua run — yang goyah cuma label & bahasa-note.
-- **Opsi lanjut (keputusan, bukan prompt lagi):** (1) turunkan temperature
-  panggilan deteksi (trade-off: reply roleplay kurang hidup — keputusan
-  PRODUK); (2) repeat-run majority di produksi utk 2 kasus ini (2-3x biaya
-  per giliran — mahal); (3) TERIMA: dampaknya kecil (statistik kelemahan
-  bocor tipis di 2 pola tepi) & bisa dinormalisasi saat agregasi. Rekomendasi
-  sementara: (3) — jangan bayar mahal utk jitter tepi sebelum ada user nyata.
+- **EKSPERIMEN TEMPERATURE (2026-07-06, kriteria ditetapkan SEBELUM hasil):**
+  runConversationTurn dapat param `temperatureOverride` (produksi TIDAK
+  berubah); harness dapat `--temp=`. Hasil @temp=0.2:
+  (1) Treatment: D4 3/5 -> **5/5**, E4 3/5 -> **5/5** (jitter HILANG);
+  (2) Guard full 31: **30/31, judge 34/34**, tanpa dimensi rusak — 1 miss
+  B6 di single-run terbukti varians bawaan (repeat=5 @t0.2: B6 **5/5**);
+  (3) Reply dibaca mata: tetap hangat/manusiawi.
+- **KEPUTUSAN PRODUK MENGGANTUNG (di Yohanes):** adopsi temp 0.2 ke produksi
+  atau tidak. Biaya nyata satu-satunya yang TAK terukur eval: reply lebih
+  seragam antar-sesi utk input mirip (user yang latihan skenario sama
+  berulang dapat interviewer yang lebih monoton). Nilai inti produk =
+  koreksi konsisten -> condong ADOPSI; variasi roleplay = pertimbangan
+  balik. Sampai diputuskan, produksi tetap default.

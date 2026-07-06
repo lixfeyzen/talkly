@@ -9,6 +9,7 @@ type CaseRecord = { id: string; dim: string; verdict: string; problems: string[]
 type Run = {
   runAt: string;
   model: string;
+  temperature?: number | null;
   totals: { pass: number; fail: number; cases: number; judgeOk: number; judgeTotal: number };
   byDim: Record<string, { pass: number; total: number }>;
   cases: CaseRecord[];
@@ -41,8 +42,9 @@ runs.forEach((r, i) => {
   const stamp = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")} ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
   const pct = Math.round((r.totals.pass / r.totals.cases) * 100);
   const judge = r.totals.judgeTotal ? `${r.totals.judgeOk}/${r.totals.judgeTotal}` : "-";
+  const modelLabel = `${r.model}${r.temperature != null ? ` @t${r.temperature}` : ""}`;
   console.log(
-    `#${String(i + 1).padEnd(2)} | ${stamp} | ${r.model.padEnd(20)} | ${`${r.totals.pass}/${r.totals.cases}`.padEnd(6)} | ${String(pct).padStart(3)}% | ${judge}`,
+    `#${String(i + 1).padEnd(2)} | ${stamp} | ${modelLabel.padEnd(20)} | ${`${r.totals.pass}/${r.totals.cases}`.padEnd(6)} | ${String(pct).padStart(3)}% | ${judge}`,
   );
 });
 
