@@ -132,3 +132,22 @@ export const userMistakeStats = pgTable(
     unique().on(table.userId, table.category),
   ],
 );
+
+// Rate limiting fixed-window, DIHITUNG DI DB (tahan restart & serverless --
+// pola yang sama dengan brute-force lock reset password). subject = userId
+// atau "ip:<alamat>"; bucket = "<aksi>:<m|d>:<jendela ISO>". Baris lama
+// dibersihkan oleh cleanup-usage-counters (kecil: 1 baris/menit-aktif/user).
+export const usageCounters = pgTable(
+  "usage_counters",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    subject: text("subject").notNull(),
+    bucket: text("bucket").notNull(),
+    count: integer("count").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // Wajib -- consumeQuota() pakai onConflictDoUpdate([subject, bucket]).
+    unique().on(table.subject, table.bucket),
+  ],
+);

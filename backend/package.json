@@ -23,6 +23,7 @@
     "test:interview-plan": "tsx --env-file=.env.local scripts/test-interview-plan.mts",
     "test:trajectory": "tsx --env-file=.env.local scripts/test-trajectory.mts",
     "test:history": "tsx --env-file=.env.local scripts/test-history.mts",
+    "test:ratelimit": "tsx --env-file=.env.local scripts/test-ratelimit.mts",
     "eval:model": "tsx --env-file=.env.local scripts/eval-model.mts",
     "eval:report": "tsx scripts/eval-report.mts"
   },

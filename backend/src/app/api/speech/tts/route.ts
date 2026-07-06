@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { openai } from "@/lib/ai/openai";
 import { jsonCors, corsPreflight, CORS_HEADERS } from "@/lib/http/cors";
+import { consumeQuota } from "@/lib/rate-limit";
 
 export function OPTIONS() {
   return corsPreflight();
@@ -18,6 +19,15 @@ export async function POST(req: NextRequest) {
   const auth = getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Pagar biaya AI (wallet attack): satu bucket "ai" bersama per-user.
+  const quota = await consumeQuota(auth.userId, "ai");
+  if (!quota.allowed) {
+    return jsonCors(
+      { error: "rate_limited", retryAfterSec: quota.retryAfterSec },
+      { status: 429 },
+    );
   }
 
   const body = await req.json().catch(() => null);

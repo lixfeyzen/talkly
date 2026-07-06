@@ -3,12 +3,22 @@ import { createUser } from "@/lib/auth/credentials";
 import { registerSchema } from "@/lib/validations/auth";
 import { signAuthToken } from "@/lib/auth/jwt";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
+import { consumeQuota, clientIp } from "@/lib/rate-limit";
 
 export function OPTIONS() {
   return corsPreflight();
 }
 
 export async function POST(req: NextRequest) {
+  // Anti pabrik-akun: registrasi dibatasi per-IP (5/menit, 20/hari).
+  const quota = await consumeQuota(`ip:${clientIp(req.headers)}`, "register");
+  if (!quota.allowed) {
+    return jsonCors(
+      { error: "rate_limited", retryAfterSec: quota.retryAfterSec },
+      { status: 429 },
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 

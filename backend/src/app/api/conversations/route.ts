@@ -23,6 +23,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
+import { consumeQuota } from "@/lib/rate-limit";
 
 export function OPTIONS() {
   return corsPreflight();
@@ -33,6 +34,15 @@ export async function GET(req: NextRequest) {
   const auth = getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Pagar biaya AI (wallet attack): satu bucket "ai" bersama per-user.
+  const quota = await consumeQuota(auth.userId, "ai");
+  if (!quota.allowed) {
+    return jsonCors(
+      { error: "rate_limited", retryAfterSec: quota.retryAfterSec },
+      { status: 429 },
+    );
   }
   try {
     const sessions = await listSessionsForUser(auth.userId);

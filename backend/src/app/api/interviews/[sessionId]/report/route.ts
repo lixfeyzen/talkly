@@ -9,6 +9,7 @@ import { generateInterviewReport } from "@/lib/ai/interview-report";
 import { isInterviewFinished, type InterviewRole } from "@/lib/ai/interview";
 import type { ChatTurn } from "@/lib/ai/conversation";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
+import { consumeQuota } from "@/lib/rate-limit";
 
 export function OPTIONS() {
   return corsPreflight();
@@ -54,6 +55,15 @@ export async function POST(req: NextRequest, ctx: Params) {
   if (existing) {
     const previousScore = await getPreviousScore(auth.userId, existing.createdAt, sessionId);
     return jsonCors({ score: existing.score, report: existing.report, createdAt: existing.createdAt, previousScore });
+  }
+
+  // Pagar biaya AI: hanya jalur generate-baru (rapor cached di atas gratis).
+  const quota = await consumeQuota(auth.userId, "ai");
+  if (!quota.allowed) {
+    return jsonCors(
+      { error: "rate_limited", retryAfterSec: quota.retryAfterSec },
+      { status: 429 },
+    );
   }
 
   const [userRow] = await db
