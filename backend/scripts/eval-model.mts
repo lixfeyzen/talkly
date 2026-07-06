@@ -116,6 +116,15 @@ const CASES: Case[] = [
     userMessage: "I am software engineer at big company in Jakarta.",
     expect: ["article_usage"],
   },
+  // BARU putaran 4 (unseen): -ed/-ing confusion, error vocab klasik — juga
+  // menguji glossary vocabulary_choice PASCA taint dihapus (tes adil).
+  {
+    id: "B9-vocab-baru",
+    dim: "B-deteksi",
+    native: "Indonesian",
+    userMessage: "I am boring in my current job, so I look for new challenge.",
+    expect: ["vocabulary_choice"],
+  },
   // ── C. KETAHANAN PERAN ──
   {
     id: "C1-melantur",
@@ -175,6 +184,16 @@ const CASES: Case[] = [
     userMessage: "I am agree with flexible working hours.",
     expect: [],
     noteMustMatch: /(verbo|porque|significa|se dice|correcto|no necesita|no se usa)/i,
+  },
+  // BARU putaran 4 (unseen): stress-test fix bocor-bahasa-note (entri #7
+  // learning log) pada kalimat Vietnam yang BERBEDA dari D2.
+  {
+    id: "D5-note-vietnam-2-baru",
+    dim: "D-global",
+    native: "Vietnamese",
+    userMessage: "I working here since 2020.",
+    expect: ["tense_usage"],
+    noteMustMatch: /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i,
   },
   // BARU putaran 3: pasar Brazil (roadmap global)
   {

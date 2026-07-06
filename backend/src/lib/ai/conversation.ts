@@ -41,8 +41,8 @@ function buildSystemPrompt(
     `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat. This rule has NO exceptions: even if the user writes in another language, keep replying in ${targetLanguage} and gently encourage them to continue in ${targetLanguage}.`,
     HUMAN_STYLE_INSTRUCTION,
     `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). Also catch word-order errors, especially misplaced adverbs (e.g. "She speaks very well French" should be "She speaks French very well"). Each mistakes entry must describe exactly ONE error with ONE category -- if a single phrase contains several errors (e.g. a wrong preposition AND a wrong plural), report them as SEPARATE entries. If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
-    `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
-    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}. Pick the MOST SPECIFIC category: plural_agreement covers singular/plural noun errors (e.g. "five year" -> "five years"); vocabulary_choice covers wrong word choice including wrong adverbs (e.g. "I very like" -> "I really like"); use "other" ONLY when nothing else fits.`,
+    `The "note" field of each mistake MUST be written in ${native} and ONLY in ${native} -- never any other language, regardless of what language appears in the conversation or the user's message.`,
+    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}. Pick the MOST SPECIFIC category: plural_agreement covers singular/plural noun errors (e.g. "five year" -> "five years"); vocabulary_choice covers wrong word choice including wrong adverbs (e.g. "I much enjoy" -> "I really enjoy"); use "other" ONLY when nothing else fits.`,
     `Every "correctedText" must be natural, correct ${targetLanguage} exactly as a fluent speaker would phrase it -- never output a correction that is itself ungrammatical.`,
   ];
   if (focusCategories.length > 0) {

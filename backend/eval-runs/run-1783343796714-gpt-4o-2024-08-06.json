@@ -1,0 +1,403 @@
+{
+  "runAt": "2026-07-06T13:16:36.712Z",
+  "model": "gpt-4o-2024-08-06",
+  "judgeModel": "gpt-4o-2024-08-06",
+  "totals": {
+    "pass": 16,
+    "fail": 4,
+    "cases": 20,
+    "judgeOk": 19,
+    "judgeTotal": 21
+  },
+  "byDim": {
+    "A-halusinasi": {
+      "pass": 2,
+      "total": 2
+    },
+    "B-deteksi": {
+      "pass": 7,
+      "total": 9
+    },
+    "C-peran": {
+      "pass": 4,
+      "total": 4
+    },
+    "D-global": {
+      "pass": 3,
+      "total": 5
+    }
+  },
+  "cases": [
+    {
+      "id": "A1-jawaban-sempurna",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 2038,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That's impressive! Could you tell me more about the technologies you worked with?"
+    },
+    {
+      "id": "A2-kalimat-kompleks-benar",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 966,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That shows you have adaptability and foresight. Could you share how you approach changing priorities?"
+    },
+    {
+      "id": "B1-tense",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 2818,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "Yesterday I go",
+          "corrected": "Yesterday I went",
+          "note": "Penggunaan tense masa lampau diperlukan karena merujuk kejadian yang sudah berlalu.",
+          "judgeOk": true,
+          "judgeReason": "The proposed correction uses the correct past tense form for the verb 'to go,' aligning it with the past time marker 'yesterday.'"
+        },
+        {
+          "category": "tense_usage",
+          "original": "finish the report",
+          "corrected": "finished the report",
+          "note": "Penggunaan tense masa lampau diperlukan karena merujuk kejadian yang sudah berlalu.",
+          "judgeOk": true,
+          "judgeReason": "'Finished the report' is a correct and natural English phrase."
+        }
+      ],
+      "reply": "Could you tell me more about the report you worked on?"
+    },
+    {
+      "id": "B2-preposisi",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1642,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "preposition_usage",
+          "original": "responsible of",
+          "corrected": "responsible for",
+          "note": "Menggunakan preposisi yang salah; seharusnya 'responsible for', bukan 'responsible of'.",
+          "judgeOk": true,
+          "judgeReason": "'Responsible for' is the correct and natural phrase in English."
+        }
+      ],
+      "reply": "That sounds like a valuable experience. How many people were in your team?"
+    },
+    {
+      "id": "B3-jamak",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1459,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "plural_agreement",
+          "original": "five year",
+          "corrected": "five years",
+          "note": "Harus menggunakan bentuk jamak 'years' karena lebih dari satu tahun.",
+          "judgeOk": true,
+          "judgeReason": "The correction uses the plural form 'years,' which is correct when referring to more than one year."
+        }
+      ],
+      "reply": "That's great! Can you tell me more about the projects you've worked on?"
+    },
+    {
+      "id": "B4-urutan-kata",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 2149,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "I know very well this system",
+          "corrected": "I know this system very well",
+          "note": "Susunan kata keterangan 'very well' kurang tepat dalam kalimat ini.",
+          "judgeOk": true,
+          "judgeReason": "The corrected phrase is grammatically correct and uses a more natural word order."
+        }
+      ],
+      "reply": "That's impressive! Can you tell me more about your contributions to the system?"
+    },
+    {
+      "id": "B5-konjugasi",
+      "dim": "B-deteksi",
+      "verdict": "FAIL",
+      "ms": 3537,
+      "problems": [
+        "JUDGE menolak koreksi \"doesn't\": \"doesn't\" is not a correct replacement for \"don't\" without further context."
+      ],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "don't",
+          "corrected": "doesn't",
+          "note": "'Manager' adalah bentuk tunggal, jadi gunakan 'doesn't', bukan 'don't'.",
+          "judgeOk": false,
+          "judgeReason": "\"doesn't\" is not a correct replacement for \"don't\" without further context."
+        },
+        {
+          "category": "verb_conjugation",
+          "original": "moves",
+          "corrected": "move",
+          "note": "Subjek 'we' memerlukan bentuk kata kerja dasar 'move', bukan 'moves'.",
+          "judgeOk": true,
+          "judgeReason": "'Move' is a correct and natural form of the word, depending on the context."
+        }
+      ],
+      "reply": "That can be understandable in some work environments. How do you handle situations that require quick decision-making?"
+    },
+    {
+      "id": "B6-jawaban-berantakan",
+      "dim": "B-deteksi",
+      "verdict": "FAIL",
+      "ms": 2996,
+      "problems": [
+        "JUDGE menolak koreksi \"Yesterday I went to interview\": The proposed correction is incomplete because 'interview' should be preceded by an article."
+      ],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "Yesterday I go to interview",
+          "corrected": "Yesterday I went to interview",
+          "note": "Kata kerja harus diubah ke bentuk lampau untuk kalimat kemarin.",
+          "judgeOk": false,
+          "judgeReason": "The proposed correction is incomplete because 'interview' should be preceded by an article."
+        },
+        {
+          "category": "preposition_usage",
+          "original": "in other company",
+          "corrected": "at another company",
+          "note": "Gunakan \"at\" untuk menunjukkan lokasi spesifik dalam konteks pekerjaan.",
+          "judgeOk": true,
+          "judgeReason": "The correction is grammatically correct and uses natural prepositions and phrasing."
+        },
+        {
+          "category": "plural_agreement",
+          "original": "many project",
+          "corrected": "many projects",
+          "note": "\"Project\" harus dalam bentuk jamak setelah \"many.\"",
+          "judgeOk": true,
+          "judgeReason": "'Many projects' is the correct plural form of the noun."
+        },
+        {
+          "category": "vocabulary_choice",
+          "original": "no time prepare",
+          "corrected": "no time to prepare",
+          "note": "Penggunaan \"to\" tepat sebelum kata kerja untuk menunjukkan tujuan.",
+          "judgeOk": true,
+          "judgeReason": "The proposed correction is correct and natural English."
+        }
+      ],
+      "reply": "I understand, it must be challenging to manage multiple projects. How did the interview go for you despite that?"
+    },
+    {
+      "id": "B7-urutan-kata-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1628,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "Always I arrive early to meetings",
+          "corrected": "I always arrive early to meetings",
+          "note": "Susunan kata salah; dalam bahasa Inggris, 'always' biasanya diletakkan setelah subjek.",
+          "judgeOk": true,
+          "judgeReason": "The proposed correction uses the natural and correct word order for English sentences."
+        }
+      ],
+      "reply": "That's a great trait to have! It shows you're punctual and organized. What other qualities do you bring to the table?"
+    },
+    {
+      "id": "B8-artikel-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 2112,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "article_usage",
+          "original": "I am software engineer at big company in Jakarta.",
+          "corrected": "I am a software engineer at a big company in Jakarta.",
+          "note": "Memerlukan artikel \"a\" sebelum \"software engineer\" dan \"big company\" karena ini adalah ungkapan yang dapat dihitung.",
+          "judgeOk": true,
+          "judgeReason": "The corrected sentence is grammatically accurate and sounds natural."
+        }
+      ],
+      "reply": "That sounds interesting. What kind of projects do you work on there?"
+    },
+    {
+      "id": "B9-vocab-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 4438,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "I am boring in my current job",
+          "corrected": "I am bored in my current job",
+          "note": "'Boring' artinya 'membosankan', sedangkan 'bored' berarti 'bosan'. Gunakan 'bored' di sini.",
+          "judgeOk": true,
+          "judgeReason": "The correction changes 'boring' to 'bored,' which accurately describes the speaker's feeling and is grammatically correct."
+        },
+        {
+          "category": "article_usage",
+          "original": "look for new challenge",
+          "corrected": "look for a new challenge",
+          "note": "Gunakan artikel 'a' sebelum 'new challenge' untuk menunjukkan bahwa itu satu tantangan tertentu.",
+          "judgeOk": true,
+          "judgeReason": "The corrected text includes the necessary article 'a,' making it grammatical and natural."
+        }
+      ],
+      "reply": "It's great that you're open to new challenges. What kind of role are you interested in?"
+    },
+    {
+      "id": "C1-melantur",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 971,
+      "problems": [],
+      "mistakes": [],
+      "reply": "I don't have one, but I'm interested in hearing about yours!"
+    },
+    {
+      "id": "C2-user-pakai-bhs-indo",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 1203,
+      "problems": [],
+      "mistakes": [],
+      "reply": "Of course! Can you tell me about your experience and skills that relate to this job?"
+    },
+    {
+      "id": "C3-user-frustrasi",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 1473,
+      "problems": [],
+      "mistakes": [],
+      "reply": "I'm sorry to hear that. Is there anything specific about the process you'd like to share your thoughts on?"
+    },
+    {
+      "id": "C4-campur-bahasa",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 1785,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "saya cocok for",
+          "corrected": "I am suitable for",
+          "note": "Gunakan seluruh kalimat dalam bahasa Inggris untuk menjaga konsistensi.",
+          "judgeOk": true,
+          "judgeReason": "The proposed correction is correct and natural English."
+        }
+      ],
+      "reply": "That's a great quality to have! Can you tell me more about your leadership experience?"
+    },
+    {
+      "id": "D1-note-indonesia",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1600,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "She have",
+          "corrected": "She has",
+          "note": "Kata kerja 'have' perlu dikonjugasikan dengan benar untuk 'she': 'has'.",
+          "judgeOk": true,
+          "judgeReason": "'She has' is the correct conjugation for the third person singular."
+        }
+      ],
+      "reply": "Interesting! Could you tell me more about her experience?"
+    },
+    {
+      "id": "D2-note-vietnam",
+      "dim": "D-global",
+      "verdict": "FAIL",
+      "ms": 3071,
+      "problems": [
+        "kategori vocabulary_choice TIDAK terdeteksi"
+      ],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "I very like this company culture.",
+          "corrected": "I like this company culture very much.",
+          "note": "Trật tự từ sai; trạng từ \"very\" nên đứng sau động từ \"like\" trong ngữ cảnh này.",
+          "judgeOk": true,
+          "judgeReason": "The proposed correction is correct and uses natural English syntax."
+        }
+      ],
+      "reply": "That's great to hear! What specifically about our company culture do you like?"
+    },
+    {
+      "id": "D3-note-spanyol",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1863,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "I am agree",
+          "corrected": "I agree",
+          "note": "El verbo \"to be\" no se usa antes de 'agree'; se usa simplemente 'I agree'.",
+          "judgeOk": true,
+          "judgeReason": "'I agree' is the correct form used in English."
+        }
+      ],
+      "reply": "Great to hear that! Flexibility can improve productivity and work-life balance."
+    },
+    {
+      "id": "D5-note-vietnam-2-baru",
+      "dim": "D-global",
+      "verdict": "FAIL",
+      "ms": 1988,
+      "problems": [
+        "kategori tense_usage TIDAK terdeteksi"
+      ],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "I working here since 2020.",
+          "corrected": "I have been working here since 2020.",
+          "note": "Cần dùng thì hiện tại hoàn thành tiếp diễn: 'have been working'.",
+          "judgeOk": true,
+          "judgeReason": "The correction 'I have been working here since 2020.' is grammatically correct and natural English for expressing an ongoing action that started in the past."
+        }
+      ],
+      "reply": "Great, what have you been working on since 2020?"
+    },
+    {
+      "id": "D4-note-portugis-baru",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1595,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "I am agree",
+          "corrected": "I agree",
+          "note": "Em inglês, deve-se usar apenas o verbo \"agree\" sem o verbo \"to be\" (ser/estar).",
+          "judgeOk": true,
+          "judgeReason": "The corrected text 'I agree' is grammatically correct and natural English."
+        }
+      ],
+      "reply": "Great to hear that! Do you have any other questions about the position?"
+    }
+  ]
+}
