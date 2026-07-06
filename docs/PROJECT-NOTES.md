@@ -769,3 +769,9 @@ native Vietnamese (kemarin benar; instruksi bahasa note perlu dipertegas
 "never any other language"); (2) TAINT — contoh glossary di prompt memakai
 kalimat uji D2 verbatim ("I very like"->"I really like") = mengajari soal
 ujian; ganti contoh lain agar D2 jadi tes adil lagi.
+
+## 📓 WORKFLOW EVAL DIKUNCI (2026-07-06): docs/MODEL-LEARNING-LOG.md
+Tiap kegagalan eval WAJIB dicatat: gejala -> akar -> fix -> bukti -> status.
+Log diisi mundur 8 entri nyata dari putaran 1-3 (6 TUTUP, 2 TERBUKA utk R4).
+Aturan main di header log (unseen cases tiap putaran, no-regresi, bedakan bug
+model vs harness, contoh prompt != kalimat uji).
