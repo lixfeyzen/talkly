@@ -240,9 +240,22 @@ Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:repo
   (2) Guard full 31: **30/31, judge 34/34**, tanpa dimensi rusak — 1 miss
   B6 di single-run terbukti varians bawaan (repeat=5 @t0.2: B6 **5/5**);
   (3) Reply dibaca mata: tetap hangat/manusiawi.
-- **KEPUTUSAN PRODUK MENGGANTUNG (di Yohanes):** adopsi temp 0.2 ke produksi
-  atau tidak. Biaya nyata satu-satunya yang TAK terukur eval: reply lebih
-  seragam antar-sesi utk input mirip (user yang latihan skenario sama
-  berulang dapat interviewer yang lebih monoton). Nilai inti produk =
-  koreksi konsisten -> condong ADOPSI; variasi roleplay = pertimbangan
-  balik. Sampai diputuskan, produksi tetap default.
+- **KEPUTUSAN PRODUK (Yohanes, 2026-07-06): ADOPSI temp 0.2 ke produksi**
+  [USER-TOLD] — default `runConversationTurn` kini 0.2; variasi roleplay
+  antar-sesi dipantau saat ada user nyata. Konfirmasi: full run di jalur
+  produksi = **31/31 (100%), judge 34/34** — skor sempurna pertama di bar
+  31 kasus. Entri #19 TUTUP.
+
+### #20 — hakim bahasa memakai skema yang salah (run konfirmasi) — TUTUP
+- **Gejala:** note Vietnam VALID divonis "bukan Vietnamese" — padahal alasan
+  si hakim sendiri menulis "Kalimat tersebut ditulis dalam bahasa Vietnam"
+  (kontradiksi boolean vs alasan).
+- **Akar:** bug ALAT UKUR — `judgeNoteLanguage` memakai ulang `judgeSchema`
+  yang deskripsi field ok-nya "true jika correctedText adalah English yang
+  benar & natural"; hakim mengikuti deskripsi SKEMA, bukan pertanyaan.
+  Teks Vietnam != English -> false.
+- **Fix:** skema terpisah `noteLanguageSchema` (ok = "teks ditulis dalam
+  bahasa yang ditanyakan").
+- **Bukti:** D2 repeat 3/3 PASS; full run 31/31.
+- **Pelajaran:** deskripsi field di structured-output = bagian dari prompt —
+  jangan pakai ulang skema lintas-pertanyaan yang beda makna.

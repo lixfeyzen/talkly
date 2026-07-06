@@ -67,13 +67,15 @@ export async function runConversationTurn(
   systemPromptOverride?: string,
   // Dipakai eval harness utk benchmark antar-model (default = model produksi).
   modelOverride?: string,
-  // Eksperimen jitter (entri #19): temperature rendah = deteksi lebih
-  // konsisten, reply kurang variatif. undefined = default API (produksi).
+  // Temperature produksi = 0.2 (keputusan produk 2026-07-06, entri #19):
+  // eksperimen membuktikan jitter deteksi hilang (D4/E4 3/5 -> 5/5) tanpa
+  // merusak dimensi lain; trade-off variasi reply antar-sesi dipantau saat
+  // ada user nyata. Override dipakai eval utk eksperimen temperature lain.
   temperatureOverride?: number,
 ): Promise<TurnResult> {
   const completion = await openai.chat.completions.parse({
     model: modelOverride ?? "gpt-4o-2024-08-06",
-    ...(temperatureOverride != null ? { temperature: temperatureOverride } : {}),
+    temperature: temperatureOverride ?? 0.2,
     messages: [
       {
         role: "system",

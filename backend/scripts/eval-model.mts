@@ -370,6 +370,14 @@ async function judgeCorrection(
 
 // Entri #18: cek "note ditulis dalam bahasa X?" via LLM — regex kata-kunci
 // 3× alarm palsu (morfologi -o/-a, frasa tak terdaftar) & buta thd leak asli.
+// SKEMA TERPISAH (entri #20): sempat memakai ulang judgeSchema yang deskripsi
+// ok-nya "English benar & natural" -> hakim bahasa menolak note Vietnam yang
+// VALID karena mengikuti deskripsi skema, bukan pertanyaan.
+const noteLanguageSchema = z.object({
+  ok: z.boolean().describe("true jika teks ditulis dalam bahasa yang ditanyakan"),
+  reason: z.string().describe("alasan singkat 1 kalimat"),
+});
+
 async function judgeNoteLanguage(
   note: string,
   language: string,
@@ -387,7 +395,7 @@ async function judgeNoteLanguage(
         content: `Text: "${note}"\nIs this text written in ${language}?`,
       },
     ],
-    response_format: zodResponseFormat(judgeSchema, "judge_verdict"),
+    response_format: zodResponseFormat(noteLanguageSchema, "language_verdict"),
   });
   const parsed = completion.choices[0]?.message.parsed;
   return parsed ?? { ok: false, reason: "judge tidak membalas" };
