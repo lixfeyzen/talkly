@@ -42,3 +42,9 @@ example
 /ios
 /android
 *.apk
+
+# Word lock/temp files (jangan pernah di-commit)
+~$*
+
+# Backup dokumen sebelum edit (lokal saja)
+*_SEBELUM_*.docx
