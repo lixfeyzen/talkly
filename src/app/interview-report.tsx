@@ -47,6 +47,7 @@ function verdictFor(score: number): { word: string; sentence: string; bubble: st
 // memanggil AI. Tidak pernah tampil untuk user sungguhan.
 const PREVIEW_REPORT: InterviewReportResponse = {
   score: 72,
+  previousScore: 64,
   createdAt: '2026-07-04T09:12:00.000Z',
   report: {
     score: 72,
@@ -139,6 +140,16 @@ export default function InterviewReportScreen() {
   ];
   const verdict = verdictFor(data.score);
   const scorePct = Math.max(0, Math.min(100, data.score));
+  // "up N from last time" -- hanya muncul kalau ada mock sebelumnya.
+  const diff = data.previousScore != null ? data.score - data.previousScore : null;
+  const deltaLabel =
+    diff == null
+      ? null
+      : diff > 0
+        ? `up ${diff} from last time`
+        : diff < 0
+          ? `down ${Math.abs(diff)} from last time`
+          : 'same as last time';
 
   return (
     <View style={styles.root}>
@@ -171,7 +182,15 @@ export default function InterviewReportScreen() {
                 <Text style={styles.scoreValue}>{data.score}</Text>
                 <Text style={styles.scoreOutOf}>/ 100</Text>
               </View>
-              <Text style={styles.verdictWord}>{verdict.word}</Text>
+              <View style={styles.verdictRow}>
+                <Text style={styles.verdictWord}>{verdict.word}</Text>
+                {deltaLabel ? (
+                  <>
+                    <View style={styles.verdictDot} />
+                    <Text style={styles.verdictDelta}>{deltaLabel}</Text>
+                  </>
+                ) : null}
+              </View>
               <View style={styles.heroTrack}>
                 <View style={[styles.heroFill, { width: `${scorePct}%` }]} />
               </View>
@@ -355,7 +374,10 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   scoreOutOf: { fontSize: 22, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
-  verdictWord: { fontSize: 19, fontWeight: '700', color: '#FFFFFF', marginTop: 14 },
+  verdictRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' },
+  verdictWord: { fontSize: 19, fontWeight: '700', color: '#FFFFFF' },
+  verdictDot: { width: 6, height: 6, borderRadius: 999, backgroundColor: '#CDEEDB' },
+  verdictDelta: { fontSize: 14, color: 'rgba(255,255,255,0.6)' },
   heroTrack: {
     height: 6,
     borderRadius: 999,

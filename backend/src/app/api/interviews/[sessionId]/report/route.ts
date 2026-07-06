@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { getSessionForUser } from "@/lib/data/conversations";
-import { saveReport, getReportForSession } from "@/lib/data/interview-reports";
+import { saveReport, getReportForSession, getPreviousScore } from "@/lib/data/interview-reports";
 import { generateInterviewReport } from "@/lib/ai/interview-report";
 import { isInterviewFinished, type InterviewRole } from "@/lib/ai/interview";
 import type { ChatTurn } from "@/lib/ai/conversation";
@@ -24,7 +24,8 @@ export async function GET(req: NextRequest, ctx: Params) {
   const { sessionId } = await ctx.params;
   const row = await getReportForSession(auth.userId, sessionId);
   if (!row) return jsonCors({ error: "report_not_found" }, { status: 404 });
-  return jsonCors({ score: row.score, report: row.report, createdAt: row.createdAt });
+  const previousScore = await getPreviousScore(auth.userId, row.createdAt, sessionId);
+  return jsonCors({ score: row.score, report: row.report, createdAt: row.createdAt, previousScore });
 }
 
 // Generate rapor setelah interview selesai. Idempoten: rapor yang sudah ada
@@ -51,7 +52,8 @@ export async function POST(req: NextRequest, ctx: Params) {
 
   const existing = await getReportForSession(auth.userId, sessionId);
   if (existing) {
-    return jsonCors({ score: existing.score, report: existing.report, createdAt: existing.createdAt });
+    const previousScore = await getPreviousScore(auth.userId, existing.createdAt, sessionId);
+    return jsonCors({ score: existing.score, report: existing.report, createdAt: existing.createdAt, previousScore });
   }
 
   const [userRow] = await db
@@ -67,7 +69,8 @@ export async function POST(req: NextRequest, ctx: Params) {
       userRow?.nativeLanguage ?? null,
     );
     const saved = await saveReport(auth.userId, sessionId, report);
-    return jsonCors({ score: saved.score, report: saved.report, createdAt: saved.createdAt });
+    const previousScore = await getPreviousScore(auth.userId, saved.createdAt, sessionId);
+    return jsonCors({ score: saved.score, report: saved.report, createdAt: saved.createdAt, previousScore });
   } catch (err) {
     console.error("Interview report generation failed:", err);
     return jsonCors({ error: "ai_service_unavailable" }, { status: 502 });

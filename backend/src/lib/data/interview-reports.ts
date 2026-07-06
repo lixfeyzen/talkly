@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, lt, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { interviewReports } from "@/lib/db/schema";
 import type { InterviewReport } from "@/lib/ai/interview-report";
@@ -24,6 +24,28 @@ export async function getReportForSession(userId: string, sessionId: string) {
     .where(and(eq(interviewReports.sessionId, sessionId), eq(interviewReports.userId, userId)))
     .limit(1);
   return rows[0] ?? null;
+}
+
+// Skor mock TEPAT SEBELUM sesi ini (untuk "up N from last time"). Null kalau
+// ini interview pertama. Dibandingkan by createdAt, kecualikan sesi ini sendiri.
+export async function getPreviousScore(
+  userId: string,
+  beforeCreatedAt: Date,
+  exceptSessionId: string,
+) {
+  const rows = await db
+    .select({ score: interviewReports.score })
+    .from(interviewReports)
+    .where(
+      and(
+        eq(interviewReports.userId, userId),
+        ne(interviewReports.sessionId, exceptSessionId),
+        lt(interviewReports.createdAt, beforeCreatedAt),
+      ),
+    )
+    .orderBy(desc(interviewReports.createdAt))
+    .limit(1);
+  return rows[0]?.score ?? null;
 }
 
 // Buat tile "Latest readiness score" di dashboard.

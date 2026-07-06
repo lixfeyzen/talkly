@@ -704,3 +704,18 @@ penuh). Murni baca DB, TIDAK pernah panggil OpenAI (nol biaya AI).
   nyata (belum di-screenshot); belum deploy ke Vercel (route baru belum di
   production) + belum masuk APK. Catatan: hanya `test:history` yang dijalankan
   sesi ini; suite lain tak dijalankan ulang (angka "total" lama tak diklaim).
+
+## ✅ Score-delta "up N from last time" di Readiness Report (2026-07-06)
+Ikut mockup Claude Design (BUKAN pil hijau template): "Nearly ready" + titik mint
+#CDEEDB + teks redup "up 8 from last time". Muncul HANYA jika ada mock sebelumnya
+(interview pertama = tak ada baris). Turun = "down N from last time", seri = "same
+as last time".
+- Backend: `getPreviousScore(userId, beforeCreatedAt, exceptSessionId)` — skor mock
+  TEPAT sebelum sesi ini (by createdAt, kecualikan sesi ini). `previousScore`
+  ditambahkan ke respons GET+POST `/api/interviews/[sessionId]/report`. NOL biaya AI.
+- Mobile: `interview-report.tsx` render baris delta (mirror style mockup 1:1);
+  `PREVIEW_REPORT.previousScore = 64`.
+- Bukti: `test:interview` 22/22 (tanpa regresi) + verifikasi `getPreviousScore` 3/3
+  lawan Neon live (mock2->64, mock1->null, isolasi antar-user). tsc+lint 0 dua proyek.
+- BELUM: dilihat mata di render app nyata; belum deploy Vercel + belum rebuild APK
+  (fitur belum sampai user sampai dua langkah itu dilakukan).

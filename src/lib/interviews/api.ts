@@ -33,6 +33,8 @@ export type InterviewReportResponse = {
   score: number;
   report: InterviewReportData;
   createdAt: string;
+  // Skor mock sebelumnya; null kalau ini interview pertama.
+  previousScore: number | null;
 };
 
 // POST = generate (idempoten di server: rapor yang sudah ada dikembalikan
