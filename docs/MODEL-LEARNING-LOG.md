@@ -25,7 +25,10 @@ Aturan main:
 Riwayat angka: R1 10/14 (71%) → R2 15/16 (94%) → R3 17/18 (94%, judge 19/19)
 → R4 16/20 (80%, judge 19/21 — turun BUKAN karena model memburuk: taint
 dihapus + judge aktif = benchmark lebih jujur; 3 dari 4 fail adalah cacat
-alat ukur/desain eval, 1 model sloppy tertangkap judge).
+alat ukur/desain eval, 1 model sloppy tertangkap judge) → R5 20/22 (91%,
+judge 23/23; 3 fix R4 semua terbukti) → **R6 22/22 (100%, judge 24/24) —
+pass penuh pertama, nol regresi.** Bar berikutnya: tambah kasus lebih sulit,
+uji model murah (--model=gpt-4o-mini) utk unit economics.
 Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:report`).
 
 ---
@@ -112,32 +115,58 @@ Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:repo
   much") — MEMBUKTIKAN kelulusan kategori D2 di R3 memang taint-assisted.
   Konsekuensinya jadi entri #9.
 
-### #9 — ekspektasi kategori terlalu kaku utk error ambigu (R4, D2 & D5) — TERBUKA (target R5)
+### #9 — ekspektasi kategori terlalu kaku utk error ambigu (R4, D2 & D5) — TUTUP
 - **Gejala:** D2 & D5 divonis FAIL padahal koreksinya BENAR & judge OK —
   yang beda cuma framing kategori ("I very like": vocabulary_choice ATAU
   word_order sama-sama valid; "I working since 2020": tense_usage ATAU
   verb_conjugation sama-sama bisa dibela).
 - **Akar:** desain EVAL — expect satu kategori tunggal utk error yang
   memang punya >1 framing valid.
-- **Rencana fix:** harness dukung `expectOneOf` (set kategori valid) utk
-  kasus ambigu; pertajam glossary batas tense-vs-conjugation ("missing
-  auxiliary have/has utk present perfect = tense_usage").
+- **Fix (R5):** harness dukung `expectOneOf` (grup kategori valid, minimal
+  satu terdeteksi); glossary + batas tense ("missing auxiliary utk perfect
+  tense = tense_usage", contoh non-uji).
+- **Bukti:** R5/R6 D2 & D5 PASS.
 - **Catatan produk:** jitter kategori antar-run utk error ambigu tetap
   nyata utk statistik kelemahan — mitigasi jangka panjang: kategori induk
   atau normalisasi saat agregasi.
 
-### #10 — judge pedantic tanpa konteks kalimat (R4, B5) — TERBUKA (target R5)
+### #10 — judge pedantic tanpa konteks kalimat (R4, B5) — TUTUP
 - **Gejala:** judge MENOLAK koreksi benar "don't"→"doesn't" ("not correct
   without further context") — fragmen pendek dinilai tanpa kalimat asalnya.
 - **Akar:** bug ALAT UKUR — prompt judge hanya diberi fragmen, tidak diberi
   kalimat penuh user.
-- **Rencana fix:** sertakan kalimat penuh user sebagai konteks di prompt judge.
+- **Fix (R5):** kalimat penuh user disertakan di prompt judge + instruksi
+  menilai fragmen DALAM konteks kalimat itu.
+- **Bukti:** R5/R6 B5 PASS ("don't"->"doesn't" kini diterima judge).
 
-### #11 — koreksi fragmen kadang tak lengkap (R4, B6) — TERBUKA (target R5)
+### #11 — koreksi fragmen kadang tak lengkap (R4, B6) — TUTUP
 - **Gejala:** model mengoreksi "Yesterday I go to interview" → "Yesterday I
   went to interview" (hilang "an"; di R3 lengkap "went to an interview") —
   judge MENANGKAP dengan benar (hakim bekerja sesuai desain).
 - **Akar:** nondeterminisme model dalam kelengkapan koreksi fragmen.
-- **Rencana fix:** instruksi prompt "correctedText must be the FULLY corrected
-  version of the quoted fragment (fix every error inside it, including
-  articles)".
+- **Fix (R5):** instruksi prompt "correctedText must be the FULLY corrected
+  version of the quoted fragment: fix every error inside it, including
+  articles and prepositions".
+- **Bukti:** R5/R6 B6 PASS, judge OK semua fragmen.
+
+### #12 — alarm palsu regex bahasa KAMBUH (R5, D4 Portuguese) — TUTUP
+- **Gejala:** note valid Portuguese ("A frase correta é ... sem 'am'")
+  divonis FAIL — regex memuat "correto" tapi note pakai "correta" (feminin).
+- **Akar:** pola kegagalan BERULANG dari entri #4 — deteksi bahasa via
+  regex kata-kunci itu rapuh (morfologi bahasa Latin: -o/-a).
+- **Fix (R6):** perluas ke `corret[oa]` + kata fungsi PT (frase/é/sem).
+- **Bukti:** R6 D4 PASS.
+- **Catatan jangka panjang:** kalau alarm palsu bahasa kambuh lagi (3×),
+  pindahkan cek bahasa-note ke LLM-judge, bukan regex.
+
+### #13 — soal eval sendiri bukan error tegas (R5, B10) — TUTUP
+- **Gejala:** "I am good in Python" tidak ditandai model → FAIL. Padahal
+  "good in <bidang>" dipakai luas & bisa dibela — model MENOLAK menandai
+  justru perilaku yang benar (tidak nitpick usage yang sah).
+- **Akar:** desain EVAL — error tertanam wajib TAK TERBANTAHKAN salah;
+  aku menanam soal ambigu.
+- **Fix (R6):** kalimat diganti error preposisi tegas "It depends of the
+  project" -> "depends on".
+- **Bukti:** R6 B10 PASS.
+- **Aturan main baru #6:** seeded error harus unambiguously wrong —
+  kalau native speaker bisa membela kalimatnya, itu bukan soal eval.

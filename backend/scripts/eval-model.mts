@@ -30,6 +30,9 @@ type Case = {
   userMessage: string;
   history?: ChatTurn[];
   expect: MistakeCategory[]; // wajib terdeteksi; [] + dim A = wajib NOL mistake
+  // Utk error AMBIGU (entri #9 learning log): tiap grup = minimal SATU dari
+  // kategori di grup itu harus terdeteksi (dua framing sama-sama valid).
+  expectOneOf?: MistakeCategory[][];
   replyMustNotMatch?: RegExp;
   noteMustMatch?: RegExp;
 };
@@ -55,6 +58,17 @@ const CASES: Case[] = [
     native: "Indonesian",
     userMessage:
       "Had I known the deadline would be moved up, I would have prioritized the integration tests differently.",
+    expect: [],
+  },
+  // BARU putaran 5 (unseen): jaga dimensi halusinasi tetap teruji saat
+  // prompt makin panjang (makin banyak instruksi deteksi = makin besar
+  // godaan mengarang error).
+  {
+    id: "A3-jawaban-benar-baru",
+    dim: "A-halusinasi",
+    native: "Indonesian",
+    userMessage:
+      "I led a team of twelve engineers across three time zones, and we shipped the product two weeks ahead of schedule.",
     expect: [],
   },
   // ── B. DETEKSI ERROR TERTANAM ──
@@ -116,6 +130,16 @@ const CASES: Case[] = [
     userMessage: "I am software engineer at big company in Jakarta.",
     expect: ["article_usage"],
   },
+  // Entri #13: kalimat awal R5 ("good in Python") ternyata BUKAN error tegas
+  // ("good in math" dipakai luas) — model menolak menandai = perilaku benar.
+  // Diganti error preposisi yang tak terbantahkan: "depends of" -> "depends on".
+  {
+    id: "B10-preposisi-baru",
+    dim: "B-deteksi",
+    native: "Indonesian",
+    userMessage: "It depends of the project, but I usually work in two-week sprints.",
+    expect: ["preposition_usage"],
+  },
   // BARU putaran 4 (unseen): -ed/-ing confusion, error vocab klasik — juga
   // menguji glossary vocabulary_choice PASCA taint dihapus (tes adil).
   {
@@ -167,14 +191,14 @@ const CASES: Case[] = [
       /(kata kerja|seharusnya|bentuk|karena|untuk subjek|harus|menjadi|gunakan|dalam|dengan)/i,
   },
   {
-    // Putaran 2: model salah kategori (word_order) DAN salah koreksi
-    // ("I like very"). Dgn glossary baru harapannya: vocabulary_choice +
-    // koreksi natural — judge yang mengawal kualitasnya.
+    // "I very like" sah dikoreksi 2 cara: "really like" (vocab) ATAU
+    // "like ... very much" (word order) — entri #9: terima keduanya.
     id: "D2-note-vietnam",
     dim: "D-global",
     native: "Vietnamese",
     userMessage: "I very like this company culture.",
-    expect: ["vocabulary_choice"],
+    expect: [],
+    expectOneOf: [["vocabulary_choice", "word_order"]],
     noteMustMatch: /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i,
   },
   {
@@ -188,11 +212,14 @@ const CASES: Case[] = [
   // BARU putaran 4 (unseen): stress-test fix bocor-bahasa-note (entri #7
   // learning log) pada kalimat Vietnam yang BERBEDA dari D2.
   {
+    // "I working since 2020": missing auxiliary = sah dibaca tense ATAU
+    // konjugasi — entri #9: terima keduanya.
     id: "D5-note-vietnam-2-baru",
     dim: "D-global",
     native: "Vietnamese",
     userMessage: "I working here since 2020.",
-    expect: ["tense_usage"],
+    expect: [],
+    expectOneOf: [["tense_usage", "verb_conjugation"]],
     noteMustMatch: /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i,
   },
   // BARU putaran 3: pasar Brazil (roadmap global)
@@ -202,7 +229,9 @@ const CASES: Case[] = [
     native: "Portuguese",
     userMessage: "I am agree with the salary offer.",
     expect: [],
-    noteMustMatch: /(verbo|porque|correto|se usa|não|em inglês|usar|precisa)/i,
+    // Entri #12: "correto" luput menangkap bentuk feminin "correta" (alarm
+    // palsu R5) — perluas dgn kata fungsi PT umum.
+    noteMustMatch: /(verbo|porque|corret[oa]|se usa|não|em inglês|usar|precisa|frase|\bé\b|\bsem\b)/i,
   },
 ];
 
@@ -212,18 +241,22 @@ const judgeSchema = z.object({
   reason: z.string().describe("alasan singkat 1 kalimat"),
 });
 
-async function judgeCorrection(original: string, corrected: string): Promise<{ ok: boolean; reason: string }> {
+async function judgeCorrection(
+  original: string,
+  corrected: string,
+  fullSentence: string, // entri #10: tanpa konteks kalimat, judge pedantic
+): Promise<{ ok: boolean; reason: string }> {
   const completion = await openai.chat.completions.parse({
     model: JUDGE_MODEL,
     messages: [
       {
         role: "system",
         content:
-          "You are a strict English copy editor. Judge ONLY whether the proposed correction is itself correct, natural English that a fluent speaker would say as a replacement for the original fragment. If the correction is ungrammatical or unnatural (e.g. \"I like very\"), it fails.",
+          "You are a strict English copy editor. Judge ONLY whether the proposed correction is correct, natural English as a replacement for the original fragment WITHIN the given full sentence. Use the full sentence as context (e.g. \"doesn't\" replacing \"don't\" is correct when the sentence subject is third-person singular). If the correction is ungrammatical or unnatural in that context, it fails.",
       },
       {
         role: "user",
-        content: `Original fragment: "${original}"\nProposed correction: "${corrected}"\nIs the proposed correction correct and natural English?`,
+        content: `Full sentence written by the user: "${fullSentence}"\nOriginal fragment: "${original}"\nProposed correction of that fragment: "${corrected}"\nIs the proposed correction correct and natural English in the context of that sentence?`,
       },
     ],
     response_format: zodResponseFormat(judgeSchema, "judge_verdict"),
@@ -279,7 +312,7 @@ for (const c of CASES) {
         console.log(`KOREKSI [${m.category}] "${m.originalText}" -> "${m.correctedText}"`);
         console.log(`   note: ${m.note}`);
         judgeTotal++;
-        const jv = await judgeCorrection(m.originalText, m.correctedText);
+        const jv = await judgeCorrection(m.originalText, m.correctedText, c.userMessage);
         if (jv.ok) judgeOk++;
         else problems.push(`JUDGE menolak koreksi "${m.correctedText}": ${jv.reason}`);
         console.log(`   judge: ${jv.ok ? "OK" : "BAD"} — ${jv.reason}`);
@@ -300,6 +333,11 @@ for (const c of CASES) {
     }
     for (const want of c.expect) {
       if (!gotCats.includes(want)) problems.push(`kategori ${want} TIDAK terdeteksi`);
+    }
+    for (const group of c.expectOneOf ?? []) {
+      if (!group.some((g) => gotCats.includes(g))) {
+        problems.push(`tak satu pun dari [${group.join("|")}] terdeteksi`);
+      }
     }
     if (c.replyMustNotMatch && c.replyMustNotMatch.test(r.reply)) {
       problems.push("reply keluar dari bahasa target");
