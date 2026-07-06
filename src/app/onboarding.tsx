@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { Chip, PrimaryButton } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Danger } from '@/constants/theme';
-import { setNativeLanguage, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
+import { Chip, PrimaryButton, Placeholder } from '@/components/ui';
+import { Spacing, MaxContentWidth, Ink, Danger, HairlineBorder } from '@/constants/theme';
+import { updateProfile, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
 
-// Onboarding sekali setelah daftar: pilih bahasa sehari-hari. Nilainya
-// dipakai AI buat menulis penjelasan koreksi dalam bahasa user.
+// Onboarding sekali setelah daftar: nama panggilan (opsional, utk sapaan
+// "Hi Mateo") + bahasa sehari-hari (dipakai AI menulis penjelasan koreksi).
 export default function OnboardingScreen() {
+  const [name, setName] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +22,10 @@ export default function OnboardingScreen() {
     setError(null);
     setLoading(true);
     try {
-      await setNativeLanguage(selected);
+      const trimmed = name.trim();
+      await updateProfile(
+        trimmed ? { nativeLanguage: selected, name: trimmed } : { nativeLanguage: selected },
+      );
       router.replace('/');
     } catch (err) {
       if (err instanceof NetworkError) {
@@ -38,6 +42,17 @@ export default function OnboardingScreen() {
     <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>First, what should I call you?</Text>
+          <TextInput
+            placeholder="Your first name (optional)"
+            placeholderTextColor={Placeholder}
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            maxLength={60}
+            style={styles.nameInput}
+          />
+
           <Text style={styles.title}>What language do you speak every day?</Text>
           <Text style={styles.subtitle}>
             I will explain your corrections in this language. You can change it anytime.
@@ -78,6 +93,18 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: '500',
     color: '#60646C',
+    textAlign: 'center',
+    marginBottom: Spacing.two,
+  },
+  nameInput: {
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: Ink,
     textAlign: 'center',
     marginBottom: Spacing.two,
   },

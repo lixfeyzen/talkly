@@ -4,6 +4,9 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  // Nama panggilan untuk sapaan ("Hi Mateo") -- opsional, diisi saat
+  // onboarding/settings. NULL = app fallback ke potongan email.
+  name: text("name"),
   // Bahasa sehari-hari user (bukan negara -- lebih fungsional & ramah
   // privasi). NULL = belum memilih -> app menampilkan onboarding sekali.
   // Dipakai AI: penjelasan koreksi ditulis dalam bahasa ini.

@@ -1,7 +1,12 @@
 import { apiFetch } from '@/lib/api/client';
 import { saveToken, clearToken } from '@/lib/auth/token-storage';
 
-export type AuthUser = { id: string; email: string; nativeLanguage?: string | null };
+export type AuthUser = {
+  id: string;
+  email: string;
+  nativeLanguage?: string | null;
+  name?: string | null;
+};
 type AuthResponse = { token: string; user: AuthUser };
 
 // Pilihan bahasa native (nilai kanonik = nama Inggris, sama dgn allowlist
@@ -55,6 +60,18 @@ export async function setNativeLanguage(nativeLanguage: string): Promise<void> {
     method: 'POST',
     auth: true,
     body: { nativeLanguage },
+  });
+}
+
+// Update profil parsial: kirim hanya field yang diisi (name / nativeLanguage).
+export async function updateProfile(fields: {
+  name?: string;
+  nativeLanguage?: string;
+}): Promise<void> {
+  await apiFetch('/api/profile', {
+    method: 'POST',
+    auth: true,
+    body: fields,
   });
 }
 

@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator, ScrollView, View, Text } from 'react-native';
+import {
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+  ScrollView,
+  TextInput,
+  View,
+  Text,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -20,6 +28,7 @@ import {
   fetchCurrentUser,
   logout,
   setNativeLanguage,
+  updateProfile,
   NATIVE_LANGUAGE_OPTIONS,
 } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
@@ -48,6 +57,9 @@ export default function SettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [reminderOn, setReminderOn] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
     fetchCurrentUser().then((user) => {
@@ -57,6 +69,8 @@ export default function SettingsScreen() {
       }
       setEmail(user.email);
       setSelected(user.nativeLanguage ?? null);
+      setUserName(user.name ?? null);
+      setNameDraft(user.name ?? '');
     });
     if (notificationsSupported) {
       isDailyReminderEnabled().then(setReminderOn);
@@ -101,8 +115,31 @@ export default function SettingsScreen() {
     router.replace('/login');
   }
 
-  const name = email ? email.split('@')[0] : 'there';
-  const initial = (email?.[0] ?? 'T').toUpperCase();
+  // Simpan nama panggilan (dipakai sapaan di Home). Kosong = tidak disimpan.
+  async function handleSaveName() {
+    const trimmed = nameDraft.trim();
+    if (savingName || !trimmed || trimmed === userName) return;
+    setSavingName(true);
+    setFeedback(null);
+    try {
+      await updateProfile({ name: trimmed });
+      setUserName(trimmed);
+      setFeedback({ kind: 'ok', text: 'Name saved.' });
+    } catch (err) {
+      setFeedback({
+        kind: 'error',
+        text:
+          err instanceof NetworkError
+            ? 'Can’t reach the server. Try again in a moment.'
+            : 'Couldn’t save, try again.',
+      });
+    } finally {
+      setSavingName(false);
+    }
+  }
+
+  const name = userName ?? (email ? email.split('@')[0] : 'there');
+  const initial = (userName?.[0] ?? email?.[0] ?? 'T').toUpperCase();
   const currentLanguage =
     NATIVE_LANGUAGE_OPTIONS.find((opt) => opt.value === selected)?.label ?? 'Not set';
 
@@ -132,6 +169,37 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             <SectionLabel style={styles.sectionLabel}>Account</SectionLabel>
             <View style={styles.groupCard}>
+              {/* Nama panggilan (dipakai sapaan "Hi ..." di Home) */}
+              <View style={styles.rowInline}>
+                <SettingIcon name="user" />
+                <Text style={styles.rowTitle}>Name</Text>
+                <TextInput
+                  placeholder="Your first name"
+                  placeholderTextColor="#8B8F98"
+                  value={nameDraft}
+                  onChangeText={setNameDraft}
+                  onSubmitEditing={handleSaveName}
+                  autoCapitalize="words"
+                  maxLength={60}
+                  style={styles.nameInput}
+                />
+                {savingName ? (
+                  <ActivityIndicator color={Ink} />
+                ) : (
+                  nameDraft.trim() !== (userName ?? '') &&
+                  nameDraft.trim() !== '' && (
+                    <Pressable
+                      onPress={handleSaveName}
+                      accessibilityRole="button"
+                      style={({ pressed }) => [styles.nameSave, { opacity: pressed ? 0.7 : 1 }]}>
+                      <Text style={styles.nameSaveText}>Save</Text>
+                    </Pressable>
+                  )
+                )}
+              </View>
+
+              <View style={styles.divider} />
+
               {/* Native language + inline picker (chips = mekanisme yang sudah terpasang) */}
               <View style={styles.nativeBlock}>
                 <View style={styles.rowInline}>
@@ -265,6 +333,27 @@ const styles = StyleSheet.create({
   },
   rowTitle: { fontSize: 15, fontWeight: '600', color: Ink },
   rowValue: { fontSize: 14, fontWeight: '600', color: '#60646C' },
+  nameInput: {
+    flex: 1,
+    minWidth: 0,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: HairlineBorder,
+    backgroundColor: '#FAFAFB',
+    paddingHorizontal: 12,
+    fontSize: 14,
+    fontWeight: '600',
+    color: Ink,
+    textAlign: 'right',
+  },
+  nameSave: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: Ink,
+  },
+  nameSaveText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   rowSub: { fontSize: 12.5, color: '#8B8F98', marginTop: 1 },
   divider: { height: 1, backgroundColor: '#F2F3F5', marginHorizontal: 15 },
 

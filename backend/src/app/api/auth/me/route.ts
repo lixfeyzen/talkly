@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   // token diterbitkan). null = belum onboarding.
   try {
     const [row] = await db
-      .select({ nativeLanguage: users.nativeLanguage })
+      .select({ nativeLanguage: users.nativeLanguage, name: users.name })
       .from(users)
       .where(eq(users.id, auth.userId))
       .limit(1);
@@ -31,7 +31,12 @@ export async function GET(req: NextRequest) {
     }
 
     return jsonCors({
-      user: { id: auth.userId, email: auth.email, nativeLanguage: row.nativeLanguage },
+      user: {
+        id: auth.userId,
+        email: auth.email,
+        nativeLanguage: row.nativeLanguage,
+        name: row.name,
+      },
     });
   } catch (err) {
     console.error("Me query failed:", err);

@@ -86,8 +86,20 @@ check(
   !updateProfileSchema.safeParse({ nativeLanguage: "Klingon" }).success,
 );
 check(
-  "profile: tanpa nativeLanguage ditolak",
+  "profile: body kosong ditolak (minimal satu field)",
   !updateProfileSchema.safeParse({}).success,
+);
+check(
+  "profile: name saja diterima (dipangkas spasinya)",
+  updateProfileSchema.safeParse({ name: "  Mateo " }).success,
+);
+check(
+  "profile: name kosong-setelah-trim ditolak",
+  !updateProfileSchema.safeParse({ name: "   " }).success,
+);
+check(
+  "profile: name >60 char ditolak",
+  !updateProfileSchema.safeParse({ name: "x".repeat(61) }).success,
 );
 
 console.log(`\nRINGKASAN: ${pass} lulus, ${fail} gagal`);

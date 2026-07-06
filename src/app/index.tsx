@@ -24,6 +24,7 @@ const HERO_BG = '#101014';
 export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashFailed, setDashFailed] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestedScenario | null>(null);
@@ -55,6 +56,7 @@ export default function HomeScreen() {
         return;
       }
       setEmail(user.email);
+      setUserName(user.name ?? null);
       setChecking(false);
     });
     if (notificationsSupported) {
@@ -88,8 +90,10 @@ export default function HomeScreen() {
     );
   }
 
-  const name = email ? email.split('@')[0] : 'there';
-  const initial = (email?.[0] ?? 'T').toUpperCase();
+  // Sapaan pakai nama panggilan bila ada; fallback potongan email (jujur,
+  // tanpa data palsu) untuk akun lama yang belum mengisi nama.
+  const name = userName ?? (email ? email.split('@')[0] : 'there');
+  const initial = (userName?.[0] ?? email?.[0] ?? 'T').toUpperCase();
 
   return (
     <View style={styles.root}>

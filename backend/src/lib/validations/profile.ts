@@ -18,6 +18,14 @@ export const NATIVE_LANGUAGES = [
 
 export type NativeLanguage = (typeof NATIVE_LANGUAGES)[number];
 
-export const updateProfileSchema = z.object({
-  nativeLanguage: z.enum(NATIVE_LANGUAGES),
-});
+// Kedua field opsional TAPI minimal satu harus ada -- endpoint yang sama
+// dipakai onboarding (bahasa / bahasa+nama) dan settings (salah satu saja).
+// Nama: teks bebas 1-60 char setelah trim (dipakai untuk sapaan di UI).
+export const updateProfileSchema = z
+  .object({
+    nativeLanguage: z.enum(NATIVE_LANGUAGES).optional(),
+    name: z.string().trim().min(1).max(60).optional(),
+  })
+  .refine((d) => d.nativeLanguage !== undefined || d.name !== undefined, {
+    message: "at_least_one_field",
+  });

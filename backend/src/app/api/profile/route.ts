@@ -10,7 +10,8 @@ export function OPTIONS() {
   return corsPreflight();
 }
 
-// Set/ubah bahasa native user (dari onboarding, nanti juga dari pengaturan).
+// Set/ubah profil user: bahasa native dan/atau nama panggilan (dari
+// onboarding maupun pengaturan). Hanya field yang dikirim yang di-update.
 export async function POST(req: NextRequest) {
   const auth = getAuthFromRequest(req);
   if (!auth) {
@@ -23,12 +24,13 @@ export async function POST(req: NextRequest) {
     return jsonCors({ error: "invalid_input" }, { status: 400 });
   }
 
+  const patch: Partial<{ nativeLanguage: string; name: string }> = {};
+  if (parsed.data.nativeLanguage !== undefined) patch.nativeLanguage = parsed.data.nativeLanguage;
+  if (parsed.data.name !== undefined) patch.name = parsed.data.name;
+
   try {
-    await db
-      .update(users)
-      .set({ nativeLanguage: parsed.data.nativeLanguage })
-      .where(eq(users.id, auth.userId));
-    return jsonCors({ ok: true, nativeLanguage: parsed.data.nativeLanguage });
+    await db.update(users).set(patch).where(eq(users.id, auth.userId));
+    return jsonCors({ ok: true, ...patch });
   } catch (err) {
     console.error("Profile update failed:", err);
     return jsonCors({ error: "internal_error" }, { status: 500 });
