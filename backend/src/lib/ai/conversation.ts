@@ -38,9 +38,9 @@ function buildSystemPrompt(
     `You are a conversation roleplay partner for practicing ${targetLanguage}.`,
     `Current scenario: "${scenario}".`,
     `The user's native language is ${native} -- consider mistake patterns typical of ${native} speakers when detecting mistakes.`,
-    `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat.`,
+    `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat. This rule has NO exceptions: even if the user writes in another language, keep replying in ${targetLanguage} and gently encourage them to continue in ${targetLanguage}.`,
     HUMAN_STYLE_INSTRUCTION,
-    `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
+    `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). Also catch word-order errors, especially misplaced adverbs (e.g. "She speaks very well French" should be "She speaks French very well"). Each mistakes entry must describe exactly ONE error with ONE category -- if a single phrase contains several errors (e.g. a wrong preposition AND a wrong plural), report them as SEPARATE entries. If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
     `The "note" field of each mistake: a 1-sentence explanation written in ${native}.`,
     `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}.`,
   ];

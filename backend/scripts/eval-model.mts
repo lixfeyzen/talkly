@@ -86,6 +86,23 @@ const CASES: Case[] = [
       "Yesterday I go to interview in other company but I am responsible of many project so I have no time prepare.",
     expect: ["tense_usage", "preposition_usage"],
   },
+  // ── KASUS BARU putaran 2 (belum pernah dilihat — pagar anti-overfit) ──
+  {
+    id: "B7-urutan-kata-baru",
+    dim: "B-deteksi",
+    native: "Indonesian",
+    userMessage: "Always I arrive early to meetings because I hate being late.",
+    expect: ["word_order"],
+  },
+  {
+    id: "C4-campur-bahasa",
+    dim: "C-peran",
+    native: "Indonesian",
+    userMessage: "I think saya cocok for this position because I have leadership experience.",
+    // reply WAJIB tetap full English walau user campur Indonesia
+    replyMustNotMatch: /\b(saya|kamu|tidak|yang|bisa|cocok)\b/i,
+    expect: [],
+  },
   // ── C. KETAHANAN PERAN (reply tetap in-character & English) ──
   {
     id: "C1-melantur",
@@ -117,7 +134,10 @@ const CASES: Case[] = [
     native: "Indonesian",
     userMessage: "She have many experience in marketing.",
     expect: ["verb_conjugation"],
-    noteMustMatch: /(kata kerja|seharusnya|bentuk|karena|untuk subjek)/i,
+    // Putaran 1: regex terlalu sempit -> alarm palsu (note valid "harus
+    // dikonjugasikan menjadi..." tak tertangkap). Diperluas dgn kata fungsi
+    // umum Indonesia.
+    noteMustMatch: /(kata kerja|seharusnya|bentuk|karena|untuk subjek|harus|menjadi|gunakan|dalam|dengan)/i,
   },
   {
     id: "D2-note-vietnam",

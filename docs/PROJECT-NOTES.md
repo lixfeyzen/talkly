@@ -736,3 +736,18 @@ native). **Putaran 1: 10 PASS, 4 FAIL (3 asli + 1 bug regex harness) ≈ 11/14.*
 - KEPUTUSAN founder terkunci: produk & model GLOBAL sejak awal; matangkan model
   via putaran eval SEBELUM dorongan launch besar; GTM masuk berurutan (wedge
   pertama padat) — bukan pemasaran ke semua orang hari-1.
+
+## ✅ EVAL PUTARAN 2 (2026-07-06): 15/16 (94%, naik dari 10/14)
+Loop eval disepakati user: perbaiki -> jalankan ulang -> TAMBAH kasus baru tiap
+putaran (anti hafal-soal); benchmark = 100% pass di set yang terus tumbuh +
+halusinasi selalu 0 ("sempurna" mutlak tidak ada — bar terus dinaikkan).
+- 3 fix prompt conversation.ts: kunci reply English tanpa kecuali (C2 fixed),
+  deteksi word-order dgn contoh BERBEDA dari kasus uji (B4 fixed), satu
+  mistake = satu kategori (B6 fixed: 4 entri terpisah, preposisi tak lagi
+  undercount). +2 kasus baru unseen: B7 word-order varian & C4 campur-bahasa
+  — dua-duanya PASS (generalisasi, bukan hafalan).
+- SISA utk putaran 3: (1) B3 kategori goyah antar-run (plural jatuh ke
+  "other" — perlu definisi kategori tajam di prompt); (2) TEMUAN MANUAL D2:
+  correctedText "I like very" = English SALAH lolos pengecek otomatis
+  (putaran 1 benar "I really like") — harness perlu LLM-judge kualitas
+  correctedText, bukan cuma cek kategori+bahasa note.
