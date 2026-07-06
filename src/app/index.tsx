@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
   const [dash, setDash] = useState<DashboardData | null>(null);
+  const [dashFailed, setDashFailed] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestedScenario | null>(null);
   const [plan, setPlan] = useState<InterviewPlanResponse | null>(null);
 
@@ -64,8 +65,11 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchDashboard()
-        .then(setDash)
-        .catch(() => {});
+        .then((d) => {
+          setDash(d);
+          setDashFailed(false);
+        })
+        .catch(() => setDashFailed(true));
       fetchSuggestedScenario()
         .then(setSuggestion)
         .catch(() => {});
@@ -100,12 +104,11 @@ export default function HomeScreen() {
               <Text style={styles.bubbleYouGotThisText}>You got this</Text>
             </View>
             <View style={[styles.dot, { top: 18, right: 150, backgroundColor: Pastel.pink }]} />
-            <View style={[styles.dot, { top: 96, right: 44, width: 9, height: 9, backgroundColor: Pastel.mint }]} />
-            <View style={[styles.dot, { top: 140, left: 30, width: 10, height: 10, backgroundColor: Pastel.cream }]} />
+            <View style={[styles.dot, { top: 70, right: 44, width: 9, height: 9, backgroundColor: Pastel.mint }]} />
 
             <View style={styles.header}>
               <View style={styles.lockup}>
-                <TalklyMark size={22} />
+                <TalklyMark size={22} variant="white" />
                 <Text style={styles.wordmark}>Talkly</Text>
               </View>
               <Pressable
@@ -129,7 +132,11 @@ export default function HomeScreen() {
           <View style={styles.sheet}>
             {/* Countdown */}
             {plan && plan.set && !plan.expired && (
-              <Pressable onPress={openPlanTask} style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+              <Pressable
+                onPress={openPlanTask}
+                accessibilityRole="button"
+                accessibilityLabel={`Countdown: ${plan.daysLeft} ${plan.daysLeft === 1 ? 'day' : 'days'} until your ${plan.role} interview. Today's task: ${plan.todayTask.title}`}
+                style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
                 <HeroCard pastel="lilac" style={styles.countdown}>
                   <View style={styles.cdTopRow}>
                     <Text style={styles.cdLabel}>Countdown</Text>
@@ -162,6 +169,8 @@ export default function HomeScreen() {
             {plan && plan.set && plan.expired && (
               <Pressable
                 onPress={() => router.push('/interview-date')}
+                accessibilityRole="button"
+                accessibilityLabel="Your interview date has passed. Set your next interview date."
                 style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
                 <View style={styles.planPrompt}>
                   <Text style={styles.planPromptTitle}>Your interview date has passed</Text>
@@ -174,6 +183,8 @@ export default function HomeScreen() {
             {plan && !plan.set && (
               <Pressable
                 onPress={() => router.push('/interview-date')}
+                accessibilityRole="button"
+                accessibilityLabel="Have an interview coming up? Set the date to shape your daily practice."
                 style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
                 <View style={styles.planPrompt}>
                   <Text style={styles.planPromptTitle}>Have an interview coming up?</Text>
@@ -211,7 +222,7 @@ export default function HomeScreen() {
                 pastel="ice"
                 icon="message-circle"
                 title="Conversations"
-                value={dash ? `${dash.activity.totalSessions}` : '...'}
+                value={dash ? `${dash.activity.totalSessions}` : dashFailed ? '—' : '...'}
                 onPress={() => router.push('/conversation')}
               />
               <ListRow
@@ -239,7 +250,7 @@ export default function HomeScreen() {
                 pastel="pink"
                 icon="zap"
                 title="Streak"
-                value={dash ? `${dash.streak.currentStreak} days` : '...'}
+                value={dash ? `${dash.streak.currentStreak} days` : dashFailed ? '—' : '...'}
                 onPress={() => router.push('/dashboard')}
               />
             </View>
@@ -265,7 +276,7 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
   hero: {
     backgroundColor: HERO_BG,
-    paddingBottom: 32,
+    paddingBottom: 46,
     overflow: 'hidden',
   },
   heroGlowA: {
@@ -288,7 +299,7 @@ const styles = StyleSheet.create({
   },
   bubbleYouGotThis: {
     position: 'absolute',
-    top: 118,
+    top: 86,
     right: 22,
     zIndex: 3,
     paddingHorizontal: 14,

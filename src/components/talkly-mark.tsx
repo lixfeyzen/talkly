@@ -1,10 +1,18 @@
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Rect } from 'react-native-svg';
 
-// Logomark Talkly -- bubble + spark negative-space, path PERSIS dari proyek
-// Claude design "Talkly AI logomark" (sumber yang sama dgn app icon).
-const MARK_PATH =
-  'M38 6 L82 6 Q112 6 112 36 L112 64 Q112 94 82 94 L54 94 L32 110 Q27 114 31 108 L44 94 L38 94 Q8 94 8 64 L8 36 Q8 6 38 6 Z ' +
-  'M60 23 Q60 50 87 50 Q60 50 60 77 Q60 50 33 50 Q60 50 60 23 Z';
+// Logomark Talkly -- 4 batang gelombang suara menaik, geometri PERSIS dari
+// mockup Claude Design "Talkly After-Login" (svg 18x12: x 0/5/10/15, lebar 3,
+// tinggi 4/7/9.5/12, rx 1, rata bawah). Dipakai di header (white) dan momen
+// brand di kanvas gelap (gradient = ramp lavender -> ungu brand).
+const BARS: readonly [x: number, h: number][] = [
+  [0, 4],
+  [5, 7],
+  [10, 9.5],
+  [15, 12],
+];
+
+// Ramp terang -> ungu brand (#8B7BF0), senada app icon.
+const RAMP = ['#EDE7FB', '#CDBEF4', '#A78FEE', '#8B7BF0'] as const;
 
 export function TalklyMark({
   size = 24,
@@ -13,21 +21,22 @@ export function TalklyMark({
   size?: number;
   variant?: 'gradient' | 'white';
 }) {
+  // Kanvas persegi 18x18; batang setinggi maks 12 duduk di baseline y=15
+  // supaya glyph seimbang secara optik di samping wordmark.
+  const BASELINE = 15;
   return (
-    <Svg width={size} height={size} viewBox="0 0 120 120">
-      {variant === 'gradient' && (
-        <Defs>
-          <LinearGradient id="tkgrad" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor="#6C5CE7" />
-            <Stop offset="1" stopColor="#8B7BF0" />
-          </LinearGradient>
-        </Defs>
-      )}
-      <Path
-        d={MARK_PATH}
-        fill={variant === 'gradient' ? 'url(#tkgrad)' : '#FFFFFF'}
-        fillRule="evenodd"
-      />
+    <Svg width={size} height={size} viewBox="0 0 18 18">
+      {BARS.map(([x, h], i) => (
+        <Rect
+          key={x}
+          x={x}
+          y={BASELINE - h}
+          width={3}
+          height={h}
+          rx={1}
+          fill={variant === 'white' ? '#FFFFFF' : RAMP[i]}
+        />
+      ))}
     </Svg>
   );
 }

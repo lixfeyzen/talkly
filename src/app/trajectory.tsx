@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import Svg, { Polyline, Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { Card, SectionLabel } from '@/components/ui';
+import { Card, EmptyState, SectionLabel } from '@/components/ui';
 import {
   Spacing,
   MaxContentWidth,
@@ -41,6 +41,15 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
   const ly = last ? toY(last.score) : 0;
   const delta = scores.length >= 2 ? scores[li].score - scores[0].score : null;
   const pillY = Math.max(2, ly - 34); // jangan keluar atas chart
+  const baseY = CHART_H - PAD;
+  // Area fill lilac di bawah garis (sesuai mockup).
+  const areaPath =
+    scores.length >= 2
+      ? `M ${toX(0)},${baseY} ` +
+        scores.map((p, i) => `L ${toX(i)},${toY(p.score)}`).join(' ') +
+        ` L ${toX(li)},${baseY} Z`
+      : null;
+  const READY = 80; // ambang "siap" (konstanta visual, bukan dari data)
 
   return (
     <Svg width="100%" height={CHART_H} viewBox={`0 0 ${CHART_W} ${CHART_H}`}>
@@ -55,6 +64,21 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
           strokeWidth={1}
         />
       ))}
+      {/* Area fill lilac di bawah garis + garis target READY 80 */}
+      {areaPath && <Path d={areaPath} fill={Pastel.lilac} opacity={0.25} />}
+      <Line
+        x1={PAD}
+        y1={toY(READY)}
+        x2={CHART_W - PAD}
+        y2={toY(READY)}
+        stroke={Pastel.lilacInk}
+        strokeWidth={1}
+        strokeDasharray="4 4"
+        opacity={0.45}
+      />
+      <SvgText x={PAD + 2} y={toY(READY) - 5} fill={Pastel.lilacInk} fontSize={9} fontWeight="700" opacity={0.75}>
+        READY · {READY}
+      </SvgText>
       {[0, 50, 100].map((v) => (
         <SvgText
           key={v}
@@ -187,11 +211,13 @@ export default function TrajectoryScreen() {
               </View>
             </Card>
           ) : (
-            <Card>
-              <Text style={styles.emptyText}>
-                No mock interviews yet. Your score history will chart here after your first one.
-              </Text>
-            </Card>
+            // EMPTY state persis component sheet mockup (judul + sub + CTA).
+            <EmptyState
+              title="No mock interviews yet"
+              subtitle="Your trajectory appears here after the first one."
+              ctaLabel="Start a mock"
+              onCta={() => router.push('/interview')}
+            />
           )}
 
           {/* Tren kesalahan 14 hari vs 14 hari sebelumnya */}

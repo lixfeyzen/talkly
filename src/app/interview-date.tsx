@@ -35,7 +35,12 @@ export default function InterviewDateScreen() {
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
 
-  const canSave = role !== null && /^\d{4}-\d{2}-\d{2}$/.test(dateIso);
+  // Error INLINE (mockup "05 · inline error"): tanggal lampau ditandai saat
+  // diketik, tanpa menunggu server. Perbandingan string aman utk format ISO.
+  const isFormatValid = /^\d{4}-\d{2}-\d{2}$/.test(dateIso);
+  const isPast = isFormatValid && dateIso < isoPlusDays(0);
+  const shownError = error ?? (isPast ? 'That date has passed. Pick a day in the future.' : null);
+  const canSave = role !== null && isFormatValid && !isPast;
 
   async function handleSave() {
     if (!canSave || saving) return;
@@ -49,7 +54,7 @@ export default function InterviewDateScreen() {
         const code = (err.body as { error?: string } | null)?.error;
         setError(
           code === 'date_in_past'
-            ? 'That date is in the past. Pick a future date.'
+            ? 'That date has passed. Pick a day in the future.'
             : code === 'date_too_far'
               ? 'That is more than 90 days away. Double-check the date.'
               : 'Invalid date. Use the format YYYY-MM-DD.',
@@ -62,7 +67,7 @@ export default function InterviewDateScreen() {
     }
   }
 
-  const inputBorder = error ? Danger : focused ? Ink : 'transparent';
+  const inputBorder = shownError ? Danger : focused ? Ink : 'transparent';
 
   return (
     <GradientBackground>
@@ -133,19 +138,22 @@ export default function InterviewDateScreen() {
               placeholder="YYYY-MM-DD"
               placeholderTextColor={Placeholder}
               value={dateIso}
-              onChangeText={setDateIso}
+              onChangeText={(t) => {
+                setDateIso(t);
+                if (error) setError(null); // error server basi hilang saat mengetik ulang
+              }}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               autoCapitalize="none"
               style={styles.input}
             />
-            {error && <Feather name="alert-circle" size={18} color={Danger} />}
+            {shownError && <Feather name="alert-circle" size={18} color={Danger} />}
           </View>
 
-          {error && (
+          {shownError && (
             <View style={styles.alertRow}>
               <Feather name="alert-circle" size={14} color={Danger} />
-              <Text style={styles.alertText}>{error}</Text>
+              <Text style={styles.alertText}>{shownError}</Text>
             </View>
           )}
 

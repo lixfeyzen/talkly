@@ -82,6 +82,7 @@ export function PrimaryButton({
   disabled,
   loading,
   icon,
+  iconLeft,
   style,
 }: {
   label: string;
@@ -89,6 +90,9 @@ export function PrimaryButton({
   disabled?: boolean;
   loading?: boolean;
   icon?: FeatherName;
+  // Mockup memakai dua pola: ikon dokumen di KIRI teks ("View my readiness
+  // report") vs panah di KANAN ("Start interview ->"). Default tetap kanan.
+  iconLeft?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   return (
@@ -105,8 +109,9 @@ export function PrimaryButton({
         <ActivityIndicator color="#FFFFFF" />
       ) : (
         <>
+          {icon && iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
           <Text style={styles.primaryBtnText}>{label}</Text>
-          {icon && <Feather name={icon} size={17} color="#FFFFFF" />}
+          {icon && !iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
         </>
       )}
     </Pressable>
@@ -158,12 +163,14 @@ export function Chip({
   onPress,
   icon,
   pastel,
+  compact,
 }: {
   label: string;
   selected?: boolean;
   onPress?: () => void;
   icon?: FeatherName;
   pastel?: PastelName;
+  compact?: boolean;
 }) {
   let bg: string;
   let fg: string;
@@ -188,10 +195,13 @@ export function Chip({
       accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.chip,
+        compact && styles.chipCompact,
         { backgroundColor: bg, borderColor: border, opacity: pressed ? 0.85 : 1 },
       ]}>
       {icon && <Feather name={icon} size={14} color={fg} />}
-      <Text style={[styles.chipText, { color: fg, fontWeight: weight }]}>{label}</Text>
+      <Text style={[styles.chipText, compact && styles.chipTextCompact, { color: fg, fontWeight: weight }]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -506,6 +516,8 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   chipText: { fontSize: 13 },
+  chipCompact: { paddingHorizontal: 13, paddingVertical: 8, minHeight: 0 },
+  chipTextCompact: { fontSize: 12.5 },
   listRow: {
     flexDirection: 'row',
     alignItems: 'center',

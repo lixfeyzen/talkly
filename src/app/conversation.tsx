@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   View,
   Text,
@@ -31,17 +32,36 @@ import {
 
 // Skenario di-target ke market: interview kerja & percakapan kantor English.
 const SCENARIOS = [
-  'Job interview',
-  'Tell me about yourself',
-  'Salary negotiation',
-  'Small talk with a colleague',
-  'Client meeting Q&A',
-  'Networking event',
+  'About yourself',
+  'Salary talk',
+  'Networking',
+  'Small talk',
+  'Client meeting',
 ];
 const TARGET_LANGUAGE = 'English';
 const CORRECTION_ACCENT = '#8B5CF0';
 
 type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[] };
+
+// Percakapan contoh untuk PREVIEW DESAIN dev-only (?preview=1, hanya saat __DEV__).
+// Menyalin frame mockup "02 Conversation" agar komponen bisa dibandingkan 1:1
+// TANPA memanggil AI. Tidak pernah tampil untuk user sungguhan.
+const PREVIEW_MESSAGES: Message[] = [
+  { role: 'assistant', content: "Let's begin. Tell me a little about yourself and your background." },
+  {
+    role: 'user',
+    content: 'Sure. I have 25 years and I work like software developer since three years.',
+    mistakes: [
+      {
+        category: 'tense_usage',
+        originalText: 'I have 25 years and I work like software developer since three years.',
+        correctedText: "I'm 25 years old and I've worked as a software developer for three years.",
+        note: 'La edad se dice con "years old", y usamos "for + tiempo" en present perfect.',
+      },
+    ],
+  },
+  { role: 'assistant', content: "That's a good place to finish for today. Nicely done, Mateo." },
+];
 
 export default function ConversationScreen() {
   const scrollRef = useRef<ScrollView>(null);
@@ -51,6 +71,7 @@ export default function ConversationScreen() {
     focus?: string;
     mode?: string;
     role?: string;
+    preview?: string;
   }>();
   const focusCategories =
     typeof params.focus === 'string' && params.focus.length > 0
@@ -58,24 +79,34 @@ export default function ConversationScreen() {
       : undefined;
   const isInterview = params.mode === 'interview' && typeof params.role === 'string';
   const interviewRole = isInterview ? (params.role as string) : undefined;
+  // Preview DESAIN dev-only: render frame mockup "02 Conversation" 1:1 (header,
+  // pesan, koreksi, tombol report, input) TANPA AI. Hanya di __DEV__ + ?preview=1.
+  const isPreview = __DEV__ && params.preview === '1';
 
   const [scenario, setScenario] = useState<string | null>(
-    typeof params.scenario === 'string' && params.scenario.length > 0 ? params.scenario : null,
+    typeof params.scenario === 'string' && params.scenario.length > 0
+      ? params.scenario
+      : isInterview
+        ? null
+        : SCENARIOS[0],
   );
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
-  const [messages, setMessages] = useState<Message[]>(
-    isInterview
-      ? [
-          {
-            role: 'assistant',
-            content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
-          },
-        ]
-      : [],
-  );
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (isInterview) {
+      return [
+        {
+          role: 'assistant',
+          content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+        },
+      ];
+    }
+    if (isPreview) return PREVIEW_MESSAGES;
+    return [];
+  });
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // --- Voice mode ---
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -145,7 +176,36 @@ export default function ConversationScreen() {
     finished: boolean;
   } | null>(null);
 
-  const started = scenario !== null || isInterview;
+  // Ganti skenario dari chip di atas chat (free-chat): mulai sesi bersih supaya
+  // backend membuat percakapan baru dgn konteks skenario yang dipilih.
+  function switchScenario(next: string) {
+    if (next === scenario || sending) return;
+    setScenario(next);
+    setSessionId(undefined);
+    setMessages([]);
+    setInput('');
+    setError(null);
+  }
+
+  // Mulai ulang sesi ini dari menu ⋮ (tanpa keluar layar). Free-chat: chat
+  // dikosongkan; interview: kembali ke pertanyaan pembuka.
+  function startOver() {
+    setMenuOpen(false);
+    setSessionId(undefined);
+    setInput('');
+    setError(null);
+    setInterviewProgress(null);
+    setMessages(
+      isInterview
+        ? [
+            {
+              role: 'assistant',
+              content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+            },
+          ]
+        : [],
+    );
+  }
 
   async function handleSend() {
     if (!input.trim() || sending) return;
@@ -185,30 +245,10 @@ export default function ConversationScreen() {
     }
   }
 
-  // ---- Pemilihan skenario (belum mulai) ----
-  if (!started) {
-    return (
-      <GradientBackground>
-        <SafeAreaView style={styles.pickSafe} edges={['top', 'bottom']}>
-          <Pressable onPress={() => router.back()} style={styles.backTile} hitSlop={6}>
-            <Feather name="chevron-left" size={18} color={Ink} />
-          </Pressable>
-          <Text style={styles.pickTitle}>What do you want to practice?</Text>
-          <Text style={styles.pickSub}>Pick a scenario and we will start a calm, low-stakes chat.</Text>
-          <View style={styles.optionRow}>
-            {(scenario && !SCENARIOS.includes(scenario) ? [scenario, ...SCENARIOS] : SCENARIOS).map(
-              (s) => (
-                <Chip key={s} label={s} selected={s === scenario} onPress={() => setScenario(s)} />
-              ),
-            )}
-          </View>
-        </SafeAreaView>
-      </GradientBackground>
-    );
-  }
-
-  const headerTitle = isInterview ? 'Mock interview' : (scenario ?? 'Practice');
-  const headerSub = isInterview
+  const headerTitle = isPreview || isInterview ? 'Mock interview' : (scenario ?? 'Practice');
+  const headerSub = isPreview
+    ? 'Tell me about yourself'
+    : isInterview
     ? `${interviewRole}${
         interviewProgress && !interviewProgress.finished
           ? ` · Q${interviewProgress.questionNumber}/${interviewProgress.total}`
@@ -239,8 +279,32 @@ export default function ConversationScreen() {
                   {headerSub}
                 </Text>
               </View>
-              <View style={styles.backTilePlaceholder} />
+              <Pressable
+                onPress={() => setMenuOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Conversation options"
+                style={styles.backTile}
+                hitSlop={6}>
+                <Feather name="more-vertical" size={18} color={Ink} />
+              </Pressable>
             </View>
+
+            {/* Chip skenario (free-chat): ganti konteks tanpa keluar layar */}
+            {!isInterview && (
+              <View style={styles.scenarioBar}>
+                {(scenario && !SCENARIOS.includes(scenario) ? [scenario, ...SCENARIOS] : SCENARIOS).map(
+                  (s) => (
+                    <Chip
+                      key={s}
+                      label={s}
+                      selected={s === scenario}
+                      compact
+                      onPress={() => switchScenario(s)}
+                    />
+                  ),
+                )}
+              </View>
+            )}
 
             {/* Pesan */}
             <ScrollView
@@ -248,6 +312,13 @@ export default function ConversationScreen() {
               style={styles.flex}
               contentContainerStyle={styles.messagesContent}
               showsVerticalScrollIndicator={false}>
+              {messages.length === 0 && (
+                <View style={styles.emptyHint}>
+                  <Text style={styles.emptyHintText}>
+                    Say hello to start. I&apos;ll reply and gently fix any mistakes as we chat.
+                  </Text>
+                </View>
+              )}
               {messages.map((msg, i) => (
                 <View key={i} style={styles.msgGroup}>
                   <MessageBubble role={msg.role}>
@@ -295,17 +366,19 @@ export default function ConversationScreen() {
 
             {error && <Text style={styles.error}>{error}</Text>}
 
-            {interviewProgress?.finished ? (
+            {(interviewProgress?.finished || isPreview) && (
               <View style={styles.reportWrap}>
                 <PrimaryButton
                   label="View my readiness report"
                   icon="file-text"
+                  iconLeft
                   onPress={() =>
                     router.push({ pathname: '/interview-report', params: { sessionId: sessionId ?? '' } })
                   }
                 />
               </View>
-            ) : (
+            )}
+            {!interviewProgress?.finished && (
               <View style={styles.inputRow}>
                 <Pressable
                   onPress={toggleRecord}
@@ -339,13 +412,38 @@ export default function ConversationScreen() {
                   accessibilityLabel="Send"
                   style={({ pressed }) => [
                     styles.sendTile,
-                    { opacity: !input.trim() ? 0.4 : pressed ? 0.85 : 1 },
+                    { opacity: !input.trim() && !isPreview ? 0.4 : pressed ? 0.85 : 1 },
                   ]}>
                   <Feather name="send" size={18} color="#FFFFFF" />
                 </Pressable>
               </View>
             )}
           </View>
+
+          <Modal
+            visible={menuOpen}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setMenuOpen(false)}>
+            <Pressable style={styles.menuBackdrop} onPress={() => setMenuOpen(false)}>
+              <View style={styles.menuSheet}>
+                <View style={styles.menuHandle} />
+                <Pressable
+                  onPress={startOver}
+                  accessibilityRole="button"
+                  accessibilityLabel="Start over"
+                  style={({ pressed }) => [styles.menuItem, { opacity: pressed ? 0.6 : 1 }]}>
+                  <Feather name="rotate-ccw" size={19} color={Ink} />
+                  <View style={styles.flex}>
+                    <Text style={styles.menuItemText}>Start over</Text>
+                    <Text style={styles.menuItemSub}>
+                      {isInterview ? 'Restart from the first question' : 'Clear this chat and begin again'}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
         </SafeAreaView>
       </GradientBackground>
     </KeyboardAvoidingView>
@@ -354,17 +452,15 @@ export default function ConversationScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  pickSafe: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
-    alignSelf: 'center',
-    width: '100%',
+  emptyHint: { paddingHorizontal: 24, paddingTop: 40, alignItems: 'center' },
+  emptyHintText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#8B8F98',
+    textAlign: 'center',
+    fontWeight: '500',
+    maxWidth: 280,
   },
-  pickTitle: { fontSize: 26, fontWeight: '800', color: Ink, marginTop: Spacing.three },
-  pickSub: { fontSize: 15, lineHeight: 21, color: '#60646C', fontWeight: '500', marginBottom: Spacing.two },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   chatWrap: { flex: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
   chatHeader: {
     flexDirection: 'row',
@@ -383,10 +479,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backTilePlaceholder: { width: 38, height: 38 },
+  menuBackdrop: { flex: 1, backgroundColor: 'rgba(17,17,20,0.35)', justifyContent: 'flex-end' },
+  menuSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 34,
+  },
+  menuHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#E3E4E7',
+    marginBottom: 6,
+  },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 14 },
+  menuItemText: { fontSize: 16, fontWeight: '600', color: Ink },
+  menuItemSub: { fontSize: 13, color: '#60646C', marginTop: 1 },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 15, fontWeight: '700', color: Ink },
   headerSub: { fontSize: 12, fontWeight: '500', color: '#60646C', marginTop: 1 },
+  scenarioBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F3F5',
+  },
   messagesContent: { gap: 11, paddingHorizontal: 18, paddingVertical: 14 },
   msgGroup: { gap: 0 },
   bubbleText: { fontSize: 14, lineHeight: 20 },

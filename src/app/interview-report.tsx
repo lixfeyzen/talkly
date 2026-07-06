@@ -12,28 +12,80 @@ import { ApiError, NetworkError } from '@/lib/api/client';
 
 // Kata + kalimat vonis diturunkan dari skor (presentasi murni; data tak punya
 // field verdict). Warm, tenang, tanpa emoji/em-dash.
-function verdictFor(score: number): { word: string; sentence: string } {
+function verdictFor(score: number): { word: string; sentence: string; bubble: string } {
   if (score >= 85) {
-    return { word: 'Interview ready', sentence: 'You are in strong shape. Keep your answers sharp.' };
+    return {
+      word: 'Interview ready',
+      sentence: 'You are in strong shape. Keep your answers sharp.',
+      bubble: 'Ready!',
+    };
   }
   if (score >= 70) {
-    return { word: 'Nearly ready', sentence: 'You are close. A little polish and you will walk in calm.' };
+    return {
+      word: 'Nearly ready',
+      sentence: 'You are close. A little polish and you will walk in calm.',
+      bubble: 'So close!',
+    };
   }
   if (score >= 50) {
-    return { word: 'Getting there', sentence: 'Solid base. Work the fixes below to lift your score.' };
+    return {
+      word: 'Getting there',
+      sentence: 'Solid base. Work the fixes below to lift your score.',
+      bubble: 'Keep going!',
+    };
   }
-  return { word: 'Early days', sentence: 'Good start. Try the fixes and run a few more rounds.' };
+  return {
+    word: 'Early days',
+    sentence: 'Good start. Try the fixes and run a few more rounds.',
+    bubble: 'You got this',
+  };
 }
+
+// Rapor contoh untuk PREVIEW DESAIN dev-only (?preview=1, hanya saat __DEV__).
+// Mengikuti frame mockup "04 Readiness Report" dengan SCHEMA NYATA app (3
+// dimensi grammar/structure/content) supaya layout bisa dibanding 1:1 TANPA
+// memanggil AI. Tidak pernah tampil untuk user sungguhan.
+const PREVIEW_REPORT: InterviewReportResponse = {
+  score: 72,
+  createdAt: '2026-07-04T09:12:00.000Z',
+  report: {
+    score: 72,
+    dimensions: {
+      grammar: { score: 70, comment: 'Cuida los tiempos verbales.' },
+      structure: { score: 64, comment: 'Añade inicio y cierre claros.' },
+      content: { score: 78, comment: 'Claro y fácil de seguir.' },
+    },
+    strongestAnswer: { question: '“Why this role?”', why: 'Specific and genuine.' },
+    weakestAnswer: { question: '“A conflict?”', why: 'Land the result.' },
+    topFixes: [
+      'Open with a one-line summary before details.',
+      'Swap “ehm” for a short, calm pause.',
+      'End each answer with the result or outcome.',
+    ],
+    answerUpgrades: [
+      {
+        question: 'Tell me about a difficult project.',
+        original: '“I worked on a project, it was difficult, but in the end we finished it.”',
+        upgraded:
+          'Our checkout kept failing during peak hours. I owned the fix before our biggest sale. I profiled the code and cached the slow query. Errors fell to near zero and sales rose 12%.',
+      },
+    ],
+  },
+};
 
 // Rapor kesiapan interview (fitur #6). POST idempoten: rapor yang sudah ada
 // dikembalikan server tanpa panggilan AI kedua.
 export default function InterviewReportScreen() {
-  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
-  const [data, setData] = useState<InterviewReportResponse | null>(null);
+  const { sessionId, preview } = useLocalSearchParams<{ sessionId?: string; preview?: string }>();
+  // Preview DESAIN dev-only: render frame mockup tanpa sessionId & tanpa AI.
+  const isPreview = __DEV__ && preview === '1';
+  const [data, setData] = useState<InterviewReportResponse | null>(
+    isPreview ? PREVIEW_REPORT : null,
+  );
   // Tanpa sessionId = kondisi TURUNAN (bukan state) -- hindari setState
   // langsung di body effect (rule react-hooks/set-state-in-effect).
-  const missingSession = !sessionId;
-  const [loading, setLoading] = useState(!missingSession);
+  const missingSession = !sessionId && !isPreview;
+  const [loading, setLoading] = useState(!missingSession && !isPreview);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const error = missingSession ? 'Missing interview session.' : fetchError;
 
@@ -95,6 +147,10 @@ export default function InterviewReportScreen() {
           {/* HERO band gelap: skor readiness besar di atas near-black */}
           <View style={styles.hero}>
             <View style={styles.heroGlow} />
+            {/* Pil motif mengambang (mockup): kata semangat TURUNAN skor. */}
+            <View style={styles.heroBubble}>
+              <Text style={styles.heroBubbleText}>{verdict.bubble}</Text>
+            </View>
 
             <View style={styles.nav}>
               <Pressable
@@ -249,6 +305,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(205,238,219,0.12)',
   },
+  heroBubble: {
+    position: 'absolute',
+    top: 92,
+    right: 22,
+    zIndex: 3,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: Pastel.mint,
+    transform: [{ rotate: '5deg' }],
+  },
+  heroBubbleText: { fontSize: 13, fontWeight: '700', color: Pastel.mintInk },
   nav: {
     height: 46,
     flexDirection: 'row',

@@ -23,9 +23,13 @@ function formatLastPracticed(iso: string | null): string {
   // Selisih HARI KALENDER (tengah-malam lokal), bukan jendela 24 jam --
   // latihan kemarin 22:00 dilihat pagi ini harus "Yesterday", bukan "Today".
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 86_400_000);
-  if (diffDays <= 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+  const when = new Date(iso);
+  const diffDays = Math.round((startOfDay(new Date()) - startOfDay(when)) / 86_400_000);
+  // Hari terdekat diberi JAM (gaya mockup "Today, 9:12") -- data timestamp
+  // memang ada, hanya presentasinya yang diperkaya.
+  const hm = `${when.getHours()}:${String(when.getMinutes()).padStart(2, '0')}`;
+  if (diffDays <= 0) return `Today, ${hm}`;
+  if (diffDays === 1) return `Yesterday, ${hm}`;
   return `${diffDays} days ago`;
 }
 
