@@ -399,16 +399,9 @@ type CaseRecord = {
   reply: string;
 };
 
-let pass = 0;
-let fail = 0;
-let judgeTotal = 0;
-let judgeOk = 0;
-const records: CaseRecord[] = [];
-
-console.log(`MODEL DIUJI : ${MODEL}`);
-console.log(`JUDGE       : ${JUDGE_MODEL} (tetap)`);
-
-for (const c of CASES) {
+// Evaluasi SATU kasus sekali jalan. Diekstrak jadi fungsi supaya bisa
+// dipanggil berulang (mode flakiness) tanpa menduplikasi logika.
+async function evaluateCase(c: Case): Promise<CaseRecord> {
   console.log("\n" + "=".repeat(72));
   console.log(`KASUS ${c.id}  [${c.dim}]  native=${c.native}`);
   console.log(`USER : ${c.userMessage}`);
@@ -435,10 +428,8 @@ for (const c of CASES) {
       for (const m of r.mistakes) {
         console.log(`KOREKSI [${m.category}] "${m.originalText}" -> "${m.correctedText}"`);
         console.log(`   note: ${m.note}`);
-        judgeTotal++;
         const jv = await judgeCorrection(m.originalText, m.correctedText, c.userMessage);
-        if (jv.ok) judgeOk++;
-        else problems.push(`JUDGE menolak koreksi "${m.correctedText}": ${jv.reason}`);
+        if (!jv.ok) problems.push(`JUDGE menolak koreksi "${m.correctedText}": ${jv.reason}`);
         console.log(`   judge: ${jv.ok ? "OK" : "BAD"} — ${jv.reason}`);
         mistakeRecords.push({
           category: m.category,
@@ -481,26 +472,69 @@ for (const c of CASES) {
       }
     }
 
-    const verdict = problems.length === 0 ? "PASS" : "FAIL";
-    if (verdict === "PASS") pass++;
-    else fail++;
+    const verdict: CaseRecord["verdict"] = problems.length === 0 ? "PASS" : "FAIL";
     console.log(`>> ${verdict} (${ms}ms)${problems.length ? " — " + problems.join("; ") : ""}`);
-    records.push({ id: c.id, dim: c.dim, verdict, ms, problems, mistakes: mistakeRecords, reply: r.reply });
+    return { id: c.id, dim: c.dim, verdict, ms, problems, mistakes: mistakeRecords, reply: r.reply };
   } catch (err) {
-    fail++;
     const msg = err instanceof Error ? err.message : String(err);
     console.log(`>> ERROR: ${msg.slice(0, 120)}`);
-    records.push({ id: c.id, dim: c.dim, verdict: "ERROR", ms: Date.now() - t0, problems: [msg.slice(0, 120)], mistakes: [], reply: "" });
+    return { id: c.id, dim: c.dim, verdict: "ERROR", ms: Date.now() - t0, problems: [msg.slice(0, 120)], mistakes: [], reply: "" };
   }
 }
 
-// ── ringkasan + simpan riwayat run ──
+// ── argumen: --repeat=N (mode flakiness), --only=id,id (fokus kasus) ──
+const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+const ONLY = onlyArg ? onlyArg.split("=")[1].split(",").filter(Boolean) : null;
+const repeatArg = process.argv.find((a) => a.startsWith("--repeat="));
+const REPEAT = repeatArg ? Math.max(1, parseInt(repeatArg.split("=")[1], 10) || 1) : 1;
+const selected = ONLY ? CASES.filter((c) => ONLY.includes(c.id)) : CASES;
+
+console.log(`MODEL DIUJI : ${MODEL}`);
+console.log(`JUDGE       : ${JUDGE_MODEL} (tetap)`);
+
+// ══ MODE FLAKINESS: tiap kasus dijalankan N kali, ukur konsistensinya ══
+if (REPEAT > 1) {
+  console.log(
+    `MODE FLAKINESS: ${REPEAT}x per kasus` + (ONLY ? ` (hanya: ${ONLY.join(", ")})` : " (SEMUA)"),
+  );
+  const results: Record<string, string[]> = {};
+  for (const c of selected) {
+    results[c.id] = [];
+    for (let i = 0; i < REPEAT; i++) {
+      const rec = await evaluateCase(c);
+      results[c.id].push(rec.verdict);
+    }
+  }
+  console.log("\n" + "=".repeat(72));
+  console.log(`FLAKINESS (${REPEAT}x per kasus) — STABIL = selalu sama, FLAKY = goyah:`);
+  let stable = 0;
+  let flaky = 0;
+  for (const [id, vs] of Object.entries(results)) {
+    const p = vs.filter((v) => v === "PASS").length;
+    const isFlaky = p !== 0 && p !== REPEAT;
+    if (isFlaky) flaky++;
+    else stable++;
+    const tag = isFlaky ? "FLAKY  " : p === REPEAT ? "STABIL✓" : "STABIL✗";
+    console.log(`  ${tag}  ${id}: ${p}/${REPEAT} PASS  [${vs.join(" ")}]`);
+  }
+  console.log(`\n${stable} stabil, ${flaky} FLAKY dari ${selected.length} kasus (di ${REPEAT}x run)`);
+  process.exit(0);
+}
+
+// ══ MODE NORMAL: sekali jalan, benchmark disimpan ══
+const records: CaseRecord[] = [];
+for (const c of selected) records.push(await evaluateCase(c));
+
 const byDim: Record<string, { pass: number; total: number }> = {};
 for (const rec of records) {
   byDim[rec.dim] ??= { pass: 0, total: 0 };
   byDim[rec.dim].total++;
   if (rec.verdict === "PASS") byDim[rec.dim].pass++;
 }
+const pass = records.filter((r) => r.verdict === "PASS").length;
+const fail = records.length - pass;
+const judgeTotal = records.reduce((n, r) => n + r.mistakes.length, 0);
+const judgeOk = records.reduce((n, r) => n + r.mistakes.filter((m) => m.judgeOk).length, 0);
 
 console.log("\n" + "=".repeat(72));
 console.log("RINGKASAN EVAL:");
@@ -510,13 +544,19 @@ for (const rec of records) {
 console.log("\nPER DIMENSI:");
 for (const [dim, s] of Object.entries(byDim)) console.log(`  ${dim}: ${s.pass}/${s.total}`);
 console.log(`JUDGE kualitas koreksi: ${judgeOk}/${judgeTotal} OK`);
-console.log(`\nTOTAL: ${pass} PASS, ${fail} FAIL dari ${CASES.length} kasus`);
+console.log(`\nTOTAL: ${pass} PASS, ${fail} FAIL dari ${selected.length} kasus`);
 
+// Simpan HANYA run penuh (bukan spot-check --only) supaya riwayat benchmark
+// tetap apple-to-apple.
+if (ONLY) {
+  console.log("\n(spot-check --only: tidak disimpan ke riwayat benchmark)");
+  process.exit(fail > 0 ? 1 : 0);
+}
 const runRecord = {
   runAt: new Date().toISOString(),
   model: MODEL,
   judgeModel: JUDGE_MODEL,
-  totals: { pass, fail, cases: CASES.length, judgeOk, judgeTotal },
+  totals: { pass, fail, cases: selected.length, judgeOk, judgeTotal },
   byDim,
   cases: records,
 };

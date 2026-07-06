@@ -218,14 +218,24 @@ Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:repo
   kutipan English di dalam note tak mengubah vonis.
 - **Bukti:** R12 dimensi D 5/5.
 
-### #19 — SISA TERBUKA: jitter nondeterminisme di gelombang E (R12)
+### #19 — jitter nondeterminisme: DIUKUR & DIISOLASI (R12) — TERBUKA (pengukuran TUTUP)
 - **Gejala:** (a) E4 s-v agreement kadang dilabeli vocabulary_choice walau
   glossary sudah mendefinisikan verb_conjugation; (b) E6 pemilihan BATAS
   fragmen kadang tak presisi ('to work with'->'working with').
 - **Akar:** nondeterminisme model (temperature default) — instruksi menekan
   frekuensi, tidak memusnahkan. BUKAN lubang instruksi lagi.
-- **Opsi lanjut (bukan prompt):** (1) turunkan temperature panggilan (trade-
-  off: reply roleplay jadi kurang hidup — keputusan produk); (2) repeat-run
-  majority di eval utk kasus flaky; (3) statistik flakiness per-kasus di
-  eval:report (data sudah ada di eval-runs/); (4) pecah deteksi-mistake ke
-  panggilan terpisah dari reply (2x biaya).
+- **ALAT UKUR DIBANGUN:** `eval:report` kini punya flakiness historis
+  (kasar — soal berubah antar-run); `eval:model --repeat=N --only=id,id`
+  mengukur BERSIH (soal versi sama, N kali).
+- **HASIL BERSIH (repeat=5 pada 6 tersangka):** B6/D2/D3/E6 = **5/5 STABIL**
+  (historis "flaky" cuma karena evolusi soal, BUKAN model) — memvalidasi
+  caveat. Yang GENUINE flaky tinggal **2**: D4-portugis 3/5 (bahasa note
+  kadang bocor) & E4-panjang 3/5 (label kategori s-v agreement kadang
+  vocabulary_choice, bukan verb_conjugation). Kualitas KOREKSI-nya tetap
+  benar di semua run — yang goyah cuma label & bahasa-note.
+- **Opsi lanjut (keputusan, bukan prompt lagi):** (1) turunkan temperature
+  panggilan deteksi (trade-off: reply roleplay kurang hidup — keputusan
+  PRODUK); (2) repeat-run majority di produksi utk 2 kasus ini (2-3x biaya
+  per giliran — mahal); (3) TERIMA: dampaknya kecil (statistik kelemahan
+  bocor tipis di 2 pola tepi) & bisa dinormalisasi saat agregasi. Rekomendasi
+  sementara: (3) — jangan bayar mahal utk jitter tepi sebelum ada user nyata.

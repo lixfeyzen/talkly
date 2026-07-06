@@ -64,6 +64,31 @@ if (runs.length >= 2) {
   }
 }
 
+// ── FLAKINESS lintas-riwayat: kasus yang kadang PASS kadang FAIL ──
+// CAVEAT: definisi sebagian kasus berubah antar-putaran (soal diperbaiki),
+// jadi ini INDIKASI kasar. Ukuran flakiness bersih = `eval:model --repeat=N`.
+const caseStats: Record<string, { pass: number; total: number }> = {};
+for (const r of runs) {
+  for (const c of r.cases) {
+    caseStats[c.id] ??= { pass: 0, total: 0 };
+    caseStats[c.id].total++;
+    if (c.verdict === "PASS") caseStats[c.id].pass++;
+  }
+}
+const flaky = Object.entries(caseStats)
+  .filter(([, s]) => s.total >= 2 && s.pass > 0 && s.pass < s.total)
+  .sort((a, b) => a[1].pass / a[1].total - b[1].pass / b[1].total);
+console.log("\nFLAKINESS lintas-riwayat (kasar — soal bisa berubah antar-run):");
+if (flaky.length === 0) {
+  console.log("  (tak ada kasus yang campur PASS/FAIL di riwayat)");
+} else {
+  for (const [id, s] of flaky) {
+    const pct = Math.round((s.pass / s.total) * 100);
+    console.log(`  ${String(pct).padStart(3)}% pass  ${id}  (${s.pass}/${s.total} run)`);
+  }
+  console.log("  → ukur bersih: npm run eval:model -- --repeat=5 --only=" + flaky.map((f) => f[0]).join(","));
+}
+
 console.log("\nKasus gagal di run terbaru:");
 const fails = last.cases.filter((c) => c.verdict !== "PASS");
 if (fails.length === 0) console.log("  (tidak ada — semua lulus)");
