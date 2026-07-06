@@ -1,0 +1,597 @@
+{
+  "runAt": "2026-07-06T13:54:03.093Z",
+  "model": "gpt-4o-2024-08-06",
+  "judgeModel": "gpt-4o-2024-08-06",
+  "totals": {
+    "pass": 30,
+    "fail": 1,
+    "cases": 31,
+    "judgeOk": 32,
+    "judgeTotal": 32
+  },
+  "byDim": {
+    "A-halusinasi": {
+      "pass": 4,
+      "total": 4
+    },
+    "B-deteksi": {
+      "pass": 9,
+      "total": 10
+    },
+    "C-peran": {
+      "pass": 4,
+      "total": 4
+    },
+    "D-global": {
+      "pass": 5,
+      "total": 5
+    },
+    "E-sulit": {
+      "pass": 8,
+      "total": 8
+    }
+  },
+  "cases": [
+    {
+      "id": "A1-jawaban-sempurna",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 1176,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That sounds impressive! What programming languages are you most comfortable with?"
+    },
+    {
+      "id": "A2-kalimat-kompleks-benar",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 779,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That's understandable. How do you usually handle unexpected changes in deadlines?"
+    },
+    {
+      "id": "A3-jawaban-benar-baru",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 906,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That's impressive! What challenges did you face managing such a diverse team?"
+    },
+    {
+      "id": "B1-tense",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 2377,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "Yesterday I go to the client office and finish the report there.",
+          "corrected": "Yesterday I went to the client's office and finished the report there.",
+          "note": "Kata kerja harus dalam bentuk past (lampau) karena kejadiannya sudah berlalu kemarin.",
+          "judgeOk": true,
+          "judgeReason": "The replacement uses the correct past tense verbs and possessive form of 'client's office,' making it grammatically correct and natural."
+        },
+        {
+          "category": "preposition_usage",
+          "original": "Yesterday I go to the client office and finish the report there.",
+          "corrected": "Yesterday I went to the client's office and finished the report there.",
+          "note": "Kata 'client' seharusnya dalam bentuk milik dengan menggunakan tanda 's di depan 'office'.",
+          "judgeOk": true,
+          "judgeReason": "The replacement correctly changes the verb tenses to past tense and adds the possessive form for 'client's office'."
+        }
+      ],
+      "reply": "Great, could you tell me more about what was included in the report?"
+    },
+    {
+      "id": "B2-preposisi",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1163,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "preposition_usage",
+          "original": "responsible of managing",
+          "corrected": "responsible for managing",
+          "note": "Gunakan 'responsible for' untuk menyatakan tanggung jawab.",
+          "judgeOk": true,
+          "judgeReason": "'Responsible for managing' is the correct and natural phrasing in English."
+        }
+      ],
+      "reply": "That sounds interesting. How many people were on your team?"
+    },
+    {
+      "id": "B3-jamak",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1222,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "plural_agreement",
+          "original": "five year",
+          "corrected": "five years",
+          "note": "Penggunaan \"year\" tunggal perlu diubah menjadi jamak karena berkaitan dengan kuantitas lebih dari satu.",
+          "judgeOk": true,
+          "judgeReason": "'Five years' is correct because it matches the plural form needed for 'experience' in this context."
+        }
+      ],
+      "reply": "That's great to hear. What kind of projects have you worked on in that field?"
+    },
+    {
+      "id": "B4-urutan-kata",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1811,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "I know very well this system",
+          "corrected": "I know this system very well",
+          "note": "Urutan kata \"very well\" salah, harus ditempatkan setelah \"this system\".",
+          "judgeOk": true,
+          "judgeReason": "The replacement 'I know this system very well' places the adverb in its natural position after the object of the verb."
+        }
+      ],
+      "reply": "That's impressive! Could you tell me more about the specific part you worked on?"
+    },
+    {
+      "id": "B5-konjugasi",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 3450,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "don't like",
+          "corrected": "doesn't like",
+          "note": "Kata kerja 'do' harus disesuaikan dengan subjek tunggal 'manager' menjadi 'doesn't'.",
+          "judgeOk": true,
+          "judgeReason": "\"Doesn't like\" is the correct form to use with the singular subject \"manager.\""
+        },
+        {
+          "category": "verb_conjugation",
+          "original": "we moves",
+          "corrected": "we move",
+          "note": "Kata kerja 'moves' harus diubah agar sesuai dengan subjek jamak 'we' menjadi 'move'.",
+          "judgeOk": true,
+          "judgeReason": "The replacement \"we move\" is the correct and natural form for this context."
+        }
+      ],
+      "reply": "That makes sense. How do you handle this when you need to innovate?"
+    },
+    {
+      "id": "B6-jawaban-berantakan",
+      "dim": "B-deteksi",
+      "verdict": "FAIL",
+      "ms": 2492,
+      "problems": [
+        "kategori preposition_usage TIDAK terdeteksi"
+      ],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "Yesterday I go to interview",
+          "corrected": "Yesterday I went to an interview",
+          "note": "'Go' harus diubah menjadi 'went' untuk menunjukkan masa lampau.",
+          "judgeOk": true,
+          "judgeReason": "The fragment 'Yesterday I went to an interview' is correct and natural English."
+        },
+        {
+          "category": "plural_agreement",
+          "original": "of many project",
+          "corrected": "of many projects",
+          "note": "'Project' harus dalam bentuk jamak karena sebelumnya ada kata 'many'.",
+          "judgeOk": true,
+          "judgeReason": "Replacing \"of many project\" with \"of many projects\" corrects the plural form required for \"projects,\" making it grammatically correct in context."
+        },
+        {
+          "category": "article_usage",
+          "original": "no time prepare",
+          "corrected": "no time to prepare",
+          "note": "Perlu menambahkan 'to' sebelum kata kerja infinitif 'prepare'.",
+          "judgeOk": true,
+          "judgeReason": "The correction 'no time to prepare' is a correct and natural fix for the fragment 'no time prepare'."
+        }
+      ],
+      "reply": "That sounds like a busy schedule. How did the interview go despite the lack of preparation?"
+    },
+    {
+      "id": "B7-urutan-kata-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1944,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "Always I arrive early to meetings",
+          "corrected": "I always arrive early to meetings",
+          "note": "Penempatan 'always' salah; harus sesudah subjek.",
+          "judgeOk": true,
+          "judgeReason": "The fragment is correctly and naturally rephrased."
+        }
+      ],
+      "reply": "That's great! Being punctual is very important. How do you usually prepare for meetings?"
+    },
+    {
+      "id": "B8-artikel-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1318,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "article_usage",
+          "original": "I am software engineer at big company in Jakarta.",
+          "corrected": "I am a software engineer at a big company in Jakarta.",
+          "note": "Perlu artikel \"a\" sebelum \"software engineer\" dan sebelum \"big company\".",
+          "judgeOk": true,
+          "judgeReason": "The fragment correctly adds the necessary articles 'a' before 'software engineer' and 'a' before 'big company' to form a grammatically correct and natural sentence."
+        }
+      ],
+      "reply": "That's great! Can you tell me more about your role and experience there?"
+    },
+    {
+      "id": "B10-preposisi-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 1375,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "preposition_usage",
+          "original": "depends of",
+          "corrected": "depends on",
+          "note": "Preposisi yang tepat setelah \"depends\" adalah \"on\".",
+          "judgeOk": true,
+          "judgeReason": "\"Depends on\" is the correct and natural prepositional phrase used in English."
+        }
+      ],
+      "reply": "That sounds organized. Could you explain how you manage your tasks during these sprints?"
+    },
+    {
+      "id": "B9-vocab-baru",
+      "dim": "B-deteksi",
+      "verdict": "PASS",
+      "ms": 4262,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "boring in my current job",
+          "corrected": "bored with my current job",
+          "note": "Kata kerja pasif 'bored' yang sesuai untuk menggambarkan perasaan.",
+          "judgeOk": true,
+          "judgeReason": "\"Bored with my current job\" is a correct and natural expression for the context."
+        },
+        {
+          "category": "preposition_usage",
+          "original": "look for new challenge",
+          "corrected": "looking for a new challenge",
+          "note": "Tambahkan \"a\" sebelum \"new challenge\" untuk menentukan sesuatu yang spesifik.",
+          "judgeOk": true,
+          "judgeReason": "\"Looking for a new challenge\" is a correct, natural fix for the given context."
+        }
+      ],
+      "reply": "I see. What kind of new challenge are you looking for?"
+    },
+    {
+      "id": "C1-melantur",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 837,
+      "problems": [],
+      "mistakes": [],
+      "reply": "I don't have personal preferences, but let's focus on your interview preparation for now. What skills do you bring to this job?"
+    },
+    {
+      "id": "C2-user-pakai-bhs-indo",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 857,
+      "problems": [],
+      "mistakes": [],
+      "reply": "Sure! Can you tell me about yourself and your professional background?"
+    },
+    {
+      "id": "C3-user-frustrasi",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 951,
+      "problems": [],
+      "mistakes": [],
+      "reply": "I'm sorry you feel that way. If there's anything I can do to help, let me know."
+    },
+    {
+      "id": "C4-campur-bahasa",
+      "dim": "C-peran",
+      "verdict": "PASS",
+      "ms": 1108,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "saya cocok",
+          "corrected": "I am suitable",
+          "note": "Gunakan frasa bahasa Inggris yang tepat untuk menyatakan bahwa Anda cocok untuk posisi tersebut.",
+          "judgeOk": true,
+          "judgeReason": "\"I am suitable\" is correct and natural in this sentence context."
+        }
+      ],
+      "reply": "That's great to hear! Could you share more about your leadership experience?"
+    },
+    {
+      "id": "D1-note-indonesia",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 2873,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "She have many experience in marketing.",
+          "corrected": "She has much experience in marketing.",
+          "note": "Setelah 'she' gunakan 'has', bukan 'have'.",
+          "judgeOk": true,
+          "judgeReason": "The correction \"She has much experience in marketing.\" properly changes the verb form and uses the correct quantifier for 'experience.'"
+        },
+        {
+          "category": "vocabulary_choice",
+          "original": "She have many experience in marketing.",
+          "corrected": "She has much experience in marketing.",
+          "note": "'Experience' adalah uncountable noun, gunakan 'much' bukan 'many'.",
+          "judgeOk": true,
+          "judgeReason": "'Has much experience' is a correct and natural replacement for 'have many experience'."
+        }
+      ],
+      "reply": "Great! Could you share more about her role in marketing?"
+    },
+    {
+      "id": "D2-note-vietnam",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1759,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "word_order",
+          "original": "I very like this company culture.",
+          "corrected": "I like this company culture very much.",
+          "note": "Vị trí của trạng từ \"very\" sai, phải được đặt sau động từ \"like.\"",
+          "judgeOk": true,
+          "judgeReason": "The corrected fragment \"I like this company culture very much\" uses the adverb \"very much\" correctly to modify the verb \"like.\""
+        }
+      ],
+      "reply": "That's great to hear! What specifically do you like about it?"
+    },
+    {
+      "id": "D3-note-spanyol",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1694,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "I am agree with flexible working hours.",
+          "corrected": "I agree with flexible working hours.",
+          "note": "La palabra \"agree\" no requiere el uso de \"am\" antes. Es incorrecto en inglés.",
+          "judgeOk": true,
+          "judgeReason": "\"I agree with flexible working hours.\" is a correct and natural English expression."
+        }
+      ],
+      "reply": "Great! Flexibility can lead to a better work-life balance. How have you managed this in the past?"
+    },
+    {
+      "id": "D5-note-vietnam-2-baru",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1648,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "I working here since 2020",
+          "corrected": "I have been working here since 2020",
+          "note": "Thiếu dạng hoàn thành để chỉ một hành động từ quá khứ tiếp diễn đến hiện tại.",
+          "judgeOk": true,
+          "judgeReason": "The replacement 'I have been working here since 2020' correctly uses the present perfect continuous tense."
+        }
+      ],
+      "reply": "Great! Can you tell me more about your role and experiences since then?"
+    },
+    {
+      "id": "D4-note-portugis-baru",
+      "dim": "D-global",
+      "verdict": "PASS",
+      "ms": 1934,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "I am agree with the salary offer.",
+          "corrected": "I agree with the salary offer.",
+          "note": "Em inglês, é 'I agree', sem 'am', para 'Eu concordo'.",
+          "judgeOk": true,
+          "judgeReason": "\"I agree with the salary offer.\" is the correct and natural fix for the fragment."
+        }
+      ],
+      "reply": "Great, I'm glad to hear that. Do you have any questions about the role?"
+    },
+    {
+      "id": "E1-conditional-halus",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1893,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "If I will get this job",
+          "corrected": "If I get this job",
+          "note": "Kalimat pengandaian dengan 'if' umumnya memakai simple present tense di klausa kondisinya.",
+          "judgeOk": true,
+          "judgeReason": "The correction 'If I get this job' is the correct usage for a future conditional sentence."
+        }
+      ],
+      "reply": "That's great to hear. Are you familiar with Singapore?"
+    },
+    {
+      "id": "E2-uncountable-halus",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1480,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "plural_agreement",
+          "original": "many progresses",
+          "corrected": "much progress",
+          "note": "\"Progress\" tidak bisa dihitung jamak, sebaiknya gunakan \"much progress.\"",
+          "judgeOk": true,
+          "judgeReason": "'Much progress' is the correct and natural expression, as 'progress' is an uncountable noun."
+        }
+      ],
+      "reply": "That's great to hear! Can you tell me more about your specific role in the migration project?"
+    },
+    {
+      "id": "E3-discuss-about-halus",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1290,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "preposition_usage",
+          "original": "discussed about the requirements",
+          "corrected": "discussed the requirements",
+          "note": "Setelah 'discussed' tidak perlu kata 'about'.",
+          "judgeOk": true,
+          "judgeReason": "The correction is correct, as \"discussed\" should not be followed by \"about.\""
+        }
+      ],
+      "reply": "It sounds like you have experience with agile methodologies. Can you share what tools you used for tracking requirements?"
+    },
+    {
+      "id": "E4-panjang-1-error",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1279,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "verb_conjugation",
+          "original": "operates",
+          "corrected": "operate",
+          "note": "Kata \"businesses\" berbentuk jamak, jadi kalimat harusnya menggunakan \"operate\".",
+          "judgeOk": true,
+          "judgeReason": "The plural subject 'businesses' correctly matches with the plural verb 'operate.'"
+        }
+      ],
+      "reply": "That's impressive! What have you enjoyed most about working in fintech?"
+    },
+    {
+      "id": "E5-panjang-multi-error",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 3414,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "I have faced many obstacle",
+          "corrected": "I faced many obstacles",
+          "note": "Perubahan waktu yang salah, seharusnya memakai tense lampau.",
+          "judgeOk": true,
+          "judgeReason": "The corrected fragment 'I faced many obstacles' is grammatically correct and natural in the past tense context of the sentence."
+        },
+        {
+          "category": "plural_agreement",
+          "original": "many obstacle",
+          "corrected": "many obstacles",
+          "note": "Kata benda jamak 'obstacle' harus dalam bentuk jamak 'obstacles' setelah 'many.'",
+          "judgeOk": true,
+          "judgeReason": "Replacing 'many obstacle' with 'many obstacles' correctly pluralizes the noun to match 'many.'"
+        }
+      ],
+      "reply": "It sounds like a challenging experience. How did you manage to overcome those obstacles?"
+    },
+    {
+      "id": "E6-gerund-idiom",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1556,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "to work with your team",
+          "corrected": "working with your team",
+          "note": "'To work' seharusnya 'working' karena konteks yang lebih tepat.",
+          "judgeOk": true,
+          "judgeReason": "The fragment 'working with your team' is correct and natural in this context after the phrase 'looking forward to.'"
+        }
+      ],
+      "reply": "Great! We're excited to have you join us. What experience do you bring to the role?"
+    },
+    {
+      "id": "E7-idiom-benar",
+      "dim": "A-halusinasi",
+      "verdict": "PASS",
+      "ms": 824,
+      "problems": [],
+      "mistakes": [],
+      "reply": "That sounds great! Could you give an example of how you switch contexts in your role?"
+    },
+    {
+      "id": "E8-false-friend-id",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 1458,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "tense_usage",
+          "original": "I ever worked",
+          "corrected": "I worked",
+          "note": "Harusnya menggunakan past simple tanpa 'ever' dalam konteks ini.",
+          "judgeOk": true,
+          "judgeReason": "'I worked' is a correct and natural phrase for describing past experiences."
+        }
+      ],
+      "reply": "That's great experience. What were your main responsibilities in the startup?"
+    },
+    {
+      "id": "E9-false-friend-es",
+      "dim": "E-sulit",
+      "verdict": "PASS",
+      "ms": 2281,
+      "problems": [],
+      "mistakes": [
+        {
+          "category": "vocabulary_choice",
+          "original": "I assisted to a conference",
+          "corrected": "I attended a conference",
+          "note": "En este contexto, \"attend\" es el verbo correcto para \"asistir a\" en inglés.",
+          "judgeOk": true,
+          "judgeReason": "'Attended' is the correct verb to use for going to a conference, making it natural English."
+        },
+        {
+          "category": "preposition_usage",
+          "original": "assisted to a conference",
+          "corrected": "attended a conference",
+          "note": "No se usa una preposición después de \"attended\" en inglés.",
+          "judgeOk": true,
+          "judgeReason": "\"Attended a conference\" is a correct and natural way to express participation in a conference."
+        }
+      ],
+      "reply": "That sounds interesting! What did you learn there?"
+    }
+  ]
+}

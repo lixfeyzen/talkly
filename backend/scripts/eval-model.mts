@@ -25,7 +25,7 @@ const MODEL = modelArg ? modelArg.split("=")[1] : DEFAULT_MODEL;
 
 type Case = {
   id: string;
-  dim: "A-halusinasi" | "B-deteksi" | "C-peran" | "D-global";
+  dim: "A-halusinasi" | "B-deteksi" | "C-peran" | "D-global" | "E-sulit";
   native: string;
   userMessage: string;
   history?: ChatTurn[];
@@ -33,8 +33,13 @@ type Case = {
   // Utk error AMBIGU (entri #9 learning log): tiap grup = minimal SATU dari
   // kategori di grup itu harus terdeteksi (dua framing sama-sama valid).
   expectOneOf?: MistakeCategory[][];
+  // Utk error yang KATEGORINYA sulit dipastikan (idiom, conditional) tapi
+  // WAJIB terdeteksi — kualitas koreksinya dikawal judge, bukan kategori.
+  expectAnyMistake?: boolean;
   replyMustNotMatch?: RegExp;
-  noteMustMatch?: RegExp;
+  // Entri #18: cek bahasa note via regex kata-kunci terbukti rapuh (3× alarm
+  // palsu: ID R1, PT R5, ES R11) DAN buta thd leak asli — kini dinilai LLM.
+  noteLanguage?: string;
 };
 
 const SCENARIO = "Job interview";
@@ -187,8 +192,7 @@ const CASES: Case[] = [
     native: "Indonesian",
     userMessage: "She have many experience in marketing.",
     expect: ["verb_conjugation"],
-    noteMustMatch:
-      /(kata kerja|seharusnya|bentuk|karena|untuk subjek|harus|menjadi|gunakan|dalam|dengan)/i,
+    noteLanguage: "Indonesian",
   },
   {
     // "I very like" sah dikoreksi 2 cara: "really like" (vocab) ATAU
@@ -199,7 +203,7 @@ const CASES: Case[] = [
     userMessage: "I very like this company culture.",
     expect: [],
     expectOneOf: [["vocabulary_choice", "word_order"]],
-    noteMustMatch: /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i,
+    noteLanguage: "Vietnamese",
   },
   {
     id: "D3-note-spanyol",
@@ -207,7 +211,7 @@ const CASES: Case[] = [
     native: "Spanish",
     userMessage: "I am agree with flexible working hours.",
     expect: [],
-    noteMustMatch: /(verbo|porque|significa|se dice|correcto|no necesita|no se usa)/i,
+    noteLanguage: "Spanish",
   },
   // BARU putaran 4 (unseen): stress-test fix bocor-bahasa-note (entri #7
   // learning log) pada kalimat Vietnam yang BERBEDA dari D2.
@@ -220,7 +224,7 @@ const CASES: Case[] = [
     userMessage: "I working here since 2020.",
     expect: [],
     expectOneOf: [["tense_usage", "verb_conjugation"]],
-    noteMustMatch: /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i,
+    noteLanguage: "Vietnamese",
   },
   // BARU putaran 3: pasar Brazil (roadmap global)
   {
@@ -229,9 +233,95 @@ const CASES: Case[] = [
     native: "Portuguese",
     userMessage: "I am agree with the salary offer.",
     expect: [],
-    // Entri #12: "correto" luput menangkap bentuk feminin "correta" (alarm
-    // palsu R5) — perluas dgn kata fungsi PT umum.
-    noteMustMatch: /(verbo|porque|corret[oa]|se usa|não|em inglês|usar|precisa|frase|\bé\b|\bsem\b)/i,
+    noteLanguage: "Portuguese",
+  },
+  // ══ GELOMBANG E (putaran 7, unseen semua): bar dinaikkan — error halus,
+  // kalimat panjang multi-klausa, idiom, false-friend per bahasa native.
+  // Tiap error tertanam DIPASTIKAN tak terbantahkan salah (aturan main #6).
+  {
+    // Error halus: first conditional tidak memakai "will" di klausa if.
+    id: "E1-conditional-halus",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage: "If I will get this job, I will relocate to Singapore immediately.",
+    expect: [],
+    expectAnyMistake: true,
+  },
+  {
+    // Error halus: "progress" tak terhitung — "many progresses" pasti salah.
+    id: "E2-uncountable-halus",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage: "Our team made many progresses on the migration project last quarter.",
+    expect: [],
+    expectOneOf: [["plural_agreement", "vocabulary_choice", "other"]],
+  },
+  {
+    // Error halus: "discuss" tidak pernah diikuti "about".
+    id: "E3-discuss-about-halus",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage: "We discussed about the requirements with the client every sprint.",
+    expect: [],
+    expectOneOf: [["preposition_usage", "vocabulary_choice", "other"]],
+  },
+  {
+    // Kalimat panjang multi-klausa, 1 error terkubur di klausa tengah:
+    // "businesses operates" (subjek jamak + verba -s).
+    id: "E4-panjang-1-error",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage:
+      "Although I have worked in three different industries, which gave me a broad perspective on how businesses operates, I still consider fintech my strongest domain.",
+    expect: ["verb_conjugation"],
+  },
+  {
+    // Kalimat panjang, BEBERAPA error terkubur: "I have faced ... last year"
+    // (past simple), "many obstacle" (jamak), "that force" (lampau).
+    id: "E5-panjang-multi-error",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage:
+      "When I was leading the migration project last year, I have faced many obstacle that force me to learn quickly and stay calm under pressure.",
+    expect: ["plural_agreement"],
+    expectOneOf: [["tense_usage", "verb_conjugation"]],
+  },
+  {
+    // Idiom/gerund: "looking forward to" wajib diikuti gerund.
+    id: "E6-gerund-idiom",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage: "I am looking forward to work with your team next month.",
+    expect: [],
+    expectAnyMistake: true,
+  },
+  {
+    // JEBAKAN halusinasi: idiom BENAR — tidak boleh dikoreksi.
+    id: "E7-idiom-benar",
+    dim: "A-halusinasi",
+    native: "Indonesian",
+    userMessage:
+      "I wear many hats in my current role, so I am comfortable switching contexts quickly.",
+    expect: [],
+  },
+  {
+    // False-friend Indonesia klasik: "pernah" -> "ever" di kalimat afirmatif.
+    id: "E8-false-friend-id",
+    dim: "E-sulit",
+    native: "Indonesian",
+    userMessage: "I ever worked at a startup for two years before joining a bank.",
+    expect: [],
+    expectAnyMistake: true,
+  },
+  {
+    // False-friend Spanyol klasik: "asistir" (menghadiri) -> "assisted to".
+    id: "E9-false-friend-es",
+    dim: "E-sulit",
+    native: "Spanish",
+    userMessage: "I assisted to a conference about product management last month.",
+    expect: [],
+    expectAnyMistake: true,
+    noteLanguage: "Spanish",
   },
 ];
 
@@ -246,17 +336,51 @@ async function judgeCorrection(
   corrected: string,
   fullSentence: string, // entri #10: tanpa konteks kalimat, judge pedantic
 ): Promise<{ ok: boolean; reason: string }> {
+  // Entri #17: judge salah vonis fragmen pendek ("agree" utk "am agree")
+  // karena menilai fragmen telanjang. Kini harness MERANGKAI kalimat hasil
+  // substitusi dan ITULAH yang dinilai (fallback ke format lama bila fragmen
+  // tak ditemukan verbatim di kalimat).
+  const resulting = fullSentence.includes(original)
+    ? fullSentence.replace(original, corrected)
+    : null;
   const completion = await openai.chat.completions.parse({
     model: JUDGE_MODEL,
     messages: [
       {
         role: "system",
         content:
-          "You are a strict English copy editor. Judge ONLY whether the proposed correction is correct, natural English as a replacement for the original fragment WITHIN the given full sentence. Use the full sentence as context (e.g. \"doesn't\" replacing \"don't\" is correct when the sentence subject is third-person singular). If the correction is ungrammatical or unnatural in that context, it fails.",
+          "You are a strict English copy editor evaluating ONE fragment replacement at a time. The sentence may contain OTHER, separate errors -- ignore them completely; they are corrected by separate entries. Judge ONLY whether the quoted replacement itself is correct, natural English for that fragment in its sentence context. If the replacement text itself is wrong (e.g. it produces \"many progress\"), it fails.",
       },
       {
         role: "user",
-        content: `Full sentence written by the user: "${fullSentence}"\nOriginal fragment: "${original}"\nProposed correction of that fragment: "${corrected}"\nIs the proposed correction correct and natural English in the context of that sentence?`,
+        content: resulting
+          ? `Original sentence: "${fullSentence}"\nFragment corrected: "${original}" -> "${corrected}"\nSentence after applying ONLY this one correction (other errors, if any, are fixed separately): "${resulting}"\nJudge ONLY this fragment replacement: is "${corrected}" a correct, natural fix for "${original}" here? Ignore any other errors elsewhere in the sentence.`
+          : `Full sentence written by the user: "${fullSentence}"\nOriginal fragment: "${original}"\nProposed correction of that fragment: "${corrected}"\nJudge ONLY this fragment replacement in the context of that sentence. Ignore any other errors elsewhere in the sentence.`,
+      },
+    ],
+    response_format: zodResponseFormat(judgeSchema, "judge_verdict"),
+  });
+  const parsed = completion.choices[0]?.message.parsed;
+  return parsed ?? { ok: false, reason: "judge tidak membalas" };
+}
+
+// Entri #18: cek "note ditulis dalam bahasa X?" via LLM — regex kata-kunci
+// 3× alarm palsu (morfologi -o/-a, frasa tak terdaftar) & buta thd leak asli.
+async function judgeNoteLanguage(
+  note: string,
+  language: string,
+): Promise<{ ok: boolean; reason: string }> {
+  const completion = await openai.chat.completions.parse({
+    model: JUDGE_MODEL,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a language identifier. Answer whether the given text is written in the specified language. Quoted English words/fragments inside the text (e.g. corrections being explained) do NOT change the language of the text itself.",
+      },
+      {
+        role: "user",
+        content: `Text: "${note}"\nIs this text written in ${language}?`,
       },
     ],
     response_format: zodResponseFormat(judgeSchema, "judge_verdict"),
@@ -339,13 +463,21 @@ for (const c of CASES) {
         problems.push(`tak satu pun dari [${group.join("|")}] terdeteksi`);
       }
     }
+    if (c.expectAnyMistake && r.mistakes.length === 0) {
+      problems.push("tidak ada mistake terdeteksi padahal ada error tertanam");
+    }
     if (c.replyMustNotMatch && c.replyMustNotMatch.test(r.reply)) {
       problems.push("reply keluar dari bahasa target");
     }
-    if (c.noteMustMatch) {
+    if (c.noteLanguage) {
       const note = r.mistakes[0]?.note ?? "";
-      if (!c.noteMustMatch.test(note)) {
-        problems.push(`note tidak cocok pola bahasa native (${c.native}): "${note.slice(0, 60)}"`);
+      if (!note) {
+        problems.push("tidak ada note untuk dicek bahasanya");
+      } else {
+        const lv = await judgeNoteLanguage(note, c.noteLanguage);
+        if (!lv.ok) {
+          problems.push(`note bukan bahasa ${c.noteLanguage}: "${note.slice(0, 60)}" (${lv.reason})`);
+        }
       }
     }
 

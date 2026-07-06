@@ -23,12 +23,13 @@ Aturan main:
    judge selalu OK. "Sempurna" mutlak tidak ada — bar terus dinaikkan.
 
 Riwayat angka: R1 10/14 (71%) → R2 15/16 (94%) → R3 17/18 (94%, judge 19/19)
-→ R4 16/20 (80%, judge 19/21 — turun BUKAN karena model memburuk: taint
-dihapus + judge aktif = benchmark lebih jujur; 3 dari 4 fail adalah cacat
-alat ukur/desain eval, 1 model sloppy tertangkap judge) → R5 20/22 (91%,
-judge 23/23; 3 fix R4 semua terbukti) → **R6 22/22 (100%, judge 24/24) —
-pass penuh pertama, nol regresi.** Bar berikutnya: tambah kasus lebih sulit,
-uji model murah (--model=gpt-4o-mini) utk unit economics.
+→ R4 16/20 (80%; benchmark jadi jujur) → R5 20/22 → R6 22/22 (100% di bar
+lama) → **BAR DINAIKKAN: +9 kasus gelombang E** (halus/panjang/idiom/
+false-friend) → R7 28/31 → R8 30/31 → R9 21/31 (REGRESI dari fix hakimku
+sendiri — entri #17) → R10 30/31 (judge pulih 32/32) → R11 28/31 (jitter
+pindah kasus) → R12 29/31 (94%; A/B/C/D SEMUA penuh; sisa 2 = jitter model
+murni di gelombang E). Bar berikutnya: tangani nondeterminisme (bukan prompt
+lagi) + uji model murah (--model=gpt-4o-mini).
 Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:report`).
 
 ---
@@ -170,3 +171,61 @@ Data mentah tiap run: `backend/eval-runs/*.json` (bandingkan: `npm run eval:repo
 - **Bukti:** R6 B10 PASS.
 - **Aturan main baru #6:** seeded error harus unambiguously wrong —
   kalau native speaker bisa membela kalimatnya, itu bukan soal eval.
+
+
+### #14 — koreksi uncountable salah (R7, E2) — TUTUP
+- **Gejala:** "many progresses" dikoreksi jadi "many progress" (masih salah;
+  judge menolak — hakim bekerja).
+- **Fix (R8):** glossary: uncountable nouns tak memakai "many"/jamak
+  ("many feedbacks" -> "a lot of feedback"; contoh non-uji).
+- **Bukti:** R8+ E2 PASS ("a lot of progress").
+
+### #15 — word_order jadi keranjang sampah (R7, E3) — TUTUP
+- **Gejala:** buang "about" (discussed about) dilabeli word_order padahal
+  tak ada kata pindah posisi.
+- **Fix (R8):** definisi batas: word_order HANYA utk kata salah posisi;
+  extra/missing preposition = preposition_usage.
+- **Bukti:** R8+ E3 PASS.
+
+### #16 — B6 kasus terflaky: gagal 3 cara berbeda (R4/R7/R10) — TUTUP (awasi)
+- **Gejala:** kalimat run-on 4-error gagal bergantian: koreksi tak lengkap
+  (R4), bundling salah label (R7), error preposisi terlewat (R10).
+- **Fix:** contoh pecah-kategori konkret non-uji + instruksi "report EVERY
+  mistake -- do not stop after the first few".
+- **Bukti:** R11/R12 PASS. Catatan: kasus flaky butuh REPEAT-RUN utk bukti
+  kuat, single pass = sampel 1.
+
+### #17 — hakim salah vonis fragmen pendek + fix-ku sendiri bikin REGRESI (R8-R10) — TUTUP
+- **Gejala:** judge menolak "am agree"->"agree" yang benar (menilai fragmen
+  telanjang). **Fix v1 (substitusi + nilai kalimat utuh) = BENCANA R9:
+  21/31, judge 18/34** — kalimat multi-error ditolak gara-gara error LAIN
+  yang ditangani entri terpisah.
+- **Fix v2 (R10):** hakim fragmen-TERSKOP: kalimat hasil substitusi jadi
+  konteks, tapi yang dinilai HANYA penggantian fragmen itu; error lain
+  diabaikan eksplisit.
+- **Bukti:** R10 judge 32/32; R12 hakim MENANGKAP fragmen tak-presisi E6
+  ('to work with'->'working with' = hilang "to") — vonis yang penilaian
+  fragmen-telanjang pasti lolos. Sistem hakim terbukti.
+- **Pelajaran:** fix alat ukur juga bisa regresi — uji dampaknya ke kasus
+  multi-error sebelum dipakai; alarm regresi eval:report menyelamatkan.
+
+### #18 — cek bahasa note pindah regex -> LLM (R11) — TUTUP
+- **Gejala:** alarm palsu regex ke-3 (ES "se usa" tak terdaftar; sebelumnya
+  ID R1, PT R5) DAN leak asli kambuh (note Indonesia utk user Portuguese).
+- **Akar:** regex kata-kunci rapuh (morfologi -o/-a, frasa tak terdaftar)
+  dan tak bisa mendeteksi leak.
+- **Fix (R12):** `judgeNoteLanguage` — LLM ditanya "teks ini bahasa X?";
+  kutipan English di dalam note tak mengubah vonis.
+- **Bukti:** R12 dimensi D 5/5.
+
+### #19 — SISA TERBUKA: jitter nondeterminisme di gelombang E (R12)
+- **Gejala:** (a) E4 s-v agreement kadang dilabeli vocabulary_choice walau
+  glossary sudah mendefinisikan verb_conjugation; (b) E6 pemilihan BATAS
+  fragmen kadang tak presisi ('to work with'->'working with').
+- **Akar:** nondeterminisme model (temperature default) — instruksi menekan
+  frekuensi, tidak memusnahkan. BUKAN lubang instruksi lagi.
+- **Opsi lanjut (bukan prompt):** (1) turunkan temperature panggilan (trade-
+  off: reply roleplay jadi kurang hidup — keputusan produk); (2) repeat-run
+  majority di eval utk kasus flaky; (3) statistik flakiness per-kasus di
+  eval:report (data sudah ada di eval-runs/); (4) pecah deteksi-mistake ke
+  panggilan terpisah dari reply (2x biaya).
