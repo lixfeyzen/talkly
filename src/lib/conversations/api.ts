@@ -60,3 +60,38 @@ export async function fetchSuggestedScenario(): Promise<SuggestedScenario | null
   );
   return res.suggestion;
 }
+
+// Riwayat percakapan (layar history) -- ringkasan per sesi, terbaru dulu.
+export type SessionSummary = {
+  id: string;
+  scenario: string;
+  mode: 'free' | 'mock_interview';
+  interviewRole: string | null;
+  createdAt: string;
+  messageCount: number;
+  lastMessage: string | null;
+};
+
+export async function fetchConversationHistory(): Promise<SessionSummary[]> {
+  const res = await apiFetch<{ sessions: SessionSummary[] }>('/api/conversations', {
+    auth: true,
+  });
+  return res.sessions;
+}
+
+// Detail satu sesi (transkrip penuh) untuk dibaca ulang.
+export type SessionDetail = {
+  id: string;
+  scenario: string;
+  mode: 'free' | 'mock_interview';
+  interviewRole: string | null;
+  createdAt: string;
+  transcript: { role: 'user' | 'assistant'; content: string }[];
+};
+
+export async function fetchConversationDetail(sessionId: string): Promise<SessionDetail> {
+  const res = await apiFetch<{ session: SessionDetail }>(`/api/conversations/${sessionId}`, {
+    auth: true,
+  });
+  return res.session;
+}

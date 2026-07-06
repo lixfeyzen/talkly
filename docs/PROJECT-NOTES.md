@@ -676,3 +676,31 @@ speech + interview-plan belum ada di production) + rebuild APK via EAS
   dipalsukan. Visual kecil: tinggi CTA 50 vs 54, chart trajectory tanpa hiasan
   +delta/target-line, label pastel beda ~1 shade. Font = SISTEM (di-sahkan
   handoff notes "System/DM Sans/Inter"). **BELUM diverifikasi mata sesi login.**
+
+## ✅ FITUR RIWAYAT PERCAKAPAN (2026-07-06) — read-only, tanpa AI
+
+Layar untuk membaca ulang sesi latihan yang lalu (daftar → tap → transkrip
+penuh). Murni baca DB, TIDAK pernah panggil OpenAI (nol biaya AI).
+- **Backend:** `listSessionsForUser()` (terbaru dulu, cap 50, ringkas:
+  messageCount + cuplikan pesan terakhir dihitung di server → payload kecil) +
+  `GET /api/conversations` (list, auth-gated). `getSessionForUser()` sudah ada
+  (kepemilikan dicek di query: sessionId + userId) dibungkus route dinamis baru
+  `GET /api/conversations/[sessionId]` (transkrip penuh; 400 UUID ngaco / 404
+  bukan-milik-atau-tak-ada / 401 tanpa token).
+- **Mobile:** `src/app/conversations.tsx` (satu layar 2 mode via param
+  `sessionId`: list ↔ detail; empty-state, error-state+retry, "Practice this
+  again" deep-link ke `/conversation`). Home row "Conversations" kini menuju
+  `/conversations` (riwayat), bukan langsung mulai chat baru.
+- **Bukti (semua dijalankan nyata):** tsc 0 + eslint 0 di KEDUA proyek;
+  `test:history` **12/12 lawan Neon live** (urutan terbaru-dulu, messageCount
+  0/2/3, lastMessage snippet + null utk sesi kosong, mode+interviewRole
+  passthrough, ISOLASI antar-user, empty-state, detail transkrip utuh,
+  KEPEMILIKAN user-A-tak-baca-sesi-user-B → null, not-found UUID acak → null);
+  HTTP live curl (server :3001): list tanpa-auth 401, list user-baru
+  `{sessions:[]}`, detail UUID ngaco 400, detail UUID acak 404, detail
+  tanpa-auth 401, dan happy-path (sisip 1 sesi) list→1 sesi messageCount 2 +
+  detail→transkrip 2 pesan. User uji `@example.com` dibersihkan.
+- **BELUM (jujur):** verifikasi VISUAL layar `conversations.tsx` di sesi login
+  nyata (belum di-screenshot); belum deploy ke Vercel (route baru belum di
+  production) + belum masuk APK. Catatan: hanya `test:history` yang dijalankan
+  sesi ini; suite lain tak dijalankan ulang (angka "total" lama tak diklaim).

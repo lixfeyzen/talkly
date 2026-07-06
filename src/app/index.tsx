@@ -227,7 +227,7 @@ export default function HomeScreen() {
                 icon="message-circle"
                 title="Conversations"
                 value={dash ? `${dash.activity.totalSessions}` : dashFailed ? '—' : '...'}
-                onPress={() => router.push('/conversation')}
+                onPress={() => router.push('/conversations')}
               />
               <ListRow
                 pastel="lilac"

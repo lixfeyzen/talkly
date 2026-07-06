@@ -14,6 +14,7 @@ import {
 import {
   createSession,
   getSessionForUser,
+  listSessionsForUser,
   appendTurns,
   recordMistakes,
 } from "@/lib/data/conversations";
@@ -25,6 +26,21 @@ import { jsonCors, corsPreflight } from "@/lib/http/cors";
 
 export function OPTIONS() {
   return corsPreflight();
+}
+
+// Daftar riwayat percakapan user (layar history). Murni baca DB, tanpa AI.
+export async function GET(req: NextRequest) {
+  const auth = getAuthFromRequest(req);
+  if (!auth) {
+    return jsonCors({ error: "unauthorized" }, { status: 401 });
+  }
+  try {
+    const sessions = await listSessionsForUser(auth.userId);
+    return jsonCors({ sessions });
+  } catch (err) {
+    console.error("List sessions failed:", err);
+    return jsonCors({ error: "internal_error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

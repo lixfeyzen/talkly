@@ -19,6 +19,30 @@ export async function createSession(
   return session;
 }
 
+// Daftar sesi user untuk layar riwayat: terbaru dulu, ringkas (jumlah pesan +
+// cuplikan pesan terakhir dihitung di server supaya payload kecil).
+export async function listSessionsForUser(userId: string, limit = 50) {
+  const rows = await db
+    .select()
+    .from(conversationSessions)
+    .where(eq(conversationSessions.userId, userId))
+    .orderBy(sql`${conversationSessions.createdAt} DESC`)
+    .limit(limit);
+  return rows.map((s) => {
+    const transcript = (s.transcript as ChatTurn[]) ?? [];
+    const last = transcript[transcript.length - 1];
+    return {
+      id: s.id,
+      scenario: s.scenario,
+      mode: s.mode,
+      interviewRole: s.interviewRole,
+      createdAt: s.createdAt,
+      messageCount: transcript.length,
+      lastMessage: last ? String(last.content).slice(0, 120) : null,
+    };
+  });
+}
+
 export async function getSessionForUser(sessionId: string, userId: string) {
   const rows = await db
     .select()
