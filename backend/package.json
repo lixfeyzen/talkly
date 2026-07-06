@@ -22,7 +22,8 @@
     "dev:cleanup-nametest": "tsx --env-file=.env.local scripts/dev-cleanup-nametest.mts",
     "test:interview-plan": "tsx --env-file=.env.local scripts/test-interview-plan.mts",
     "test:trajectory": "tsx --env-file=.env.local scripts/test-trajectory.mts",
-    "test:history": "tsx --env-file=.env.local scripts/test-history.mts"
+    "test:history": "tsx --env-file=.env.local scripts/test-history.mts",
+    "eval:model": "tsx --env-file=.env.local scripts/eval-model.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

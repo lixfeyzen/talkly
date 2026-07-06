@@ -719,3 +719,20 @@ as last time".
   lawan Neon live (mock2->64, mock1->null, isolasi antar-user). tsc+lint 0 dua proyek.
 - BELUM: dilihat mata di render app nyata; belum deploy Vercel + belum rebuild APK
   (fitur belum sampai user sampai dua langkah itu dilakukan).
+
+## 🎉 AI HIDUP PERTAMA KALI + eval harness (2026-07-06)
+Saldo OpenAI diisi user → core AI TERBUKTI JALAN untuk pertama kalinya.
+Dibangun `npm run eval:model` (backend/scripts/eval-model.mts) — eval harness
+permanen yang memanggil pipeline ASLI (runConversationTurn), 14 kasus, 4 dimensi:
+anti-halusinasi / deteksi error tertanam / ketahanan peran / global (note bahasa
+native). **Putaran 1: 10 PASS, 4 FAIL (3 asli + 1 bug regex harness) ≈ 11/14.**
+- LULUS: nol halusinasi pada jawaban benar; tense/preposisi/jamak/konjugasi
+  terdeteksi akurat; tetap in-character saat dilantur/dimaki; note keluar benar
+  dalam Vietnam & Spanyol (tesis AI-global jalan).
+- GAP NYATA utk putaran 2 (perbaikan prompt): (1) word_order lolos ("I know very
+  well this system"); (2) multi-error digabung 1 kategori → statistik kelemahan
+  undercount (butuh "satu mistake = satu kategori"); (3) user nulis Indonesia →
+  reply ikut Indonesia (harus tetap English). +fix regex checker D1 (Indonesian).
+- KEPUTUSAN founder terkunci: produk & model GLOBAL sejak awal; matangkan model
+  via putaran eval SEBELUM dorongan launch besar; GTM masuk berurutan (wedge
+  pertama padat) — bukan pemasaran ke semua orang hari-1.
