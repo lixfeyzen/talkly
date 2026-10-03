@@ -5,6 +5,77 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Fokus penyelesaian v1 — 2026-10-03
+
+User menyetujui melanjutkan implementasi setelah audit produk dan teknis.
+Acuan terbaru adalah fokus interview English untuk non-native professionals;
+UI English dan penjelasan koreksi dalam bahasa native tetap dipertahankan.
+Alur penerimaan: akun -> interview -> koreksi tersimpan -> latihan terarah ->
+jawaban baru yang sebanding -> buka kembali riwayat pada Android.
+Suara dan reminder yang sudah ada tetap harus diuji jika disertakan rilis.
+Weekly Challenge dan monetisasi ditunda; pekerjaan lokalnya dipertahankan.
+
+Skor adalah umpan balik atas jawaban latihan, bukan prediksi diterima kerja
+atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
+Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
+yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
+
+Status: tahap B (perbaikan inti) dikerjakan. Tahap C akun/biaya, D rilis,
+E penggunaan HP, dan F manfaat pengguna masih terbuka. Anggaran pengujian
+berbayar belum ditetapkan; implementasi dan pemeriksaan awal memakai layanan tiruan.
+Deployment, migrasi cloud, perubahan provider, dan build berbayar belum dijalankan.
+
+Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Milestone lokal: alur latihan dan pemulihan — 2026-10-03
+
+Tahap B selesai pada lapisan lokal yang diperiksa. V1 keseluruhan belum selesai.
+Kode tetap berada dalam working tree; pekerjaan awal yang sudah ada dipertahankan.
+
+- Pertanyaan interview memakai pembagian angka tanpa tanda negatif; 6 role x
+  1.000 ID sintetis menghasilkan lima pertanyaan valid dan stabil.
+- Kuota dipakai pada pengiriman AI, bukan membaca riwayat. Request ID, lease,
+  hasil AI tersimpan, serta transaksi PostgreSQL menyatukan transkrip, koreksi,
+  hitungan dan streak. Penjelasan koreksi ikut tersimpan pada jawaban asal.
+- Rapor lama tiga/empat dimensi tetap terbuka. Rapor baru memakai practice-v1,
+  menyimpan role, dan menghitung skor dari empat dimensi teks. Label confidence
+  lama dipisahkan. Prompt melarang klaim psikologis, prediksi hiring dan fakta
+  kandidat rekaan; kepatuhan AI nyata terhadap prompt belum diuji.
+- Perbandingan skor memakai role dan versi penilaian yang sama. Jumlah koreksi
+  ditampilkan sebagai catatan aktivitas; tidak berlatih tidak disebut kemajuan.
+  Latihan terarah memakai koreksi 28 hari terakhir dan dapat dilanjutkan ke
+  interview baru untuk role yang sama.
+- Browser menemukan Back gagal setelah reload riwayat dan teks rapor tertutup
+  panel. Keduanya diperbaiki dan kasus layar terkait diperiksa ulang.
+
+Bukti: test:persistence 15/15; test:core 9/9; test:learning 14/14.
+TypeScript dan lint frontend/backend lulus. Next production build lulus dengan
+konfigurasi database/provider sintetis (19/19 static pages). Warning penentuan
+workspace root karena dua lockfile masih ada; kedua lockfile memang dipakai.
+
+Browser: Expo web -> route handlers asli -> PostgreSQL sementara (PGlite).
+Akun dan AI sintetis. Dua interview selesai, latihan terarah dijalankan,
+respons sukses sengaja diganti 503 lalu dipulihkan lewat Retry. Tercatat tiga
+sesi berisi 10/2/10 pesan; 12 POST percakapan hanya memakai 11 panggilan AI
+simulasi. Dua rapor tetap dua panggilan setelah reload. Riwayat menyimpan note.
+Layar 390x844 diperiksa. Ini bukan bukti Next runtime produksi, Neon, provider
+nyata, pembelajaran pengguna atau pemakaian Android. PGlite memakai satu koneksi.
+
+Migrasi 0011_durable_conversation_turns tersedia, belum diterapkan ke Neon.
+expo-crypto ditambahkan sesuai SDK 57; perlu APK baru sebelum memakai perubahan
+native. ADB tersedia, tetapi daftar perangkat kosong. Tidak ada deployment,
+APK baru, panggilan AI/email berbayar atau perubahan auto-recharge dalam sesi ini.
+
+Tahap C: rancangan akun 17 tes sintetis lulus, tetapi BELUM diterapkan.
+Auto-review meminta izin pengguna khusus untuk perubahan akses akun. Pertanyaan
+izin sudah dikirim; belum ada jawaban. Rebase rancangan terhadap perubahan B
+terbaru sebelum menerapkannya bila diizinkan. Anggaran live belum disetujui.
+Tahap D–F tetap terbuka: rilis selaras, uji Android dan manfaat pada pengguna.
+
+Bukti serta cadangan sesi berada di:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/
+dan work/<batch>/before/. Lihat Talkly-Hasil-Perbaikan-Lokal-2026-10-03.md.
+
 ## Bukti pasar (Tier S — fresh-verified 2026-07-03)
 
 **Duolingo** (NASDAQ: DUOL, perusahaan publik) — data resmi SEC filing Q1 2026:
