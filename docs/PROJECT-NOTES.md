@@ -66,10 +66,17 @@ expo-crypto ditambahkan sesuai SDK 57; perlu APK baru sebelum memakai perubahan
 native. ADB tersedia, tetapi daftar perangkat kosong. Tidak ada deployment,
 APK baru, panggilan AI/email berbayar atau perubahan auto-recharge dalam sesi ini.
 
-Tahap C: rancangan akun 17 tes sintetis lulus, tetapi BELUM diterapkan.
-Auto-review meminta izin pengguna khusus untuk perubahan akses akun. Pertanyaan
-izin sudah dikirim; belum ada jawaban. Rebase rancangan terhadap perubahan B
-terbaru sebelum menerapkannya bila diizinkan. Anggaran live belum disetujui.
+Tahap C: rancangan akun v3 sudah diselaraskan dengan perubahan B terbaru.
+Sebanyak 19 tes akun/migrasi lulus pada PostgreSQL sementara dengan akun sintetis;
+TypeScript nol diagnostic. Migrasi usulan 0012 hanya menambah auth_version.
+Akun uji yang sudah ada tetap utuh; reset mencabut sesi lama dan login baru berhasil.
+24 file kode dan 3 file migrasi hanya disiapkan di folder chat, BELUM diterapkan.
+Sebelas endpoint mempertahankan logika selain menunggu pemeriksaan sesi.
+Auto-review meminta izin khusus atas perubahan akses akun. Pertanyaan izin sudah
+dikirim dan belum dijawab. Anggaran live belum disetujui. Syarat lanjut adalah
+izin perubahan akun lokal; cloud, email nyata dan deployment tetap terpisah.
+Rancangan: outputs/Talkly-Perubahan-Akun-Untuk-Ditinjau.md pada folder chat.
+Bukti: outputs/talkly-auth-proposal-v3-complete-checks.json (19 pemeriksaan).
 Tahap D–F tetap terbuka: rilis selaras, uji Android dan manfaat pada pengguna.
 
 Bukti serta cadangan sesi berada di:
