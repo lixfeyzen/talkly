@@ -20,15 +20,60 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status terbaru 2026-10-05: B lolos uji lokal terdahulu; APK QA dan alur emulator
-sudah diuji. Audit nilai membuka perbaikan hubungan koreksi dengan latihan;
-lihat milestone audit di bawah. Manfaat pengguna belum diuji.
+Status terbaru 2026-10-05: B1/B2 selesai pada uji lokal dan browser dengan AI buatan.
+B3 penerapan pada tugas baru dan B4 pengarahan v1 masih terbuka.
+APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
 Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi cloud, provider nyata,
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Implementasi bertahap: B2 revisi jawaban selesai lokal — 2026-10-05
+
+Rapor baru membawa satu target nullable; server mencocokkan nomor jawaban,
+indeks perbaikan dan kutipan dengan interview milik pengguna.
+Sesi answer_practice menyimpan pertanyaan, jawaban asal, satu perbaikan dan
+kriteria pada metadata pembuka. Jawaban ulang disimpan di sesi terpisah.
+Sumber/kriteria tetap terkunci pada sesi dan hasil pending; Retry tidak
+menggandakan hasil. Rapor lama tidak ditebak atau dibuat ulang otomatis.
+Target null/tidak cocok memakai latihan umum dengan label yang jelas.
+Daftar perbaikan kosong diperbolehkan; label jawaban baik tidak memaksa kelemahan.
+
+Implementer: target 45/45, opener 50/50, persistence 15/15, learning 14/14, core 9/9.
+TypeScript penuh frontend/backend pada 512 MB serta lint terdampak exit0.
+Percobaan TS 256 MB gagal alokasi memori; output gagal tetap disimpan.
+Verifier komponen 22/22 memakai hooks/API/native-element simulasi.
+Dua cacat dibuktikan lalu diperbaiki: pertanyaan kosong (retest 2/2), dan
+data target hilang pada sesi yang sudah berisi jawaban (focused actual handler/SQL 13/13).
+SQL awal 55/56 bukan hasil 56/56; kegagalan tetap tersedia.
+
+CUA browser benar-benar menjalankan dua interview, revisi grammar A1,
+revisi content A2 tanpa grammar mistake, respons hilang/Retry, history,
+linked-entry reload, history reload, Practice again dan Start over.
+Sumber asli masing-masing 11 pesan; tiga revisi masing-masing 3 pesan.
+14 conversation POST menghasilkan13 AI buatan; 3 report POST menghasilkan2 rapor.
+Pemeriksaan silang browser/data/source 22/22 tercatat di outputs/talkly-b2-browser-independent-1791154534114.json.
+33 berkas frontend src identik D/C; semua layanan/tab QA ditutup setelah capture.
+
+Salinan QA memakai web.output single; konfigurasi web static di D tetap.
+Reload linked entry memulai draft baru; jawaban tersimpan dibuka melalui History.
+Peringatan static web B1 belum diperbaiki; bukan bukti Android gagal.
+Log QA mencatat peringatan style lama dan dukungan push web, tanpa JS error terlihat.
+Feedback/skor/akun/data buatan; tidak membuktikan kualitas AI aktual atau manfaat manusia.
+
+Hasil/diff/backup/rollback:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-B2-Hasil-2026-10-05.md
+work/b2-implementation/final/2026-10-04T22-44-04-360Z/ menyimpan diff dan receipt.
+Rollback menolak perubahan lanjutan dan mengarsipkan berkas; sintaks diperiksa,
+belum dijalankan. 12 berkas lama dan 2 baru; dirty work/B1 tetap dipertahankan.
+Tidak ada app commit, migrasi, provider nyata, deployment atau perubahan akun/memori.
+
+Checkpoint berikut B3: pertanyaan berbeda memakai kriteria terikat,
+bukti jawaban tersimpan, dan grafik tidak mengklaim delta setara tanpa dasar.
+Setelah B3: B4 pengarahan v1; C AI aktual/biaya; D/E API/build/perangkat;
+F manfaat pengguna. B keseluruhan masih terbuka, akun tetap ditunda.
 
 ## Implementasi bertahap: B1 transkrip selesai lokal — 2026-10-05
 
