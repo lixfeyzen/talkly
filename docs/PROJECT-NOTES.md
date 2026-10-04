@@ -20,13 +20,55 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status terbaru 2026-10-05: B selesai lokal; APK QA dan alur emulator sudah diuji.
+Status terbaru 2026-10-05: B lolos uji lokal terdahulu; APK QA dan alur emulator
+sudah diuji. Audit nilai membuka perbaikan hubungan koreksi dengan latihan;
+lihat milestone audit di bawah. Manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
 Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi cloud, provider nyata,
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Audit fokus dan nilai produk — 2026-10-05
+
+Pengguna meminta audit manfaat nyata dan keselarasan komponen dengan fokus.
+Yohanes mengonfirmasi: belum pernah dicoba pengguna sasaran.
+Fokus interview English masuk akal sebagai hipotesis untuk diuji, belum bukti
+efektivitas atau kelayakan bisnis. Model runtime sudah GPT-4o; model yang dahulu
+membantu membangun belum diketahui. Penyebab tidak boleh disimpulkan dari merek AI.
+
+Temuan utama: tombol latihan rapor tidak membawa masalah pada jawaban itu;
+pertanyaan pembuka tidak ikut dalam transkrip yang dikirim ke pembuat rapor;
+role/rubrik sama belum cukup untuk menyatakan dua set pertanyaan sebanding.
+Countdown memakai seluruh riwayat, sedangkan saran Home memakai 28 hari.
+Evaluator terkini memakai prompt umum dan tidak membuat rapor interview.
+Weekly yang ditunda masih dapat diakses bila data dashboard berhasil.
+
+Keputusan audit: pertahankan interview, koreksi native tersimpan dan riwayat.
+Prioritaskan satu perbaikan -> jawaban ulang dengan kata sendiri -> pertanyaan baru.
+Skor/grafik menjadi pendukung; Weekly dan monetisasi tetap ditunda.
+Uji lokal B terdahulu dipertahankan, tetapi celah hubungan latihan perlu diperbaiki.
+Kebutuhan/manfaat dapat diperiksa manual bersama peserta sebelum rilis produksi.
+Ukuran: perbaikan diterapkan pada jawaban baru dan membantu dibanding cara sebelumnya.
+Penilai bahasa/isi memeriksa kebenaran; skor AI bukan satu-satunya bukti.
+
+Dasar audit: bagian dokumen relevan, kode terkini, lima screenshot emulator lama,
+empat sumber primer dengan batas akses, dan fungsi asli memakai input sintetis.
+Sepuluh berkas frontend inti identik dengan salinan build QA saat dicek ulang.
+Hasil fungsi/screenshot bukan bukti belajar, speaking, hiring atau kemauan membayar.
+Tidak ada pengguna yang dihubungi, panggilan provider, app edit atau deployment.
+Paket akun tetap ditunda; rancangan biaya lama belum berarti izin menjalankannya.
+
+Laporan, seluruh V1-V7, langkah manual P1-P5 dan peta A-F:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-Audit-Nilai-Produk-2026-10-05.md
+Bukti fungsi asli/sintetis:
+outputs/talkly-product-claims-independent-1791147668729.json
+outputs/talkly-opener-independent-1791147747127.json
+
+Langkah berikut yang direkomendasikan: periksa contoh masalah nyata peserta,
+lalu tinjau perbaikan alur yang sesuai. Pembangunan dan uji penggunaan nyata
+belum dilakukan dalam audit ini. C-F dan manfaat keseluruhan tetap terbuka.
 
 ## Persiapan uji AI dan batas biaya — 2026-10-05
 
