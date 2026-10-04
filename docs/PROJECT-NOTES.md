@@ -30,6 +30,44 @@ dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
 
+## Rencana prioritas dari audit dan riset — 2026-10-05
+
+Arahan terbaru pengguna: gunakan riset sebagai dasar manfaat dan susun rencana
+prioritas dahulu. Perbaikan B tidak perlu menunggu rekrutmen pengguna sasaran.
+Riset mendukung pendekatan dalam konteks yang diteliti; penerapan Talkly tetap
+diperiksa melalui kode, AI aktual, alur perangkat, dan jawaban pengguna.
+Belum ada peserta bukan alasan menahan perbaikan cacat yang sudah ditemukan.
+
+Dasar: Kang & Han 2015 untuk koreksi tertulis; Lyster & Saito 2010 untuk koreksi
+lisan dan perbaikan sendiri; Suzuki dkk. 2025 untuk feedback dengan latihan AI;
+Harvard MCS untuk praktik jawaban interview. Abstrak/panduan dan batas akses
+tercatat dalam rencana; tidak mengklaim pembacaan penuh atau Talkly sudah efektif.
+
+Urutan B: B1 transkrip/pembuka lengkap -> B2 satu perbaikan terkait jawaban
+dan latihan ulang -> B3 penerapan pada pertanyaan baru/progres yang tepat ->
+B4 Home, role, rentang 28 hari, akses Weekly serta dokumen yang selaras.
+B1 menyimpan pembuka asli tepat sekali dalam transaksi jawaban pertama.
+B2 memerlukan target yang server cocokkan dengan data pengguna; rapor lama
+tetap terbuka tanpa tebakan hubungan atau AI ulang otomatis.
+
+Rute keseluruhan: A fokus/riset -> B pembangunan -> C AI aktual/biaya ->
+D persiapan API/build -> E QA Android -> D publikasi final.
+F dapat dimulai manual/pilot lebih awal; penggunaan app final setelah D/E.
+Codex menangani rencana dan pekerjaan teknis yang disepakati.
+Yohanes memutuskan produk, biaya/rilis dan akses peserta/perangkat yang belum ada.
+
+Status: rencana sudah disusun; pembangunan B1-B4 baru belum dilakukan.
+Tes lokal/Android sintetis terdahulu dipertahankan sebagai bukti terbatas.
+Paket akun tetap ditunda. Weekly dan monetisasi ditunda, kodenya dipertahankan.
+Budget lama dicocokkan ulang setelah B; usulan US$1/13 panggilan bukan izin baru.
+Tidak ada app edit, provider, deployment, kontak peserta atau perubahan instruksi global.
+
+Rencana lengkap: tujuan, sumber, A-F, B1-B4, pemilik, prasyarat, bukti selesai,
+penanganan kegagalan dan batas pelaksanaan:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-Rencana-Prioritas-2026-10-05.md
+Checkpoint pelaksanaan berikut: B1; masukan rapor harus lengkap dan tidak berganda
+saat Retry/restart. Implementasi menunggu berakhirnya tugas plan dahulu ini.
+
 ## Audit fokus dan nilai produk — 2026-10-05
 
 Pengguna meminta audit manfaat nyata dan keselarasan komponen dengan fokus.
