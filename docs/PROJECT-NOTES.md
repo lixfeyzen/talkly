@@ -30,6 +30,44 @@ dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
 
+## Implementasi bertahap: B1 transkrip selesai lokal — 2026-10-05
+
+Pengguna menyetujui menerapkan rencana prioritas secara bertahap.
+B1 menyimpan pembuka lengkap yang benar-benar tampil bersama jawaban pertama.
+AI first turn menerima pembuka itu; Retry memakai hasil tersimpan.
+expectedTurns tetap panjang sebelum append (nol); lima jawaban menentukan selesai.
+Raw history dan hasil pending lama tanpa pembuka tetap mempertahankan bentuk lama.
+Rapor lama tidak dibuat ulang. Tidak ada panggilan AI pembuka tambahan.
+
+Implementer: B1 50/50, inti 9/9, persistence 15/15, learning 14/14.
+TypeScript penuh serta lint berkas terdampak frontend/backend exit 0.
+Verifier independen: 61/61 pada route, SQL, serializer asli dan PostgreSQL sementara.
+AI/akun sintetis pada suite tersebut; kegagalan alokasi memori terdahulu disimpan.
+Compiler yang lebih ringan membuat pemeriksaan independen dapat dijalankan.
+
+Browser CUA memakai export frontend yang 33 berkas src-nya sama dengan sumber D.
+Login QA, pembuka, kegagalan respons setelah DB berhasil, Retry, lima jawaban,
+rapor, reload, riwayat, interview baru, serta Start over benar-benar dijalankan.
+Data browser: sesi pertama 11 pesan, sesi kedua 3 pesan, 6 panggilan percakapan
+dan 1 pembuatan rapor. Dua permintaan rapor memakai hasil tersimpan yang sama.
+Masukan rapor dicatat langsung. Respons/skor AI buatan, bukan bukti kualitas AI.
+Web statis menampilkan peringatan hydration saat reload sebelum rapor benar tampil.
+Peringatan disimpan dan belum diperbaiki pada B1; bukan bukti cacat Android.
+Layanan QA dihentikan. Tidak memakai Neon/provider atau data pengguna nyata.
+
+Hasil, batas dan bukti:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-B1-Hasil-2026-10-05.md
+Diff, backup byte-verified, perintah dan pemulihan tersimpan pada
+work/b1-implementation/ di task tersebut. Pemulihan menolak isi yang berubah lagi;
+sintaks diperiksa, tidak dijalankan. Seluruh dirty work terdahulu dipertahankan.
+
+Checkpoint berikut B2: target rapor terikat jawaban milik pengguna;
+latihan ulang menyimpan sumber/kriteria tanpa menimpa jawaban awal.
+B3 tugas baru/progres dan B4 pengarahan v1 menyusul sesuai rencana.
+B keseluruhan belum selesai. C AI aktual, D/E rilis/perangkat dan F manfaat tetap terbuka.
+Akun tetap ditunda; usulan biaya lama belum disetujui. Tidak ada app commit,
+migrasi cloud, deployment, kontak peserta atau perubahan memori global.
+
 ## Rencana prioritas dari audit dan riset — 2026-10-05
 
 Arahan terbaru pengguna: gunakan riset sebagai dasar manfaat dan susun rencana
