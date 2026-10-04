@@ -20,12 +20,55 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status: tahap B (perbaikan inti) dikerjakan. Tahap C akun/biaya, D rilis,
-E penggunaan HP, dan F manfaat pengguna masih terbuka. Anggaran pengujian
-berbayar belum ditetapkan; implementasi dan pemeriksaan awal memakai layanan tiruan.
-Deployment, migrasi cloud, perubahan provider, dan build berbayar belum dijalankan.
+Status terbaru 2026-10-05: B selesai lokal; APK QA dan alur emulator sudah diuji.
+C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
+masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
+Anggaran berbayar belum ditetapkan. Deployment, migrasi cloud, provider nyata,
+dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Milestone Android lokal — 2026-10-05
+
+APK kode terkini sudah dibuat dan dipakai pada emulator Android API 36.
+Salinan build memakai identitas com.talkly.app.localqa dan API localhost:3001.
+Paket ditandatangani dengan kunci uji; bukan rilis Play Store atau cloud.
+Ukuran 75.625.665 byte; arm64-v8a dan x86_64. Sumber 64/64 berkas cocok.
+SHA-256: c38296a3875e92138835891d91d92ebe8bd03853b1697d5499d76299b66cf6a6.
+
+Alur inti 14/14 pemeriksaan bukti lulus: login, dua interview dengan role sama,
+latihan terarah, Retry setelah respons 503 buatan, riwayat setelah cold restart,
+note Indonesia tersimpan, dan rapor tidak meminta AI lagi saat dibuka ulang.
+Tiga sesi berisi 10/2/10 pesan. Dua belas POST memakai sebelas AI simulasi;
+panggilan rapor tetap dua. Skor 70 ditetapkan untuk uji, bukan bukti belajar.
+Backend menggunakan route handlers asli dan PGlite/PostgreSQL satu koneksi.
+Akun, jawaban dan AI sintetis. Neon, Next runtime produksi dan AI nyata belum diuji.
+
+Kontrol reminder/kegagalan suara 10/10 pemeriksaan bukti lulus.
+Izin notifikasi diminta; alarm bertahan setelah proses ditutup dan dibuka ulang.
+Saat reminder OFF, alarm aktif nol. Pemutaran yang gagal tetap menerima ketikan.
+Penolakan mikrofon dijelaskan dan teks tetap tersimpan. Suara sukses belum diuji.
+Kode HTTP permintaan suara Android tidak ditangkap. Server uji lama berhenti;
+salinan data setelah suara adalah snapshot terakhir, bukan pembacaan database baru.
+
+Pengiriman reminder 10/10 pemeriksaan bukti lulus pada uji jam emulator.
+APK yang sama menjadwalkan dari Settings; proses aplikasi lalu dihentikan di latar.
+Jam virtual dimajukan melewati target 19.00 dan jendela satu jam hingga 20.00.01.
+Notifikasi native Time to practice muncul dan ketukannya membuka Talkly Home.
+Tidak ada notifikasi yang disisipkan manual. Jam, waktu otomatis dan UID shell
+awal dipulihkan; reminder dimatikan kembali. Uji ini tidak membuktikan ketepatan
+waktu biasa, pembatasan baterai, atau HP fisik. Backend baru tidak memanggil AI.
+
+Tidak ada perubahan kode aplikasi pada milestone Android ini. B tetap ada dalam
+working tree bersama pekerjaan lama. Usulan akun 0012 tetap di luar repo.
+Cloud, provider berbayar, email dan auto-recharge tidak diubah.
+V1 keseluruhan belum selesai: biaya/AI nyata, rilis produksi, HP/suara nyata,
+serta penggunaan koreksi oleh pengguna sasaran masih memerlukan bukti.
+
+APK, laporan lengkap dan bukti berada di folder chat:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/
+Lihat Talkly-Android-QA-2026-10-05.md, talkly-android-core-checks.json,
+talkly-android-extras-checks.json dan talkly-reminder-delivery-checks.json.
 
 ## Milestone lokal: alur latihan dan pemulihan — 2026-10-03
 
@@ -72,9 +115,10 @@ TypeScript nol diagnostic. Migrasi usulan 0012 hanya menambah auth_version.
 Akun uji yang sudah ada tetap utuh; reset mencabut sesi lama dan login baru berhasil.
 24 file kode dan 3 file migrasi hanya disiapkan di folder chat, BELUM diterapkan.
 Sebelas endpoint mempertahankan logika selain menunggu pemeriksaan sesi.
-Auto-review meminta izin khusus atas perubahan akses akun. Pertanyaan izin sudah
-dikirim dan belum dijawab. Anggaran live belum disetujui. Syarat lanjut adalah
-izin perubahan akun lokal; cloud, email nyata dan deployment tetap terpisah.
+Keputusan 2026-10-04: pengguna memilih membiarkan paket akun saat ini.
+Usulan akun tetap ditunda; tidak diterapkan ke repo atau cloud.
+Pertanyaan izin lama tidak lagi menunggu jawaban. Anggaran live masih terbuka.
+Cloud, email nyata dan deployment tetap memerlukan keputusan terpisah.
 Rancangan: outputs/Talkly-Perubahan-Akun-Untuk-Ditinjau.md pada folder chat.
 Bukti: outputs/talkly-auth-proposal-v3-complete-checks.json (19 pemeriksaan).
 Tahap D–F tetap terbuka: rilis selaras, uji Android dan manfaat pada pengguna.
