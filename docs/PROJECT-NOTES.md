@@ -23,10 +23,44 @@ yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir
 Status terbaru 2026-10-05: B selesai lokal; APK QA dan alur emulator sudah diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
-Anggaran berbayar belum ditetapkan. Deployment, migrasi cloud, provider nyata,
+Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi cloud, provider nyata,
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Persiapan uji AI dan batas biaya — 2026-10-05
+
+Rancangan satu kali uji AI teks tersedia; usulan biaya maksimum US$1 belum disetujui.
+Model tetap gpt-4o-2024-08-06: dua interview, satu latihan, dua rapor.
+Maksimal 13 panggilan; keluaran 1.024 token per giliran dan 2.048 per rapor.
+SDK QA menonaktifkan retry; transport menolak model/endpoint, alat, gambar,
+panggilan paralel dan jumlah pilihan yang tidak disetujui rancangan.
+Pembatas mencadangkan biaya sebelum kirim dan berhenti pada pemakaian tak jelas.
+Tarif Standard US$2,50/US$10 per sejuta token input/output; cadangan memakai
+tarif Priority US$4,25/US$17 dan konteks maksimum 128.000 token secara konservatif.
+Perkiraan US$0,156 berasal dari asumsi token, bukan tagihan/pemakaian nyata.
+Jika cadangan berikutnya tidak cukup, uji dapat berhenti sebelum 13 panggilan.
+Pagar ini untuk biaya token alat QA; bukan seluruh akun, pajak atau produksi.
+
+Pembatas 17/17 dan alur 9/9 pemeriksaan offline lulus. Route handlers, prompt,
+SDK dan PostgreSQL sementara asli; akun, respons AI dan hitungan token buatan.
+Tiga sesi dan dua rapor tersimpan. Pengiriman ulang dan rapor tersimpan tidak
+menambah panggilan simulasi. Jam backend sementara dimajukan 61 detik.
+Database sementara sudah ditutup; tidak memakai Neon atau data pengguna.
+AI nyata, kualitas isi, Android dengan provider, suara dan manfaat manusia belum diuji.
+Kode aplikasi, paket akun, deployment, provider/email dan auto-recharge tidak diubah.
+
+Temuan resmi untuk rilis: tts-1 berhenti 6 Januari 2027; whisper-1 berhenti
+26 Februari 2027. Penggantian perlu disiapkan sebelum melewati jadwal tersebut;
+model/kode suara belum diganti. Sumber diperiksa pada 5 Oktober 2026:
+https://developers.openai.com/api/docs/pricing
+https://developers.openai.com/api/docs/models/gpt-4o
+https://developers.openai.com/api/docs/deprecations
+
+Artefak di folder chat outputs/Talkly-Uji-AI-Biaya-2026-10-05.md,
+talkly-ai-budget-checks.json dan talkly-ai-offline-flow.json.
+Langkah berikut: keputusan biaya oleh pengguna, lalu uji dan tinjau isi oleh Codex.
+Persetujuan akun tidak diminta ulang. V1 keseluruhan masih terbuka pada C–F.
 
 ## Milestone Android lokal — 2026-10-05
 
