@@ -11,7 +11,7 @@ User menyetujui melanjutkan implementasi setelah audit produk dan teknis.
 Acuan terbaru adalah fokus interview English untuk non-native professionals;
 UI English dan penjelasan koreksi dalam bahasa native tetap dipertahankan.
 Alur penerimaan: akun -> interview -> koreksi tersimpan -> latihan terarah ->
-jawaban baru yang sebanding -> buka kembali riwayat pada Android.
+pertanyaan baru dengan kriteria yang sama -> buka kembali riwayat pada Android.
 Suara dan reminder yang sudah ada tetap harus diuji jika disertakan rilis.
 Weekly Challenge dan monetisasi ditunda; pekerjaan lokalnya dipertahankan.
 
@@ -20,9 +20,8 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status terbaru 2026-10-05: B1/B2 selesai pada uji lokal dan browser dengan AI buatan.
-B3 terpasang, tetapi penyimpanan, TypeScript/lint dan browser belum selesai diuji.
-B4 belum dimulai.
+Status terbaru 2026-10-05: B1/B2/B3 selesai pada uji lokal dan browser dengan AI buatan.
+B4 berikutnya: Home/countdown, role, Weekly v1 dan dokumen.
 APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
@@ -30,6 +29,50 @@ Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi clou
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Implementasi bertahap: B3 selesai lokal/browser — 2026-10-05
+
+Revisi sekarang membuka pertanyaan baru dengan kriteria tersimpan yang sama.
+Interview asal, revisi dan penerapan tetap terpisah; sumber dapat dibuka lagi.
+Salinan terdeteksi, skip serta kutipan kosong/salah menghasilkan masukan netral.
+Grafik memakai skor tiap latihan tanpa menyebut selisih sebagai bukti belajar.
+Pilihan tugas boleh null; tidak ada panggilan pembuka/evaluator tambahan.
+
+Bukti sintetis: SQL implementer53/53; route/SQL/format SDK independen27/27;
+SDK4/4; fungsi layar24/24; helper16/16; regresi B2 45, B1 50,
+persistence15, learning14, core9 lulus. TypeScript penuh dan lint terdampak exit0.
+Browser asli+route+PostgreSQL sementara diperiksa silang32/32, exit0:
+dua interview11pesan, tiga revisi3, empat penerapan3; 18kiriman17AIbuatan.
+Retry identik, reload/tautan sumber, Start over kosong, null reason/noCTA,
+masukan netral serta kasus isi tanpa kesalahan grammar buatan terbukti.
+Seluruh33 sumber frontend dan32 sumber server cocok dengan D.
+Rapor browser aktual70/70 berbeda role; kontrol92 bukan hasil browser.
+Kasus kenaikan70ke92 tanpa klaim perbandingan hanya bukti fungsi/SQL.
+
+Uji teks tidak mengesahkan makna: fixture label berhasil dengan kutipan benar
+untuk “I will work tomorrow” tetap lolos kriteria bentuk lampau.
+Kecocokan tugas dan penilaian model aktual harus diperiksa pada C.
+AI buatan, akun/input buatan; bukan penguasaan mandiri atau manfaat pengguna.
+QA web memakai salinan single; warning reload static D lama belum terbukti selesai.
+APK/emulator lama belum memuat B1–B3; Android terbaru masih terbuka.
+
+Trial resource gagal disimpan. Setelah headroom berubah dari sekitar205MiB
+ke1,4GiB, smoke128MiB/SQL/TS/lint lulus; penyebab persis smoke lama belum pasti.
+Typo harness, asumsi hitungan sumber JOIN dan opsi export diperbaiki hanya pada QA.
+Tidak ada aplikasi pengguna ditutup atau pengaturan sistem diubah.
+Saat penutupan, port3001/8081 dan tabQA tidak ditemukan; handle proses hilang.
+Tidak ada klaim bahwa perintah penghentian berhasil; observasi tersimpan.
+
+13sumber aplikasi+2skrip uji; 26salinan cadangan cocok; rollback dry-run15 lulus.
+Rollback belum dijalankan; dua berkas baru diarsipkan saat pemulihan.
+Source belum di-commit; hanya catatan milestone. Kerja sebelum B3 terjaga.
+Laporan/diff/bukti/pemulihan/rute lengkap:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-B3-Hasil-2026-10-05.md
+
+B3 diterima untuk scope lokal/browser sintetis. Berikutnya B4: Home/role,
+fokus28hari sama, Weekly tersembunyi v1 dengan kode tetap, dokumen selaras.
+C–F belum selesai; akun ditunda; biaya/provider/deploy belum diizinkan.
+Blok checkpoint lama di bawah adalah riwayat, bukan status penerimaan kini.
 
 ## Implementasi bertahap: B3 terpasang, verifikasi terbuka — 2026-10-05
 
