@@ -5,6 +5,29 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Persiapan akun v4 dan kontrak biaya — 2026-10-06
+
+Kandidat akun v4 siap ditinjau di workspace audit; belum dipasang pada aplikasi/cloud.
+24 source + 3 berkas migrasi; 9 route disesuaikan dengan baseline terbaru.
+16 route hanya berubah pada pemeriksaan akun; B1–B4 dan guidance v2 dipertahankan.
+28/28 tes auth asli dengan akun buatan/database sementara; reset mencabut token lama.
+14/14 tes rapor/skor/riwayat/suggestion/trajectory memakai AI buatan; TypeScript 0 diagnostics.
+Tes 14 itu tidak menjalankan ulang opener/revisi/transfer; preservasi code diperiksa terpisah.
+Review independen menjalankan tes dan menerima persiapan saja; bukan penerimaan produk.
+148 berkas source/migrasi/script/package repo dan 16 artefak lama tetap utuh.
+Empat dispatch SDK OpenAI ditemukan; opener/plan/saran skenario tidak menambah panggilan.
+Kuota jumlah request tidak membatasi uang; retry default SDK dapat menambah attempt.
+Kontrak mengusulkan reservasi user+total sebelum dispatch, output/retry eksplisit dan unknown tetap ditahan.
+Kontrak/config biaya belum dipasang atau diuji sebagai guard aplikasi; anggaran positif belum diputuskan.
+API tambahan tetap US$0/0 request; tarif/invoice/total Codex tidak diverifikasi.
+Penundaan akun lama tetap tercatat; penerapan source lokal memerlukan keputusan baru yang spesifik.
+Migrasi cloud/email/deploy/paid provider tidak dilakukan. Rollback auth lama dapat menerima kembali token dicabut.
+C model aktual v2, D/E Android/hosted terbaru, F peserta dan G pembayaran tetap terbuka.
+Proposal: C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-Proposal-Akun-v4-2026-10-06.md
+Kontrak: C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-Kontrak-Biaya-Operasional-2026-10-06.md
+Bukti review: outputs/talkly-saas-preparation-verification-20261006.json pada workspace audit.
+Progres: work/task-progress.json → saasExecutionPreparation; scope persiapan, bukan seluruh D1/D2 selesai.
+
 ## Rencana SaaS menyeluruh — 2026-10-06
 
 Yohanes meminta planning menuju Talkly yang dapat dipakai dan mungkin dibayar.
