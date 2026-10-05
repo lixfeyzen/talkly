@@ -25,12 +25,31 @@ C run pertama memakai15 panggilan model aktual; kualitas makna gagal.
 Estimasi token konservatif US$0,065822; bukan invoice atau saldo akun.
 Perbaikan v2 lulus lokal; source beku dan delapan jawaban baru siap diuji.
 Provider v2 belum dijalankan. Izin satu run pertama sudah terpakai.
-Usulan run kedua maksimum16 permintaan teks / US$1 belum disetujui.
+Batas total dua uji diperkecil menjadi US$0,50; uji kedua belum diizinkan.
 APK/emulator lama belum memuat B1–B4 atau C terbaru. D rilis, E HP/suara,
 F manfaat tetap terbuka. Belum pernah dicoba pengguna sasaran.
 Paket akun ditunda. Auto-recharge tetap; tidak ada deployment baru.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## C batas biaya diperkecil — 2026-10-05
+
+Yohanes meminta batas lebih kecil dari US$1. Batas token total dua uji
+sekarang US$0,50; estimasi konservatif v1 US$0,065822 sudah dihitung.
+Sisa untuk satu run kedua US$0,434178, maksimum16 attempt, model sama.
+Ini batas dua proses QA, bukan invoice/saldo seluruh akun atau biaya Codex.
+Tidak ada provider kedua, retry/fallback/judge berbayar atau auto-recharge.
+Pengaman full128k sebelum dispatch tetap; saldo tidak menjadi izin run.
+Proof salinan guard8/8 dan total5/5, exit0: cadangan + biaya tidak melewati
+batas; token v1 direplay lokal, bukan prediksi biaya atau penyelesaian v2.
+Dua percobaan offline gagal native memory; satu gagal setup, nol provider.
+Sesudah membatasi compiler WebAssembly, offline63/63,16 balasan buatan,
+38 route, exit0, database ditutup; join17/17, izin18/18, guidance4/4 exit0.
+Usage offline sekarang buatan yang lebih kecil; bukan tarif atau cost forecast.
+Source app/kasus baru/guard/marker lama tetap. Pending approved=false.
+C-Q6 menunggu satu keputusan biaya baru; mutu model v2 belum diverifikasi.
+Bukti terbaru: work/c-current-flow/runs/offline-2026-10-05T06-35-55-354Z-5445302c/preparation.json
+Proof batas: outputs/talkly-quality-independent-total-cap-1791181310261.json
 
 ## C kualitas AI: hasil aktual dan perbaikan v2 — 2026-10-05
 
@@ -75,7 +94,7 @@ Label adalah referensi AI, bukan kalibrasi ahli; workspace bersama bukan
 pembutaan kriptografis. Tidak ada klaim belajar, speaking atau kesiapan kerja.
 Cadangan/diff/rollback tersedia; rollback belum dijalankan, v1 tetap tersimpan.
 
-Usulan baru: satu run teks maksimum16 attempt / US$1 token dari saldo ada,
+Usulan baru: satu run teks maksimum16 attempt / US$0,434178 token dari saldo ada,
 model sama, tanpa retry/fallback/judge berbayar atau auto-recharge.
 Template pending approved=false; tidak membuat ulang marker terpakai.
 Setelah izin baru, source/persiapan diperiksa; Codex meninjau G2/G3 sebelum
