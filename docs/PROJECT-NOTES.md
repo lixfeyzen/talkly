@@ -25,10 +25,50 @@ Home mengutamakan interview; role, fokus28hari dan Weekly v1 telah diperiksa.
 APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
-Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi cloud, provider nyata,
+Usulan uji C maksimal 16 permintaan / US$1 siap ditinjau, belum disetujui. Deployment, migrasi cloud, provider nyata,
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Persiapan C diterima offline — 2026-10-05
+
+Persiapan untuk menguji AI aktual selesai. C live tetap belum dijalankan.
+52/52 pemeriksaan alur lulus, exit0; 16 respons AI buatan, 36 operasi API.
+Kode route, parser SDK dan PostgreSQL sementara benar-benar dijalankan.
+Database sementara ditutup. Tidak ada provider, network, key/.env dibaca.
+Pembatas biaya21/21 + pemeriksaan independen15/15; fixture11/11, semua exit0.
+Pengaman izin18/18; pemeriksaan silang bukti20/20, exit0.
+37 berkas source/migrasi, 518 dependency dan enam berkas evaluator terikat
+ke bukti alur; perubahan diperiksa kembali sebelum live.
+
+K4 sengaja memberi observed pada jawaban future-only. Hasil salah itu tetap
+tersimpan: kecocokan kutipan tidak membuktikan makna. Ini simulasi, bukan
+kegagalan model aktual. K6/K7 copy/skip dinetralkan server. Semua16 review
+makna tetap unreviewed. Rapor buatan88 dinormalisasi70, bukan hasil belajar.
+Dua trial alur dan satu pemeriksa silang gagal, lalu diperbaiki hanya di QA.
+Ketiga trial gagal tetap tersimpan; bentuk respons history diperiksa sesuai API.
+Source aplikasi tidak diubah dalam persiapan C. Tidak ada uji browser baru.
+
+Usulan: satu run teks memakai model aplikasi gpt-4o-2024-08-06.
+Maksimal16 attempt; biaya token US$1 dari saldo yang ada, belum disetujui.
+Lima turn + rapor; revisi/tugas baru bersyarat; delapan kasus kontrol terpisah.
+Codex meninjau hasil G2/G3 sebelum meneruskan target/tugas. Null/rejected
+tetap dicatat, tidak diganti agar alur terlihat berhasil.
+Tidak ada retry SDK, model pengganti, AI judge atau regenerasi tambahan.
+Izin manusia harus terpisah; approvalId satu kali, salinan tidak mereset jatah.
+Tarif default resmi USD2.50 input / USD10 output per1M token diperiksa:
+https://developers.openai.com/api/docs/models/gpt-4o
+Pembatas hanya untuk run QA ini dalam kontrak tarif default. Bukan batas
+akun atau invoice; penggunaan token offline adalah angka buatan.
+Auto-recharge tidak diubah; paket akun tetap ditunda. Tidak ada deploy.
+
+Laporan, bukti mentah, kegagalan, pengaman dan rute A–F:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-C-Persiapan-Hasil-2026-10-05.md
+Codex menyelesaikan persiapan; Yohanes memutuskan pengeluaran berikutnya.
+Setelah izin: C makna/biaya aktual -> D persiapan API/build -> E Android
+terbaru/suara/reminder -> D rilis final. F pilot setelah B; app final setelah
+D/E. Belum ada pengguna sasaran; manfaat nyata tetap belum diuji.
+Catatan B4 dan sebelumnya di bawah dipertahankan sebagai riwayat.
 
 ## Implementasi bertahap: B4 selesai lokal/browser — 2026-10-05
 
