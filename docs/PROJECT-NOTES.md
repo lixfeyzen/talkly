@@ -5,6 +5,17 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## F manual: siap, belum dijalankan — 2026-10-06
+
+Yohanes menjawab langsung: “Belum ada peserta”. Penilai belum dikonfirmasi.
+Lembar P0-P5 disiapkan dan diperiksa; seluruh hasil masih kosong.
+Jawaban awal/ulang/baru, fakta asli, koreksi serta perbandingan cara lama dicatat.
+F tertahan peserta nyata; dokumen siap bukan bukti manfaat Talkly atau model v2.
+API tambahan tetap US$0; C aktual dan D/E penggunaan app terbaru tetap terbuka.
+Tidak ada kontak peserta, pengeluaran, provider, deployment atau edit source baru.
+Worksheet: outputs/Talkly-Uji-Manual-F-2026-10-06.md pada workspace audit.
+Bukti: work/manual-user-trial-handoff-20261006.json pada workspace audit.
+
 ## Status biaya terbaru — 2026-10-06
 
 Yohanes meminta biaya diperkecil lagi. Keputusan saat ini: US$0 API tambahan.
