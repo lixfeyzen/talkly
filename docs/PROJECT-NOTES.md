@@ -20,15 +20,78 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status terbaru 2026-10-05: B1–B4 selesai pada uji lokal dan browser dengan AI buatan.
-Home mengutamakan interview; role, fokus28hari dan Weekly v1 telah diperiksa.
-APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
-C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
-masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
-Usulan uji C maksimal 16 permintaan / US$1 siap ditinjau, belum disetujui. Deployment, migrasi cloud, provider nyata,
-dan build berbayar belum dijalankan.
+Status terbaru 2026-10-05: B1–B4 lulus lokal/browser dengan AI buatan.
+C run pertama memakai15 panggilan model aktual; kualitas makna gagal.
+Estimasi token konservatif US$0,065822; bukan invoice atau saldo akun.
+Perbaikan v2 lulus lokal; source beku dan delapan jawaban baru siap diuji.
+Provider v2 belum dijalankan. Izin satu run pertama sudah terpakai.
+Usulan run kedua maksimum16 permintaan teks / US$1 belum disetujui.
+APK/emulator lama belum memuat B1–B4 atau C terbaru. D rilis, E HP/suara,
+F manfaat tetap terbuka. Belum pernah dicoba pengguna sasaran.
+Paket akun ditunda. Auto-recharge tetap; tidak ada deployment baru.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## C kualitas AI: hasil aktual dan perbaikan v2 — 2026-10-05
+
+Riset publik UvA/AUT, ETS, DeepMind FACTS dan panduan evaluasi menjadi aturan
+di feedback-guidance.ts. Akses publik bukan kerja sama/dukungan institusi.
+Koreksi, fakta kandidat dan pemenuhan seluruh kriteria diperiksa terpisah.
+Kutipan dari jawaban terakhir disaring sebelum penyimpanan/statistik.
+Versi guidance melekat pada hasil baru; data/rubrik/cache lama dipertahankan.
+
+Run v1 actual: gpt-4o-2024-08-06 default,15 panggilan,37 operasi route;
+61/61 alur dan join biaya/data16/16, exit0, database sementara ditutup.
+Input kandidat buatan; keluaran provider nyata. Makna ditolak review AI.
+Tiga koreksi tidak diperlukan: one checklist item, habitual I check,
+dan class-project. Dua dari delapan keputusan kriteria tidak sesuai referensi.
+Rapor terlalu umum dan menghilangkan batas pengalaman; penutup menyiratkan
+rekrutmen. Generated G3 null sah; G4 tidak dijalankan. Enam kontrol transfer
+bukan bukti G4 generated. Tidak ada kalibrasi guru atau pembanding model lama.
+Input18807/output1880 token; estimasi konservatif US$0,065822, bukan tagihan.
+Maksimal16/US$1 ditaati; izin satu-run terpakai dan marker asli dipertahankan.
+
+V2 mengubah empat sumber; delapan hash source beku. Penutup final memakai
+INTERVIEW_COMPLETION_REPLY, transfer memakai buildTransferReply setelah
+validasi dan sebelum prepare. English server menyajikan keputusan AI,
+bukan membuktikan maknanya benar. Alasan native/status/kutipan tetap terpisah.
+Panduan mempertimbangkan pertanyaan, waktu, jumlah dan variasi gaya yang sah.
+Hasil baru feedback-guidance-v2; replay legacy/v1 tetap sama tanpa backfill.
+SDK/parser/route implementer31/31; TypeScript512MiB/lint exit0.
+Independent route/SDK/temporarySQL24/24, exit0, database ditutup.
+Persiapan baru63/63,16 respons buatan/38 route, exit0, database ditutup.
+Join persiapan17/17, pengaman izin18/18, guidance guard4/4, external exit0.
+38 source/migrasi,518 dependency,enam evaluator cocok dengan persiapan.
+Tes ini memakai balasan buatan; provider v2 belum diuji.
+K4 sengaja salah observed dengan kutipan had not sent tetap tersimpan:
+asal kutipan dan English tidak menjamin keputusan kriteria benar.
+Dua setup SDK verifikator gagal sebelum database; bukti gagal tetap ada.
+Perbaikan evaluator menutup pembacaan konfigurasi kunci cadangan.
+
+Source beku05:36:39Z; delapan jawaban baru beku05:45:12Z.
+Konteks sumber/bank dipakai kembali; generated lama adalah regresi.
+Kasus baru menguji waktu/negasi, pelaku passive dan kutipan fiksi/pengalaman.
+Label adalah referensi AI, bukan kalibrasi ahli; workspace bersama bukan
+pembutaan kriptografis. Tidak ada klaim belajar, speaking atau kesiapan kerja.
+Cadangan/diff/rollback tersedia; rollback belum dijalankan, v1 tetap tersimpan.
+
+Usulan baru: satu run teks maksimum16 attempt / US$1 token dari saldo ada,
+model sama, tanpa retry/fallback/judge berbayar atau auto-recharge.
+Template pending approved=false; tidak membuat ulang marker terpakai.
+Setelah izin baru, source/persiapan diperiksa; Codex meninjau G2/G3 sebelum
+melanjutkan cabang, lalu review hasil mentah/final/fakta/alasan/kriteria.
+Jika makna salah, pertahankan kegagalan, perbaiki hanya sebab yang terbukti,
+dan periksa kasus tetangga dengan otorisasi yang sesuai. C tetap terbuka.
+Jika bank tidak cocok, pertahankan null/alasan; jangan memaksa label sukses.
+
+Hasil, sumber penelitian, bukti mentah dan rute A–F:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-C-Hasil-Kualitas-2026-10-05.md
+Urutan A -> B1 -> B2 -> B3 -> B4 -> C -> D persiapan -> E -> D rilis final.
+Codex memiliki pelaksanaan; Yohanes memutuskan biaya/rilis/akses HP.
+F manual boleh lebih awal; F app final memerlukan D/E dan peserta sukarela.
+Jika manfaat F tidak muncul, tinjau tugas/hambatan bersama peserta sebelum
+menambah fitur; periksa ulang jawaban baru. Manfaat nyata belum diverifikasi.
+Catatan persiapan lama berikut adalah riwayat, bukan status provider terbaru.
 
 ## Persiapan C diterima offline — 2026-10-05
 
