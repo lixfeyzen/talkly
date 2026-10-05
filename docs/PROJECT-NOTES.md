@@ -5,6 +5,25 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Rencana SaaS menyeluruh — 2026-10-06
+
+Yohanes meminta planning menuju Talkly yang dapat dipakai dan mungkin dibayar.
+Rencana aktif A–G melanjutkan audit; A–F dan bukti B1–B4 tetap dipertahankan.
+B lokal/browser sintetis sudah selesai; C model v2, D/E terbaru dan F tetap terbuka.
+US$0 API tambahan dan 0 request baru tetap berlaku. Peserta 0; penilai belum dikonfirmasi.
+Paket akun lama tetap ditunda; baseline9/24 berubah, patch perlu disesuaikan.
+Guard biaya QA bukan batas dolar trafik pengguna; D2 mencakup biaya operasional.
+G0 penawaran → G1 bangun/tes pembayaran → G2 pilot nyata → G3 penggunaan ulang.
+Paket interview terbatas dan bulanan diuji; harga/demand/renewal belum terbukti.
+Huru menawarkan fitur pencari kerja gratis di situs; app/hasilnya belum diuji.
+Jika G1 mengubah API/Android, D3/E terkait diperiksa ulang sebelum D4 versi berbayar.
+D1 akun, D2 data/privasi/support/biaya, D3 kandidat dan D4 rilis memiliki bukti sendiri.
+Monetisasi kini direncanakan; implementasi tetap bersyarat bukti dan keputusan spesifik.
+Dokumen diperiksa untuk cakupan/dependensi; ini belum menyelesaikan produk atau penjualan.
+Tidak ada edit app, provider, migrasi eksternal, deploy, kontak atau transaksi dalam planning.
+Rencana: C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-Rencana-SaaS-2026-10-06.md
+Progres/review: work/task-progress.json → saasPlanning pada workspace audit.
+
 ## F manual: siap, belum dijalankan — 2026-10-06
 
 Yohanes menjawab langsung: “Belum ada peserta”. Penilai belum dikonfirmasi.
