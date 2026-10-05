@@ -20,8 +20,8 @@ atau ukuran kondisi psikologis. Aktivitas dan kualitas dipisahkan.
 Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
-Status terbaru 2026-10-05: B1/B2/B3 selesai pada uji lokal dan browser dengan AI buatan.
-B4 berikutnya: Home/countdown, role, Weekly v1 dan dokumen.
+Status terbaru 2026-10-05: B1–B4 selesai pada uji lokal dan browser dengan AI buatan.
+Home mengutamakan interview; role, fokus28hari dan Weekly v1 telah diperiksa.
 APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
@@ -29,6 +29,49 @@ Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi clou
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Implementasi bertahap: B4 selesai lokal/browser — 2026-10-05
+
+Home mengutamakan Start interview dan membawa role valid yang tersimpan.
+Countdown mock membawa role; latihan umum membawa scenario/focus/retryRole.
+Home/countdown/fokus Dashboard memakai rentang inklusif28hari, milik pengguna,
+tanpa data masa depan; total aktivitas dan contoh koreksi historis tetap.
+GET terpisah memakai waktu masing-masing; tidak ada janji snapshot atomik.
+Kegagalan Home terlihat, tugas lama dibersihkan; interview dan Retry tetap usable.
+
+Weekly v1 tidak tampil, tidak meminta progress dan tidak membuat challenge.
+Wrapper menolak mode langsung/array sebelum legacy child; limaAPI defer403.
+Pending/prepared Weekly tidak boleh menulis; completed replay tetap dibaca.
+Riwayat lama dilabeli deferred tanpa latihan ulang; kode Weekly dipertahankan.
+README/DESIGN-BRIEF mengikuti interview/revisi/tugas baru/history dan batas klaim.
+
+Bukti akun/AI/data buatan: fungsi layar20/20; route/SQL independen17/17;
+JOIN browser/data/sumber15/15, semua exit0. FullTS/lint akhir tanpa warning.
+Regresi B1 50, B2 45, B3 53, persistence15, core9 lulus.
+31observasi/3gambar; empat kiriman/empatAIbuatan, nolrapor baru;
+tujuhsesi (tigaawal+empatbaru), 66events dan nolbarisWeekly.
+34sumber frontend D/C,30server dan29SQL independen cocok.
+Empat event sebelum login disimpan, dikecualikan dari join akunQA.
+
+Trial layar18/20 dan SQL17/17-exit1 disimpan; asumsi/injector C diperbaiki.
+ServerQA awal gagal karena kolomstatus tak ada; pencatat C disesuaikan schema.
+Dua tunggu UI dan sembilanwarning web disimpan; editor tanggal via URL langsung
+tetap terlihat setelah save200, Home dibuka eksplisit. aria-selectednull;
+role terbukti lewat URL/header/POST/sesi, bukan atribut tersebut.
+TabQA ditutup. CtrlC kedua proses exit eksternal1; hostexit0 memeriksa port
+3001/8081 kosong. Snapshot akhir ada; tidak mengklaim gracefulexit0.
+Tidak ada aplikasi pengguna ditutup atau sistem diubah.
+
+21sumber aplikasi+2dokumen; 23versi cocok dan40salinan awal terverifikasi.
+Rollback dry-run23 lulus, belum dipulihkan; versi baru diarsipkan saat restore.
+Kerja B1–B3/dirtylain aman. Source aplikasi belum di-commit.
+Laporan/diff/pemulihan/bukti/rute A–F:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-B4-Hasil-2026-10-05.md
+
+B selesai untuk scope lokal/browser sintetis. C memperbarui evaluator/biaya
+sebelum uji provider berbayar. Usulan US$1/13calls lama belum disetujui.
+Android terbaru, produksi dan manfaat pengguna tetap terbuka; akun ditunda.
+Catatan B3 dan sebelumnya di bawah dipertahankan sebagai riwayat.
 
 ## Implementasi bertahap: B3 selesai lokal/browser — 2026-10-05
 

@@ -1,37 +1,23 @@
-# Talkly — Design Brief / Prompt (after-login screens)
+# Talkly — current v1 design brief
 
-> Paste everything under the line into Claude (design mode) or any capable
-> design-generation AI. Produce high-fidelity mobile screen mockups (portrait,
-> 390×844) a developer implements 1:1 in React Native.
->
-> This brief is derived from Talkly's EXISTING login/register screens so the whole
-> app feels like ONE product. Language = **dark hero + white sheet + pastel
-> accents + black CTA**, warm and high-contrast. NOT a dark purple "pro tool".
->
-> Tip: if the tool struggles to render all 8 screens at once, generate one screen
-> per request in the order listed — the design system section stays the same each time.
+Use this brief for the interview-first product. It supersedes the earlier broad conversation
+and readiness brief. Preserve the existing auth-screen identity and useful tokens below;
+do not add features because an older mockup contains them.
 
----
+## Purpose and audience
 
-You are a senior product designer. Redesign the **after-login screens** of
-**Talkly**, a React Native (iOS/Android) app that helps non-native English
-speakers rehearse **job interviews and workplace conversations** with an AI
-partner. The login/register screens already exist and set the visual language —
-your job is to extend that SAME language to every screen after login, so the app
-feels like one coherent product. Deliver hi-fi mockups (portrait, 390×844) for
-the 8 screens below plus a small component sheet.
+English interview practice for non-native professionals. Candidates use their own facts,
+revise one answer, then try a different question with the same saved criterion when available.
+Target English level and actual user benefit still need validation.
+UI labels are English; AI correction notes, instructions and feedback explanations use the
+user's native language. Practice scores are not hiring, confidence or anxiety measurements.
 
-## Creative north star
-Warm, human, confident — the calm before a big interview, not a gamified toy.
-Think the **boldness of Cash App / Monzo** (black type, big numbers, one strong
-CTA) meeting the **warmth of Headspace** (soft pastel, rounded, encouraging), on
-a **clean white canvas** with generous whitespace. Friendly, grown-up, and
-distinctly NOT a generic AI-made template.
+## Current evidence
 
-## Who it's for
-Adult job seekers and early-career professionals worldwide, English level B1–B2,
-anxious about freezing when they *speak* English in real interviews. They want to
-feel prepared and reassured.
+B1–B3 have local/browser evidence with simulated AI and accounts. B4 covers navigation,
+role, recent correction focus and Weekly gating; current acceptance is tracked in
+[PROJECT-NOTES](PROJECT-NOTES.md). Current-source Android, voice/reminders, real-model
+semantic quality and target-user benefit are separate open checks.
 
 ## The existing language to MATCH (from the auth screens)
 A **dark near-black hero** at the top with white text and soft glowing **pastel
@@ -65,7 +51,7 @@ Primary buttons are **solid black pills** with white text. Reuse this identity:
 **Pastel accent system** (functional color-coding, one per feature — consistent
 everywhere; each with dark readable text on top):
 - Ice `#D8EFF6` (text `#23404B`) → Conversations
-- Lilac `#E6DCF8` (deep plum text) → Interview / readiness
+- Lilac `#E6DCF8` (deep plum text) → Interview / practice feedback
 - Cream `#F7EDC9` (dark text) → Trajectory / progress
 - Pink `#F9D9E0` (text `#3D2A31`) → Streak
 - Mint `#CDEEDB` (text `#1F4433`) → success / "strongest" highlights
@@ -75,7 +61,7 @@ everywhere; each with dark readable text on top):
 ## Craft rules (what makes it premium on white, not generic)
 - SVG line icons only (Feather / Lucide), 1.5–2px stroke, consistent size. **Never emoji.**
 - Separation via hairline `#ECEDEF` border or soft shadow — never heavy boxes.
-- Big, bold display numbers for scores/streaks; pastel tiles carry the color, black carries the action.
+- Use clear numbers for individual practice scores/activity; the next useful action remains primary.
 - One primary CTA per screen; everything else visually subordinate.
 - Short, human microcopy. No em-dashes/en-dashes. No centered-everything layouts.
 - Generous whitespace and a clear 4/8pt rhythm. Touch targets ≥44pt; respect safe areas; content clears the bottom nav.
@@ -84,71 +70,34 @@ everywhere; each with dark readable text on top):
 
 ---
 
-## Screens (after login)
+## Screens and required states
 
-### 1. Home
-Top: "Talkly" wordmark + circular avatar with the user's initial (tap → Settings).
-Warm greeting "Hi {name}, ready to practice?" + one-line subtitle.
-**Hero card = Interview-Day Countdown** (the single focal card; lilac or dark hero
-with a soft glow): "{N} days until your {Role} interview" / "Today: {task}" / one
-line of description. Variants: not-set ("Have an interview coming up? Set the
-date") and expired ("Your interview date has passed").
-Quick-action chips (pill, icon + label): Free chat · Mock interview · Targeted practice.
-Section "Workspace" → 4 white list rows, each = pastel icon tile + title + right
-value + chevron: Conversations ({n} sessions, ice) · Interview readiness
-({score}/100 or "not tested", lilac) · Am I getting better? (trends, cream) ·
-Streak ({n} days, pink). Optional recent-corrections rows.
-Bottom nav (3 tabs, icon + label, active = black): Home · Progress · Settings.
+| Screen | Current v1 behavior |
+|---|---|
+| Home | One primary **Start interview** action. Forward a valid saved role. Countdown is optional; mock keeps that role, generic practice carries scenario/focus and an explicit return-to-interview role. Free chat remains secondary. Failed reads are visible and retryable; they never present old tasks as fresh or failures as empty history. |
+| Interview | Validate the optional role against the six existing roles. Late route params can set a default; a user's manual choice takes precedence. Start five questions and receive practice feedback. |
+| Conversation | Keep ordinary chat, mock interview, source-bound answer revision and guided application distinct. A revision shows the real original question/answer, one improvement and criterion. Guided application shows the frozen new question/instruction/criterion; hide old/model answers before the new response. Use another real example when available, or say none is available; the polite-request task is explicitly hypothetical. |
+| Practice report | Individual score and Grammar/Structure/Content/Answer wording feedback. Fixes/upgrades may be empty and the linked target nullable. **Revise this answer** uses a valid source reference; old/null reports clearly offer general practice. Preserve archived rubrics. Never invent facts or force a STAR example. |
+| Interview date | Save a valid role and date. Countdown uses recent correction focus: more than three days practice; two/three days mock; one day review; day zero light review; expired dates offer a new date. |
+| Dashboard | Historical session/correction totals and activity streak. Label correction focus **last 28 days** and correction examples **latest corrections**. Practice report/history remain accessible. No Weekly card or automatic Weekly request. |
+| Trajectory | Raw practice scores for individual attempts and correction activity. No score delta or role/rubric match presented as proof of learning or equivalent tasks. Link guided-practice History. |
+| History | Preserve interview, revision and new-question sessions with their source links. AI feedback keeps status, exact quoted evidence and native explanation. Unverified/copy/no-answer results remain neutral. Old Weekly sessions are readable, labelled deferred, and have no practice-again action. |
+| Settings | Retain existing native-language, password, notification and sign-out controls. No new account or monetization flow in this stage. |
 
-### 2. Conversation (chat practice)
-Pre-start: "What do you want to practice?" + scenario chips (Job interview, Tell
-me about yourself, Salary negotiation, Small talk with a colleague, Client meeting
-Q&A, Networking event).
-Chat: header shows scenario (or "Mock interview · {Role} · Question 3/5"). User
-bubble right = black `#111114` (white text); AI bubble left = `#F2F3F5` (dark
-text). Under a user bubble, inline mistake note: `original → corrected` + one line
-in the user's native language. AI bubble has a small "Listen" speaker action.
-Typing indicator while AI thinks. Input bar: mic button + text field (`#F2F3F5`) +
-black send button. When interview ends: black "View my readiness report" button.
+## Product limits in the flow
 
-### 3. Interview (start a mock)
-Explainer ("5 questions, like a real English interview. No corrections mid-way;
-you get a readiness report at the end."). Role chips: Software Engineer, Marketing,
-Sales, Finance, Designer, General. Black "Start interview" button.
+Guided application visibly provides the criterion. Describe it as **AI feedback**,
+not mastery or an independent test. Selection may be absent with a usable reason;
+do not manufacture a task. Literal evidence supports traceability, not certified meaning.
+Use plain user-facing explanations; do not show request IDs, schemas or validation machinery.
 
-### 4. Interview Readiness Report
-Hero **score 0–100** — big tabular number on a dark hero band or lilac tile — plus
-a one-line verdict. Dimension rows (Clarity / Structure / Confidence / Language):
-label + mini bar + short comment (native language). "Strongest answer" card (mint)
-and "Needs the most work" card (pink): question + why. "Top fixes" (1–3). "Answer
-upgrades": original summary → stronger STAR version (English). Back-to-home.
-
-### 5. Interview Date (set countdown)
-"When is your interview?" + subtitle. Role chips. Date quick-chips (In 3 days / 1
-week / 2 weeks / 1 month) + manual date field (`#F2F3F5`). Inline errors (past date
-/ too far). Black "Start my countdown" button (loading state).
-
-### 6. Progress (dashboard)
-"Your progress". 3 stat tiles (Streak / Sessions / Corrections) — big tabular
-numbers, each a pastel tile. "Last practiced" card. "Latest interview readiness
-{score}/100" card. "Am I getting better?" entry card. "Top weaknesses" list
-(category + count badge). "Recent corrections" list. Empty state (bubble motif).
-
-### 7. Trajectory ("Am I getting better?")
-Insight card: one confident sentence ("Readiness up 22 points since your first
-mock. Tense mistakes down 60%."). **Readiness score line chart** over time, fixed
-0–100 y-axis (honest scale), black or accent line + points, date labels; empty
-state before first mock. "Mistake trends (last 2 weeks vs before)" rows: category
-+ change, green (down / improving) / red (up / worsening) / neutral, words not just arrows.
-
-### 8. Settings
-Native language (editable). Change password. Notifications toggle. Sign out
-(separated, danger red). Version footer.
+Weekly Challenge has no v1 entry or execution, including direct links. Keep its deferred
+implementation and historical data; do not redesign or finish that feature in this brief.
 
 ## Deliverables
-1. Hi-fi mockup of each of the 8 screens (390×844), matching the auth language.
-2. Component sheet: primary (black) + secondary button, chip, list row with pastel
-   icon tile, card (default + hero), input (default / focus / error), message
-   bubble (user black / AI grey), stat tile, trend row, bottom nav, section label — with states.
-3. Notes on font, icon set, spacing, and the pastel-to-feature mapping so a React
-   Native dev can implement it 1:1 with the tokens above.
+
+Create portrait 390×844 mockups for the screen/state map above, with loading, empty,
+error/retry and source-bound practice states where relevant. Include a small component sheet:
+black primary/ghost buttons, chips, pastel icon tiles, cards, inputs, message bubbles,
+correction notes, score rows, status/evidence cards, bottom nav and empty-state motifs.
+Keep the visual tokens consistent; show one practical next action clearly.
