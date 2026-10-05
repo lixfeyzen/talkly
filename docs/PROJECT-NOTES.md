@@ -5,6 +5,20 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Status biaya terbaru — 2026-10-06
+
+Yohanes meminta biaya diperkecil lagi. Keputusan saat ini: US$0 API tambahan.
+Uji provider kedua ditahan; persetujuan formal tetap false dengan nol panggilan.
+Estimasi token uji pertama US$0,065822 sudah terjadi; bukan invoice atau saldo.
+Angka tersebut tidak mencakup biaya Codex, pajak atau penggunaan akun lain.
+Usulan positif US$0,50 sebelumnya disimpan sebagai riwayat, bukan izin aktif.
+Jawaban pada pertanyaan izin lama tidak mengaktifkan usulan yang sudah diganti.
+Audit menggunakan dokumen, kode dan hasil pertama yang ada, tanpa API baru.
+Ketepatan model v2 tetap belum diuji; C-Q6 belum selesai. D/E/F tetap terbuka.
+Source aplikasi, kasus baru, pengaman, persiapan dan bukti gagal tetap utuh.
+Jika kelak biaya baru diizinkan, tentukan ulang batas dan persetujuan langsung.
+Bukti: work/quality-zero-additional-budget-20261006.json pada workspace audit.
+
 ## Fokus penyelesaian v1 — 2026-10-03
 
 User menyetujui melanjutkan implementasi setelah audit produk dan teknis.
