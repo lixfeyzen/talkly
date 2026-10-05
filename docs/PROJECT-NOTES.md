@@ -21,7 +21,8 @@ Kasus penerimaan v1 dibatasi pada alur ini dan regresi kritis; kumpulan eval
 yang terus berkembang tetap berguna tetapi bukan syarat kesempurnaan tanpa akhir.
 
 Status terbaru 2026-10-05: B1/B2 selesai pada uji lokal dan browser dengan AI buatan.
-B3 penerapan pada tugas baru dan B4 pengarahan v1 masih terbuka.
+B3 terpasang, tetapi penyimpanan, TypeScript/lint dan browser belum selesai diuji.
+B4 belum dimulai.
 APK/emulator lama belum memuat perubahan ini; manfaat pengguna belum diuji.
 C biaya AI nyata, D rilis produksi, E HP/suara nyata, dan F manfaat pengguna
 masih terbuka. Paket akun ditunda sesuai keputusan pengguna pada 4 Oktober.
@@ -29,6 +30,54 @@ Usulan batas biaya uji US$1 disiapkan, belum disetujui. Deployment, migrasi clou
 dan build berbayar belum dijalankan.
 
 Catatan historis di bawah dipertahankan sebagai riwayat; bukan status rilis terkini.
+
+## Implementasi bertahap: B3 terpasang, verifikasi terbuka — 2026-10-05
+
+Latihan pertanyaan baru membawa kriteria dari revisi jawaban sebelumnya.
+Lima tugas kecil dipilih melalui permintaan AI yang sudah ada; pilihan boleh null.
+Sumber/kriteria terkunci; jawaban asal, revisi dan aplikasi baru tetap terpisah.
+Riwayat mengikat masukan yang tepat; jawaban contoh disembunyikan sebelum menjawab.
+Masukan memakai tiga status dan kutipan literal. Salinan yang terdeteksi, skip,
+serta kutipan kosong/salah tidak menjadi label keberhasilan.
+Pemeriksaan salinan terbatas pada normalisasi teks, bukan seluruh parafrasa.
+Permintaan hipotetis memiliki petunjuk sendiri; tidak meminta pengalaman rekaan.
+Grafik menampilkan skor tiap latihan tanpa delta kemajuan yang belum sebanding.
+Skor/rubrik lama dan empat sumber B2 yang dilindungi tetap sama.
+
+Bukti sekarang: komponen 24/24 (hooks/API simulasi); SDK 4/4 (provider buatan);
+core 9/9 (layanan buatan); helper/grafik independen 16/16 (input/label buatan).
+Dua skrip lolos sintaks. 15 berkas terpasang/staging identik;
+lima sumber yang diuji komponen cocok; 26 salinan dari 13 berkas lama cocok.
+Rollback dry-run 15 lulus, belum dijalankan; dua berkas baru akan diarsipkan.
+
+Uji helper sengaja menerima label AI salah dengan kutipan yang memang ada:
+“I will work tomorrow” untuk kriteria tindakan selesai dalam bentuk lampau.
+Artinya kutipan saja tidak mengesahkan penilaian makna. C AI aktual tetap wajib.
+Latihan terpandu/feedback AI bukan bukti penguasaan mandiri atau manfaat pengguna.
+
+Suite SQL berhenti saat PostgreSQL mulai; belum ada putusan kasus aplikasi.
+Percobaan 32 MiB gagal: modul terpasang membutuhkan 128 MiB.
+Smoke host 128 MiB dan opsi trap-handler berbeda tetap exit 1 sebelum SELECT 1;
+penyebab persis smoke belum dipastikan. Jangan menyebutnya cacat route terbukti.
+Lint backend 256 MiB exit 134: Committing semi space failed; belum ada putusan lint.
+TypeScript penuh, SQL/regresi terkait dan browser B3 belum selesai dijalankan.
+Pada 23:50:26 UTC, 4 Oktober, memori virtual bebas sekitar 205 MiB.
+Seluruh trial gagal tetap disimpan. Tidak ada aplikasi pengguna ditutup,
+pengaturan sistem diubah, database baru dipasang atau layanan QA berat aktif.
+
+Checkpoint: Yohanes menyimpan pekerjaan dan membebaskan memori dari aplikasi/tab
+yang tidak dipakai. Permintaan ini pending; bukan izin baru mengubah aplikasi.
+Codex memeriksa ruang lalu satu smoke baru, SQL/regresi, TypeScript/lint, browser.
+Jika startup gagal lagi, simpan error dan ubah pendekatan berdasarkan bukti.
+B3 tetap aktif; B4 dimulai setelah penerimaan B3. C–F tetap terbuka.
+APK/emulator lama tidak memuat B1–B3. Akun tetap ditunda, biaya lama belum diizinkan.
+Tidak ada app commit, provider berbayar, migrasi cloud, deployment, kontak peserta
+atau perubahan memori pribadi.
+
+Laporan mandiri, diff, pemulihan, bukti dan rute lengkap:
+C:/Users/LEGION/Documents/Codex/2026-10-03/bisa-anda-bantu-saya-2/outputs/Talkly-B3-Checkpoint-2026-10-05.md
+Snapshot: work/b3-implementation/snapshots/2026-10-04T23-52-51-428Z/ pada task tersebut.
+B3 adalah built + pemeriksaan sebagian; belum behavior-checked secara menyeluruh.
 
 ## Implementasi bertahap: B2 revisi jawaban selesai lokal — 2026-10-05
 
