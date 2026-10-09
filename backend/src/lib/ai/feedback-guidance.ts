@@ -49,7 +49,9 @@ export function filterGroundedCorrections<T extends Correction>(mistakes: T[], l
   const seen = new Set<string>();
   return mistakes.filter(mistake => {
     if (mistake.severity === "style_preference") return false;
-    if (!mistake.originalText.trim() || !lastUserMessage.includes(mistake.originalText)
+    // ponytail: a fragment that occurs twice ("was" -> "were") cannot be placed on screen, so it is dropped;
+    // upgrade path = ask the model for a longer unique quote.
+    if (!mistake.originalText.trim() || lastUserMessage.split(mistake.originalText).length !== 2
       || !mistake.correctedText.trim() || !mistake.note.trim()
       || sameIgnoringHyphens(mistake.originalText, mistake.correctedText)
       || breaksAnArticle(mistake.originalText, mistake.correctedText)) return false;

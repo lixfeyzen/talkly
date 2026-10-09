@@ -5,6 +5,34 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Uji chat bebas (live) — 2026-10-09: LULUS (dinilai 2026-10-10)
+
+Izin "sure" (batas US$0,13). Terpakai **US$0,091134**, 20/20. Total biaya uji kualitas US$0,563891.
+Penilaian (Claude dulu, lalu 2 penilai AI independen; 0 beda pendapat): tertangkap 8/8 · tak perlu 0 · merusak 0 →
+**LULUS**. Satu koreksi di pesan "bersih" (C1-5 "watch it"→"watch one") dinilai SUNGGUHAN oleh ketiganya: AI hanya
+bertanya "Have you watched any good action movies recently?" tanpa menyebut film, jadi "it" tak merujuk apa pun;
+pesan uji tulisanku mengira AI merekomendasikan film. Kalaupun dihitung "tak perlu", tetap lulus (syarat ≤1).
+Ke-9 penjelasan (note) benar; dua lemah tapi tidak salah ("since" tak dijelaskan; "discuss … tidak memerlukan about").
+Penyaring membuang 5 koreksi ULANG atas pesan SEBELUMNYA + 1 saran gaya — tanpa aturan "harus ada di pesan terakhir",
+koreksi itu akan menempel di pesan yang salah. Kategori salah 1 dari 9 ("six month" → article_usage).
+Keputusan sesuai syarat: chat bebas tetap seperti sekarang (koreksi + penjelasan tampil, tanpa pemeriksa kedua).
+Batas bukti: pesan sintetis, 1 kali jalan, penilai AI. Bukti: `work/c-freechat-v4b/runs/live-2026-10-09T14-01-49-510Z-843b08ea/`
+(`grading-final.json`). Teks layar interview (B) sudah diganti: "No corrections during the interview" dan
+"I won't interrupt you. Your feedback comes when you finish." (tsc & eslint bersih; belum dilihat di layar).
+
+## Sesudah commit 275ae41 — 2026-10-09
+
+- `filterGroundedCorrections`: koreksi yang potongan aslinya muncul >1x di pesan dibuang (tak bisa ditempatkan di
+  layar, mis. "was"→"were"). Hanya membuang → tak bisa menambah koreksi salah; pada data uji: v4b 1 terbuang (9/10 tetap
+  lulus), v4 1 terbuang ("use"→"used"). Tes core 12/12, opener 51/51, answer-practice 45/45, transfer 57/57,
+  persistence 15/15, learning 14/14, harness Codex 63/63.
+- Uji chat bebas disiapkan offline (`work/c-freechat-v4b/`): 20 pesan di 4 skenario aplikasi (Small talk,
+  Networking, Salary talk, Client meeting), 12 bersih + 8 kesalahan tanam, kunci diperiksa 2 penilai AI; dijalankan
+  atas izin Yohanes (hasil di bagian atas).
+- Temuan: layar rapor interview TIDAK menampilkan koreksi per jawaban; koreksi hanya ada di Riwayat. Teks
+  `interview.tsx` ("I hold every correction until the end") sudah diganti atas izin Yohanes. Menampilkan koreksi di
+  layar rapor = perubahan tampilan → menunggu mockup & persetujuan.
+
 ## Gerbang koreksi interview v4b (live, 20 jawaban BARU) — 2026-10-09: LULUS
 
 Izin Yohanes "sure" (batas US$0,16). Terpakai **US$0,117670**, 33 panggilan (20 giliran + 13 cek), 20/20 selesai.

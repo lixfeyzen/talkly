@@ -111,6 +111,10 @@ test('Correction filter drops hyphen-only and an->a vowel-sound edits, keeps rea
   assert.equal(kept('an European client', 'a European client'), true);
   assert.equal(kept('a apple', 'an apple'), true);
   assert.equal(kept('an unfamiliar steps', 'an unfamiliar step'), true);
+  // A fragment that occurs twice cannot be placed on screen (live gate v4b: "was" -> "were").
+  const once = (originalText, message) => filterGroundedCorrections([{category:'verb_conjugation', originalText, correctedText:'were', note:'n', severity:'grammar_error'}], message).length === 1;
+  assert.equal(once('was', 'The store was busy and two colleagues was sick.'), false);
+  assert.equal(once('colleagues was', 'The store was busy and two colleagues was sick.'), true);
 });
 test('Correction check keeps only fully passing proposals; omitted or conflicting indexes are rejected', async () => {
   let sent;

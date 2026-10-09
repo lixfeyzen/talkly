@@ -20,7 +20,7 @@ const MUTED_ICON = '#60646C';
 // PERSIS mockup (bukan tile pastel).
 const HOW_IT_WORKS: { icon: FeatherName; text: string }[] = [
   { icon: 'message-square', text: 'Five questions, like a real interview' },
-  { icon: 'pause', text: 'No corrections until the very end' },
+  { icon: 'pause', text: 'No corrections during the interview' },
   { icon: 'file-text', text: 'Practice feedback when you finish' },
 ];
 
@@ -71,7 +71,7 @@ export default function InterviewStartScreen() {
             <View style={styles.heroText}>
               <Text style={styles.title}>A calm practice run.</Text>
               <Text style={styles.subtitle}>
-                Five questions, like the real thing. I hold every correction until the end.
+                Five questions, like the real thing. I won&apos;t interrupt you. Your feedback comes when you finish.
               </Text>
             </View>
           </View>
