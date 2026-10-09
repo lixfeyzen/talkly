@@ -22,7 +22,7 @@ const reportFixture = {
   strongestAnswer: {question: 'Tell me about yourself and your background.', why: 'Synthetic.'},
   weakestAnswer: {question: 'Synthetic question 2?', why: 'Synthetic.'},
   topFixes: ['Explain your own contribution.'],
-  answerUpgrades: [{question: 'Synthetic question 2?', original: 'I go.', upgraded: 'I went.'}],
+  answerUpgrades: [{answerNumber: 1, parts: [{kind: 'sentence', sentenceIndex: 0, gapPrompt: null}, {kind: 'gap', sentenceIndex: null, gapPrompt: 'the result'}]}],
 };
 const mistakes = [{category: 'tense_usage', originalText: 'I go', correctedText: 'I went', note: 'Gunakan bentuk lampau.'}];
 const mocks = {
@@ -127,7 +127,7 @@ async function main() {
   check('History exposes the opener and keeps the checked correction, without the AI note, on its original user answer', history.status === 200 && history.data.session.transcript[0].content === fullSession.opener && history.data.session.transcript[1].mistakes[0].originalText === mistakes[0].originalText && history.data.session.transcript[1].mistakes[0].note === '');
   check('Interview corrections pass the second check with the answered question and the answer', checkCalls > 0 && capturedCheck.answer === 'Synthetic answer 5' && capturedCheck.question.startsWith('Recorded. Synthetic question 5'));
   const generated = await report(fullSession.id);
-  const expectedPayload = 'Here is the full interview transcript:\n\n' + completed.transcript.map(t => `${t.role === 'user' ? 'CANDIDATE' : 'INTERVIEWER'}: ${t.content}`).join('\n');
+  const expectedPayload = 'Here is the full interview transcript:\n\n' + completed.transcript.map(t => `${t.role === 'user' ? 'CANDIDATE' : 'INTERVIEWER'}: ${t.content}`).join('\n') + '\n\nNumbered candidate sentences for answerUpgrades (use only these indices):\n' + completed.transcript.filter(t => t.role === 'user').map((t, n) => `Answer ${n + 1}: ` + t.content.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean).map((s, i) => `[${i}] ${s}`).join(' ')).join('\n');
   check('Actual report route/serializer receives every question and answer in stored order', generated.status === 200 && capturedReport[1].content === expectedPayload && capturedReport[1].content.startsWith('Here is the full interview transcript:\n\nINTERVIEWER: ' + fullSession.opener));
   const reportQuota = quotaCalls;
   check('Saved report replay makes no extra report generation or quota call', (await report(fullSession.id)).status === 200 && reportCalls === 1 && quotaCalls === reportQuota);

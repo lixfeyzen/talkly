@@ -144,6 +144,31 @@ test('Answer upgrades that add unstated content are detected; honest rewrites pa
   assert.equal(addsUnstatedContent("You should hire me because I learn fast and I always finish my work on time. During my internship at a bank, I helped the team prepare weekly reports [add one deadline you met].", answers), false);
   assert.equal(addsUnstatedContent("I did an internship at a bank for six months.", answers), false);
 });
+test('Answer upgrades are assembled only from the candidate sentences, checked corrections and gap prompts', () => {
+  const {assembleAnswerUpgrades} = load('backend/src/lib/ai/interview-report.ts', {'@/lib/ai/openai':{openai:{}}, 'openai/helpers/zod':{zodResponseFormat:() => ({})}});
+  const transcript = [
+    {role:'assistant', content:'Tell me about yourself.'},
+    {role:'user', content:'I did an internship at a bank for six month. I helped the team prepare weekly reports.', mistakes:[{category:'plural_agreement', originalText:'six month', correctedText:'six months', note:''}]},
+    {role:'assistant', content:'Why should we hire you?'},
+    {role:'user', content:'I learn fast. I always finish my work on time.'},
+  ];
+  const s = sentenceIndex => ({kind:'sentence', sentenceIndex, gapPrompt:null}), gap = gapPrompt => ({kind:'gap', sentenceIndex:null, gapPrompt});
+  const out = assembleAnswerUpgrades([
+    {answerNumber:2, parts:[s(1), s(0), gap('one real example of a deadline you met')]},
+    {answerNumber:1, parts:[s(0), s(1)]},
+  ], transcript);
+  assert.equal(JSON.stringify(out), JSON.stringify([
+    {question:'Why should we hire you?', original:'I learn fast. I always finish my work on time.', upgraded:'I always finish my work on time. I learn fast. [add one real example of a deadline you met]', answerNumber:2},
+    {question:'Tell me about yourself.', original:transcript[1].content, upgraded:'I did an internship at a bank for six months. I helped the team prepare weekly reports.', answerNumber:1},
+  ]));
+  const dropped = parts => assembleAnswerUpgrades([{answerNumber:2, parts}], transcript).length === 0;
+  assert.ok(dropped([s(5), gap('the result')]), 'invalid sentence index');
+  assert.ok(dropped([s(0), gap('[the result]')]), 'bracket inside a gap prompt');
+  assert.ok(dropped([s(0), gap('a'), gap('b'), gap('c'), gap('d')]), 'more than three gaps');
+  assert.ok(dropped([s(0), s(1)]), 'no change from the original answer');
+  assert.ok(dropped([gap('the result')]), 'no candidate sentence');
+  assert.equal(assembleAnswerUpgrades([{answerNumber:9, parts:[s(0)]}], transcript).length, 0);
+});
 test('Interview corrections drop the AI note and fail closed when the check errors', async () => {
   const deps = parse => ({'@/lib/ai/openai':{openai:{chat:{completions:{parse}}}}, 'openai/helpers/zod':{zodResponseFormat:() => ({})}});
   const pass = async () => ({choices:[{message:{parsed:{checks:[{index:0, reason:'r', originalIsWrong:true, correctionIsRight:true, noteIsRight:true}]}}}]});

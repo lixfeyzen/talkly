@@ -5,6 +5,24 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## "Answer upgrade" DISUSUN, bukan ditulis — 2026-10-10: LULUS (uji live 4 rapor)
+
+Atas izin Yohanes ("sure"). AI tak lagi menulis versi "Stronger": ia memilih `answerNumber` + `parts` (indeks kalimat
+dari daftar kalimat bernomor yang dilampirkan ke pesan rapor, urutan, ≤3 `gap` berupa permintaan netral).
+`assembleAnswerUpgrades` menyusun teks HANYA dari kalimat pelamar sendiri (+ koreksi yang tersimpan & sudah dicek)
+dan `[add …]`; indeks salah/duplikat, gap berkurung, >3 gap, atau tanpa perubahan → dibuang. Judul pertanyaan diambil
+dari bagian pertanyaan pewawancara (`questionOf`). Larangan umum "Never invent … anywhere in this report" tetap ada.
+Prompt koreksi interview/chat bebas identik per byte (dicek). Format tersimpan/tampil TIDAK berubah.
+Uji live (`work/c-upgrade-v5/`, 4 transkrip: app 10 Okt + gate I5/I7/I8): **US$0,040048**. Penilaian (Claude + 2 AI,
+sepakat): mengarang 0 · gap yang mengandaikan 0 · tersusun benar 4/4 (dicek skrip) · rapor dengan upgrade 4/4 ·
+berguna 4/4 (APP di garis batas; tetap lulus bila dikeluarkan) → **LULUS**. Total biaya uji kualitas US$0,603939
+(+ ≈US$0,04–0,05 perkiraan dari uji di aplikasi).
+Catatan jujur: hasilnya TIPIS — tak ada yang mengubah urutan, dan tak ada gap yang menunjuk bukti kuat yang sudah
+diucapkan pelamar di jawaban LAIN (Brevet lulus, 20 laptop dalam 3 minggu, Node.js/PostgreSQL). Di luar upgrade:
+topFixes/practiceTarget rapor APP meminta "pencapaian selama magang" yang tak pernah disebut (permintaan, bukan klaim).
+Tes: core 14/14, opener 51/51, answer-practice 45/45, criterion-transfer 57/57, persistence 15/15, learning 14/14,
+test:interview 22/22 (Neon), harness Codex 63/63 (cek isi pesan rapor persis diperbarui), budget-guard 21/21.
+
 ## Penyaring fakta "Answer upgrade" — 2026-10-10 (atas izin Yohanes)
 
 `interview-report.ts` `addsUnstatedContent`: versi "Stronger" dibuang bila memuat kata isi (benda/kerja/angka/nama)

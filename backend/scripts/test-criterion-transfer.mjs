@@ -58,8 +58,8 @@ const transferFixture = (status, evidenceQuote, explanation = 'Kutipan jawaban i
 const pastTarget = {fixIndex: 0, answerNumber: 1, dimension: 'grammar', evidenceQuote: 'I go', instruction: 'Gunakan bentuk lampau untuk menceritakan tindakan yang selesai.', successCriterion: 'Tindakan yang selesai ditulis dengan bentuk lampau yang tepat.'};
 const politeTarget = {fixIndex: 0, answerNumber: 1, dimension: 'grammar', evidenceQuote: 'send me', instruction: 'Buat permintaan informasi dengan bentuk yang sopan.', successCriterion: 'Permintaan memakai bentuk sopan tanpa menjadi perintah kasar.'};
 const contentTarget = {fixIndex: 0, answerNumber: 2, dimension: 'content', evidenceQuote: 'I helped my team.', instruction: 'Sebutkan tindakan nyata yang Anda sendiri lakukan.', successCriterion: 'Ada satu tindakan spesifik kandidat, bukan hanya tindakan tim.'};
-// Must survive the report's fact guard (only the candidate's own words + a placeholder), so it is actually shown and excluded.
-const modelExample = 'Yesterday I went to work, and I helped my team [add one task you finished].';
+// The report assembles upgrades from the source answer's own sentence + a gap, so this exact text is shown and excluded.
+const modelExample = 'Yesterday I go to work. [add one task you finished]';
 async function source(target, firstAnswer = 'Yesterday I go to work.', firstQuestion) {
   const id = crypto.randomUUID(), transcript = [{role: 'assistant', content: firstQuestion ?? load('backend/src/lib/ai/interview.ts').buildInterviewOpener('General')}];
   for (let n = 1; n <= 5; n++) {
@@ -67,7 +67,7 @@ async function source(target, firstAnswer = 'Yesterday I go to work.', firstQues
     transcript.push({role: 'assistant', content: n === 5 ? 'Thank you.' : 'Stored source question ' + (n + 1) + '?'});
   }
   await pg.query('INSERT INTO conversation_sessions(id,user_id,scenario,target_language,mode,interview_role,transcript) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb)', [id,userId,'Synthetic interview source','English','mock_interview','General',JSON.stringify(transcript)]);
-  reportFixture = {score: 70, dimensions: Object.fromEntries(['grammar','structure','content','confidence'].map(key => [key,{score:70,comment:'Synthetic comment.'}])), strongestAnswer:{question:'Q5',why:'Relative selection.'}, weakestAnswer:{question:'Q1',why:'Relative selection.'}, topFixes:['Perbaikan terkait kriteria.'], answerUpgrades:[{original:'Summary, never a source binding.',upgraded:modelExample}], practiceTarget:target};
+  reportFixture = {score: 70, dimensions: Object.fromEntries(['grammar','structure','content','confidence'].map(key => [key,{score:70,comment:'Synthetic comment.'}])), strongestAnswer:{question:'Q5',why:'Relative selection.'}, weakestAnswer:{question:'Q1',why:'Relative selection.'}, topFixes:['Perbaikan terkait kriteria.'], answerUpgrades:[{answerNumber:1,parts:[{kind:'sentence',sentenceIndex:0,gapPrompt:null},{kind:'gap',sentenceIndex:null,gapPrompt:'one task you finished'}]}], practiceTarget:target};
   const result = await load('backend/src/app/api/interviews/[sessionId]/report/route.ts').POST({}, params(id));
   assert.equal(result.status,200); return {id, transcript, context:result.data.practiceContext};
 }

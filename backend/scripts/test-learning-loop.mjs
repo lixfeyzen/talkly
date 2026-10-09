@@ -25,7 +25,7 @@ const syntheticReport = {
   strongestAnswer: {question: 'Q1', why: 'Synthetic'},
   weakestAnswer: {question: 'Q2', why: 'Synthetic'},
   topFixes: ['Describe your actual contribution.'],
-  answerUpgrades: [{question: 'Q2', original: 'I helped the team finish a project.', upgraded: 'I helped my team finish the project.'}],
+  answerUpgrades: [{answerNumber: 2, parts: [{kind: 'sentence', sentenceIndex: 0, gapPrompt: null}, {kind: 'gap', sentenceIndex: null, gapPrompt: 'the result'}]}],
 };
 const mocks = {
   '@/lib/auth/require-auth': {getAuthFromRequest: () => userId ? {userId} : null},
