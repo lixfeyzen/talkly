@@ -5,6 +5,31 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Uji ujung-ke-ujung di aplikasi sungguhan (web lokal + Neon) — 2026-10-10
+
+Atas izin Yohanes ("sure"): ChatGPT ditutup & server dev AdsWise dihentikan (memori 0,7→4,3 GB bebas; nyalakan
+lagi AdsWise dengan `npm run dev` di `D:\ai-ads-copilot`), lalu:
+- Tes suite Neon 10/10 hijau: auth 8, dashboard 13, streak 15, adaptive 15, interview 22, reset 15, interview-plan 15,
+  trajectory 13, history 12, ratelimit 6. Dua suite sempat gagal karena TES ketinggalan, bukan kode:
+  `test-trajectory` masih mengharap "up 22/17 points"/"below" padahal kalimat insight sengaja dibuat non-komparatif
+  ("Latest report score: X … not established as equivalent") → 3 cek diselaraskan; `test-dashboard` rapuh terhadap jam
+  DB yang 1,3 dtk lebih cepat dari laptop (`getRecentCorrectionStats` memakai `lte(createdAt, asOf)`) → asOf +1 menit
+  di tes. Kode produk tidak diubah. Tes membersihkan datanya sendiri (jumlah baris identik).
+- Interview "General" 5 jawaban diketik (akun uji `talkly-qa-…@example.com`, dihapus sesudahnya; 4 akun @example.com
+  lama TIDAK disentuh — `cleanup:test-users` sengaja tidak dipakai karena akan menghapus akun lama juga).
+  Terbukti di layar: teks pembuka baru tampil benar; mode suara (mic besar, pembuka dibacakan, "Type instead");
+  tak ada koreksi selama interview; Riwayat menampilkan tepat 3 koreksi benar TANPA penjelasan ("six month → six
+  months", "I join → I joined", "rotate → rotates"); 2 jawaban bersih tanpa koreksi.
+- Waktu tunggu (POST /api/conversations, server dev): 6,2* / 3,7 / 3,0 / 4,6 / 3,6 dtk (*kompilasi pertama);
+  suara pewawancara +2,7–3,9 dtk. Total ≈6–8 dtk dari kirim sampai pertanyaan terdengar.
+- **CACAT BARU: rapor mengarang fakta di "Answer upgrade".** Jawaban "I learn fast, I am honest…, finish my work on
+  time" di-upgrade menjadi "…quickly mastered new software tools during my internship … consistently met deadlines at
+  the bank" — tak pernah disebut kandidat. `addsNewFacts` diisi sendiri oleh model (false) → penyaring v3 tak
+  menangkap. Rapor juga tidak menyebut 3 kesalahan grammar yang ada (Grammar 75, "cukup baik").
+- Biaya: perkiraan ≈US$0,04–0,05 (5 giliran + 3 cek + 1 rapor + 4 suara; tagihan pasti tak terlihat dari aplikasi).
+- Sisa di DB: 6 baris `usage_counters` (penghitung kuota per jendela waktu, tak terkait data lain) sengaja dibiarkan.
+Tangkapan layar: `C:\Users\LEGION\Desktop\Talkly-Bukti-Layar\01–05`.
+
 ## Migrasi Neon 0011 + 0012 diterapkan — 2026-10-10
 
 Atas izin Yohanes ("sure"). Sebelum: 11 migrasi tercatat (0000–0010), tertunda 0011 & 0012; isi keduanya hanya

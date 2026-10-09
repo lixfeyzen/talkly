@@ -50,7 +50,8 @@ const up = buildTrajectory(
 );
 check("UNIT: skor urut kronologis walau input acak dites terpisah",
   up.scores[0].score === 52 && up.scores[2].score === 74);
-check("UNIT: skor naik -> insight 'up 22 points'", up.insight.includes("up 22 points"));
+// Insight wording is deliberately non-comparative: reports from different tasks are not equivalent scores.
+check("UNIT: skor naik -> insight sebut skor terakhir, tanpa klaim naik", up.insight.includes("Latest report score: 74") && !up.insight.includes("up 22"));
 
 const down = buildTrajectory(
   [
@@ -60,8 +61,8 @@ const down = buildTrajectory(
   [],
   NOW,
 );
-check("UNIT: skor turun -> insight jujur tapi menyemangati (tanpa 'up')",
-  down.insight.includes("below") && !down.insight.includes("up "));
+check("UNIT: skor turun -> insight sebut skor terakhir, tanpa klaim naik/turun",
+  down.insight.includes("Latest report score: 65") && !down.insight.includes("up ") && !down.insight.includes("below"));
 
 const mistakes = [
   // tense_usage: 10 di jendela lama, 4 di jendela baru -> -60%
@@ -128,8 +129,8 @@ async function main() {
 
     const live = buildTrajectory(reports.map(r => ({...r, ...comparable})), mrows, NOW, categoryLabel);
     check("DB: 2 skor terbaca urut & benar", live.scores.length === 2 && live.scores[0].score === 55 && live.scores[1].score === 72);
-    check("DB: insight gabungan skor naik + tren membaik",
-      live.insight.includes("up 17 points") && live.insight.includes("tense usage"));
+    check("DB: insight gabungan = skor terakhir + jumlah catatan, tanpa klaim kausal",
+      live.insight.includes("Latest report score: 72") && live.insight.includes("tense usage") && live.insight.includes("cannot establish improvement"));
     check("DB: tren tense 2->1 = -50%", live.trends[0]?.changePct === -50);
   } finally {
     await db.delete(users).where(eq(users.id, u.id)); // cascade bersihkan sisanya

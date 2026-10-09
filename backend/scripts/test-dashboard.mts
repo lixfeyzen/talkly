@@ -61,7 +61,10 @@ async function main() {
     });
     await db.insert(userMistakeStats).values({ userId: userB, category: "gender_agreement", occurrenceCount: 1 });
 
-    const dashA = await getDashboardData(userA);
+    // The DB clock can run ahead of this machine (measured +1.3 s, 2026-10-10); a one-minute horizon keeps
+    // rows inserted just now inside the recent window.
+    const asOf = new Date(Date.now() + 60_000);
+    const dashA = await getDashboardData(userA, asOf);
 
     check("totalSessions user A = 2", dashA.activity.totalSessions === 2);
     check("totalCorrections user A = 3", dashA.activity.totalCorrections === 3);
@@ -81,13 +84,13 @@ async function main() {
       !dashA.recentCorrections.some((c) => c.originalText === "le maison"),
     );
 
-    const dashB = await getDashboardData(userB);
+    const dashB = await getDashboardData(userB, asOf);
     check("user B totalSessions = 1 (bukan 3)", dashB.activity.totalSessions === 1);
     check("user B totalCorrections = 1 (bukan 4)", dashB.activity.totalCorrections === 1);
 
     // Empty state: user baru tanpa data apa pun.
     const emptyUser = await seedUser(`dash-empty-${stamp}@example.com`);
-    const dashEmpty = await getDashboardData(emptyUser);
+    const dashEmpty = await getDashboardData(emptyUser, asOf);
     check("EMPTY STATE: user baru totalSessions = 0", dashEmpty.activity.totalSessions === 0);
     check("EMPTY STATE: topWeaknesses kosong (bukan error)", dashEmpty.topWeaknesses.length === 0);
     check("EMPTY STATE: lastPracticedAt null", dashEmpty.activity.lastPracticedAt === null);
