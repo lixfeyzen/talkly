@@ -58,7 +58,8 @@ const transferFixture = (status, evidenceQuote, explanation = 'Kutipan jawaban i
 const pastTarget = {fixIndex: 0, answerNumber: 1, dimension: 'grammar', evidenceQuote: 'I go', instruction: 'Gunakan bentuk lampau untuk menceritakan tindakan yang selesai.', successCriterion: 'Tindakan yang selesai ditulis dengan bentuk lampau yang tepat.'};
 const politeTarget = {fixIndex: 0, answerNumber: 1, dimension: 'grammar', evidenceQuote: 'send me', instruction: 'Buat permintaan informasi dengan bentuk yang sopan.', successCriterion: 'Permintaan memakai bentuk sopan tanpa menjadi perintah kasar.'};
 const contentTarget = {fixIndex: 0, answerNumber: 2, dimension: 'content', evidenceQuote: 'I helped my team.', instruction: 'Sebutkan tindakan nyata yang Anda sendiri lakukan.', successCriterion: 'Ada satu tindakan spesifik kandidat, bukan hanya tindakan tim.'};
-const modelExample = 'I organized the project checklist and reviewed the missing entries.';
+// Must survive the report's fact guard (only the candidate's own words + a placeholder), so it is actually shown and excluded.
+const modelExample = 'Yesterday I went to work, and I helped my team [add one task you finished].';
 async function source(target, firstAnswer = 'Yesterday I go to work.', firstQuestion) {
   const id = crypto.randomUUID(), transcript = [{role: 'assistant', content: firstQuestion ?? load('backend/src/lib/ai/interview.ts').buildInterviewOpener('General')}];
   for (let n = 1; n <= 5; n++) {

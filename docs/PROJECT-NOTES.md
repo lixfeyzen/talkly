@@ -5,6 +5,20 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Penyaring fakta "Answer upgrade" — 2026-10-10 (atas izin Yohanes)
+
+`interview-report.ts` `addsUnstatedContent`: versi "Stronger" dibuang bila memuat kata isi (benda/kerja/angka/nama)
+di luar `[add …]` yang tak ada di jawaban mana pun dari pelamar di interview itu. Kata tugas, perubahan bentuk
+(join→joined, go→went, month→months) dan fakta dari jawaban lain pelamar yang sama diizinkan. Aturan pasti, bukan
+penilaian AI (model yang sama terbukti tak bisa menilai dirinya sendiri).
+Bukti offline: 4/4 "Stronger" dari rapor sungguhan (5, 6, 9, 10 Okt) yang mengarang → terbuang; 3/3 contoh jujur
+(rapikan + `[add …]`, kutulis sendiri) → tetap. Tes: core 13/13 (tes baru), opener 51/51, answer-practice 45/45,
+criterion-transfer 57/57 (contoh "versi model" di tes diganti yang lolos penyaring — contoh lamanya mengarang fakta),
+persistence 15/15, learning 14/14, test:interview 22/22 (Neon), harness Codex 63/63.
+**Akibat produk:** karena 4/4 versi "Stronger" yang dihasilkan model saat ini mengarang, bagian "Answer upgrade" akan
+hampir selalu tersembunyi (layar sudah menyembunyikannya bila kosong) sampai PEMBUATNYA diperbaiki. Batas: penyaring
+kata tak menangkap klaim karangan yang memakai kata-kata pelamar sendiri, dan ikut membuang sinonim jujur.
+
 ## Uji ujung-ke-ujung di aplikasi sungguhan (web lokal + Neon) — 2026-10-10
 
 Atas izin Yohanes ("sure"): ChatGPT ditutup & server dev AdsWise dihentikan (memori 0,7→4,3 GB bebas; nyalakan

@@ -63,6 +63,50 @@ export type InterviewReport = Omit<ParsedReport, "practiceTarget" | "answerUpgra
   practiceTarget?: PracticeTarget | null;
 };
 
+// Deterministic fact guard for answer upgrades (2026-10-10). The self-declared addsNewFacts flag failed in the
+// real app: all 4 recorded upgrades invented experience ("consistently met deadlines at the bank").
+// Every content word outside [placeholders] must already appear in one of the candidate's own answers.
+// ponytail: word-level check; it drops honest synonyms and misses an invented claim built only from the
+// candidate's own words. Upgrade path = an independent grounding check per sentence.
+const FUNCTION_WORDS = new Set(("a an the i me my mine we us our ours you your yours he him his she her hers it its they them their " +
+  "this that these those who whom whose which what am is are was were be been being have has had do does did will would can " +
+  "could should may might must shall in on at to for from with by of about as into during after before through over under " +
+  "between within without across around up down out off and or but so because since although though while when where if " +
+  "than then also too not no nor yet both either neither such very really just more most much many some any each every all " +
+  "own one other another how why there here now only even still again ever dont doesnt didnt im ive id ill isnt arent wasnt " +
+  "werent cant couldnt wont wouldnt shouldnt theyre youre were lets thats first second next finally result example situation " +
+  "action overall").split(" "));
+const IRREGULAR: Record<string, string> = { went: "go", gone: "go", did: "do", done: "do", made: "make", built: "build",
+  took: "take", taken: "take", gave: "give", given: "give", got: "get", gotten: "get", came: "come", saw: "see", seen: "see",
+  knew: "know", known: "know", thought: "think", brought: "bring", bought: "buy", taught: "teach", found: "find", led: "lead",
+  ran: "run", began: "begin", begun: "begin", wrote: "write", written: "write", chose: "choose", chosen: "choose",
+  spoke: "speak", spoken: "speak", met: "meet", kept: "keep", left: "leave", felt: "feel", told: "tell", said: "say",
+  paid: "pay", sent: "send", spent: "spend", won: "win", lost: "lose", held: "hold", stood: "stand", understood: "understand",
+  became: "become", grew: "grow", grown: "grow", people: "person", children: "child", men: "man", women: "woman" };
+const NUMBER_WORDS: Record<string, string> = { two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7", eight: "8",
+  nine: "9", ten: "10", eleven: "11", twelve: "12", twenty: "20", thirty: "30", fifty: "50", hundred: "100", thousand: "1000" };
+
+function lemma(word: string): string {
+  if (IRREGULAR[word]) return IRREGULAR[word];
+  for (const [suffix, replacement] of [["ies", "y"], ["ied", "y"], ["ing", ""], ["ed", ""], ["es", ""], ["s", ""], ["ly", ""]]) {
+    if (word.length > suffix.length + 2 && word.endsWith(suffix) && !(suffix === "s" && word.endsWith("ss"))) {
+      word = word.slice(0, -suffix.length) + replacement;
+      break;
+    }
+  }
+  return word.replace(/e$/, "");
+}
+
+function contentLemmas(text: string): string[] {
+  return text.replace(/\[[^\]]*\]/g, " ").toLowerCase().replace(/['’]/g, "").split(/[^a-z0-9]+/)
+    .filter(Boolean).map(word => NUMBER_WORDS[word] ?? word).filter(word => !FUNCTION_WORDS.has(word)).map(lemma);
+}
+
+export function addsUnstatedContent(upgraded: string, candidateAnswers: string[]): boolean {
+  const known = new Set(candidateAnswers.flatMap(contentLemmas));
+  return contentLemmas(upgraded).some(word => !known.has(word));
+}
+
 export async function generateInterviewReport(
   role: InterviewRole,
   transcript: ChatTurn[],
@@ -107,7 +151,8 @@ export async function generateInterviewReport(
     Object.values(parsed.dimensions).reduce((total, dimension) => total + dimension.score, 0) / 4,
   );
   const practiceTarget = validatePracticeTarget(parsed, transcript);
-  // Self-declared only: the model can still under-report invented facts (checked by live evaluation, not here).
-  const answerUpgrades = parsed.answerUpgrades.filter(upgrade => upgrade.addsNewFacts !== true);
+  const candidateAnswers = transcript.filter(turn => turn.role === "user").map(turn => turn.content);
+  const answerUpgrades = parsed.answerUpgrades.filter(upgrade =>
+    upgrade.addsNewFacts !== true && !addsUnstatedContent(upgrade.upgraded, candidateAnswers));
   return { ...parsed, answerUpgrades, practiceTarget, score, rubricVersion: PRACTICE_RUBRIC_VERSION, interviewRole: role, feedbackGuidanceVersion: FEEDBACK_GUIDANCE_VERSION };
 }

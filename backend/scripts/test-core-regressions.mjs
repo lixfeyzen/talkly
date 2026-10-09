@@ -133,6 +133,17 @@ test('Correction check keeps only fully passing proposals; omitted or conflictin
   assert.ok(sent.messages[0].content.includes('written in Indonesian'));
   assert.deepEqual(await checkCorrections('q', 'a', [], null), []);
 });
+test('Answer upgrades that add unstated content are detected; honest rewrites pass', () => {
+  const {addsUnstatedContent} = load('backend/src/lib/ai/interview-report.ts', {'@/lib/ai/openai':{openai:{}}, 'openai/helpers/zod':{zodResponseFormat:() => ({})}});
+  const answers = ["I did an internship at a bank for six month, where I helped the team prepare weekly reports.",
+    "You should hire me because I learn fast, I am honest about what I don't know yet, and I always finish my work on time."];
+  // Real app output, 2026-10-10: invented experience the candidate never stated.
+  assert.equal(addsUnstatedContent("I learn fast, as shown when I quickly mastered new software tools during my internship, and I consistently met deadlines at the bank.", answers), true);
+  assert.equal(addsUnstatedContent("I helped the team prepare 20 weekly reports at Google.", answers), true);
+  // Grammar fixes, reordering, facts from another answer and [placeholders] are allowed.
+  assert.equal(addsUnstatedContent("You should hire me because I learn fast and I always finish my work on time. During my internship at a bank, I helped the team prepare weekly reports [add one deadline you met].", answers), false);
+  assert.equal(addsUnstatedContent("I did an internship at a bank for six months.", answers), false);
+});
 test('Interview corrections drop the AI note and fail closed when the check errors', async () => {
   const deps = parse => ({'@/lib/ai/openai':{openai:{chat:{completions:{parse}}}}, 'openai/helpers/zod':{zodResponseFormat:() => ({})}});
   const pass = async () => ({choices:[{message:{parsed:{checks:[{index:0, reason:'r', originalIsWrong:true, correctionIsRight:true, noteIsRight:true}]}}}]});
