@@ -166,6 +166,7 @@ test('Answer upgrades are assembled only from the candidate sentences, checked c
   assert.ok(dropped([s(0), gap('[the result]')]), 'bracket inside a gap prompt');
   assert.ok(dropped([s(0), gap('a'), gap('b'), gap('c'), gap('d')]), 'more than three gaps');
   assert.ok(dropped([s(0), s(1)]), 'no change from the original answer');
+  assert.ok(dropped([s(0)]), 'dropping a sentence without a gap, reorder or correction');
   assert.ok(dropped([gap('the result')]), 'no candidate sentence');
   assert.equal(assembleAnswerUpgrades([{answerNumber:9, parts:[s(0)]}], transcript).length, 0);
 });

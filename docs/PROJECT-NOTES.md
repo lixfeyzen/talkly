@@ -5,6 +5,25 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Uji v6 "pinjam bukti dari jawaban lain" — 2026-10-10: GAGAL → dimatikan; 2 cacat ditemukan & diperbaiki
+
+Atas izin Yohanes ("sure"). Uji live di 4 transkrip HELD-OUT (I6 Designer, I2 SE, I3 Marketing, I4 General; tak
+dipakai merancang perubahan ini): **US$0,046356** (`work/c-upgrade-v6/`). Total biaya uji kualitas US$0,650295
+(+≈US$0,04–0,05 uji di aplikasi).
+- Syarat penentu GAGAL secara hitungan objektif: 0/4 upgrade meminjam kalimat dari jawaban lain (syarat ≥2/4) —
+  izin di prompt saja tak membuat model memakainya. Penilai AI tidak dijalankan (penyimpangan dari protokol, dicatat:
+  hasil gagal tak bisa dibalik oleh label yang lebih ketat).
+- Cacat 1 (juga ada di v5 yang ter-commit): contoh di prompt "one real example of a deadline you met" TERSALIN
+  mentah ke jawaban debugging (I2) → mendorong mengklaim pengalaman deadline yang tak pernah disebut. Diperbaiki:
+  contoh diganti netral ("the result", "what you personally did"), di skema & prompt.
+- Cacat 2: satu "upgrade" cuma membuang kalimat terakhir (I4). Diperbaiki: upgrade wajib punya gap, urutan baru, atau
+  koreksi yang sudah dicek; membuang kalimat saja ditolak.
+- Sesuai syarat gagal: peminjaman lintas-jawaban dimatikan (kembali ke perakitan v5 yang lulus). Kalimat baru
+  "topFixes/practiceTarget tak boleh mengandaikan pencapaian" dipertahankan — efeknya BELUM terbukti.
+- Perbaikan 1 (penghapusan contoh) adalah perubahan prompt: belum diuji live; sumber salinannya sudah tidak ada.
+Tes: core 14/14 (+1 cek), opener 51/51, answer-practice 45/45, criterion-transfer 57/57, persistence 15/15,
+learning 14/14, test:interview 22/22 (Neon), harness Codex 63/63; prompt koreksi identik per byte.
+
 ## "Answer upgrade" DISUSUN, bukan ditulis — 2026-10-10: LULUS (uji live 4 rapor)
 
 Atas izin Yohanes ("sure"). AI tak lagi menulis versi "Stronger": ia memilih `answerNumber` + `parts` (indeks kalimat
