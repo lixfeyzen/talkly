@@ -1,15 +1,14 @@
-// Readiness Trajectory: jawaban atas "apakah aku makin siap?" -- skor mock
-// interview lintas-waktu + tren kategori kesalahan. Fungsi murni (tanpa
-// DB/AI/clock) supaya gampang dites; "sekarang" disuntik dari luar.
+// Practice scores and recorded correction counts. Counts measure activity,
+// not proficiency; the clock is supplied so window boundaries can be tested.
 
-export type ScorePoint = { date: string; score: number };
+export type ScorePoint = { date: string; score: number; role?: string | null; rubricVersion?: string | null };
 
 export type CategoryTrend = {
   category: string;
   recentCount: number; // 14 hari terakhir
   previousCount: number; // 14 hari sebelumnya
-  // Negatif = membaik (kesalahan berkurang). null = belum ada pembanding
-  // (kategori baru muncul di jendela terakhir).
+  // Percentage change in recorded counts, not an error rate or learning gain.
+  // null means there is no prior count to divide by.
   changePct: number | null;
 };
 
@@ -17,9 +16,10 @@ export type Trajectory = {
   scores: ScorePoint[];
   trends: CategoryTrend[];
   insight: string;
+  comparison: { role: string; rubricVersion: string } | null;
 };
 
-type ReportRow = { score: number; createdAt: Date };
+type ReportRow = { score: number; createdAt: Date; role?: string | null; rubricVersion?: string | null };
 type MistakeRow = { category: string; createdAt: Date };
 
 const WINDOW_MS = 14 * 86_400_000;
@@ -30,9 +30,13 @@ export function buildTrajectory(
   now: Date,
   labelOf: (category: string) => string = (c) => c,
 ): Trajectory {
-  const scores: ScorePoint[] = [...reports]
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-    .map((r) => ({ date: r.createdAt.toISOString().slice(0, 10), score: r.score }));
+  const ordered = reports.filter(r => r.createdAt.getTime() <= now.getTime())
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  // Shared role/rubric does not establish equivalent questions or learning.
+  const comparison = null;
+  const scores: ScorePoint[] = ordered.map(r => ({
+    date: r.createdAt.toISOString().slice(0, 10), score: r.score, role: r.role ?? null, rubricVersion: r.rubricVersion ?? null,
+  }));
 
   // Hitung kesalahan per kategori di dua jendela 14-hari bersebelahan.
   const recentStart = now.getTime() - WINDOW_MS;
@@ -41,6 +45,7 @@ export function buildTrajectory(
   const previous = new Map<string, number>();
   for (const m of mistakes) {
     const t = m.createdAt.getTime();
+    if (t > now.getTime()) continue;
     if (t >= recentStart) {
       recent.set(m.category, (recent.get(m.category) ?? 0) + 1);
     } else if (t >= prevStart) {
@@ -66,40 +71,22 @@ export function buildTrajectory(
       };
     });
 
-  return { scores, trends, insight: buildInsight(scores, trends, labelOf) };
+  return { scores, trends, comparison, insight: buildInsight(scores, trends, labelOf) };
 }
 
-// Satu kalimat deterministik: rayakan perbaikan paling nyata; jujur bila
-// belum ada data pembanding.
+// Report observed differences without diagnosing learning from activity.
 function buildInsight(
   scores: ScorePoint[],
   trends: CategoryTrend[],
   labelOf: (category: string) => string,
 ): string {
-  const bestImproving = trends
-    .filter((t) => t.changePct !== null && t.changePct < 0)
-    .sort((a, b) => (a.changePct ?? 0) - (b.changePct ?? 0))[0];
-
-  if (scores.length >= 2) {
-    const first = scores[0].score;
-    const last = scores[scores.length - 1].score;
-    const delta = last - first;
-    if (delta > 0) {
-      return bestImproving
-        ? `Readiness up ${delta} points since your first mock. ${labelOf(bestImproving.category)} mistakes are down ${Math.abs(bestImproving.changePct!)}%.`
-        : `Readiness up ${delta} points since your first mock interview. Keep going.`;
-    }
-    if (delta < 0) {
-      return `Latest mock scored ${Math.abs(delta)} below your first. One off day doesn't erase progress. Do a targeted practice today.`;
-    }
-    return `Readiness steady at ${last}. Push through with targeted practice on your weak spots.`;
+  const parts: string[] = [];
+  if (scores.length > 0) {
+    parts.push(`Latest report score: ${scores[scores.length - 1].score}. Scores describe individual practice reports; different tasks or scoring instructions are not established as equivalent. They do not establish learning.`);
   }
-
-  if (bestImproving) {
-    return `${labelOf(bestImproving.category)} mistakes are down ${Math.abs(bestImproving.changePct!)}% these two weeks. Do a mock interview to lock in a readiness score.`;
+  const top = trends[0];
+  if (top) {
+    parts.push(`Recorded ${labelOf(top.category)} corrections: ${top.recentCount} in the last 14 days, versus ${top.previousCount} in the previous 14. Counts vary with practice volume and cannot establish improvement.`);
   }
-  if (scores.length === 1) {
-    return `First readiness score: ${scores[0].score}. Do another mock this week to start your trend line.`;
-  }
-  return "Practice a few sessions and do a mock interview. Your progress graph starts here.";
+  return parts.join(" ") || "Do a mock interview to record practice feedback. Your practice graph starts here.";
 }

@@ -16,7 +16,7 @@ const ttsSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }

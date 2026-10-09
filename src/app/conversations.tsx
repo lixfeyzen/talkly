@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -20,6 +20,8 @@ import {
   fetchConversationDetail,
   type SessionSummary,
   type SessionDetail,
+  criterionStatusLabel,
+  criterionValidationLabel,
 } from '@/lib/conversations/api';
 
 // Riwayat percakapan: daftar sesi (ringkas) -> tap -> transkrip penuh
@@ -38,25 +40,35 @@ function formatDate(iso: string): string {
 export default function ConversationsScreen() {
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
-  const [detail, setDetail] = useState<SessionDetail | null>(null);
+  const [loadedDetail, setDetail] = useState<SessionDetail | null>(null);
   const [failed, setFailed] = useState(false);
 
   const isDetail = typeof sessionId === 'string' && sessionId.length > 0;
+  const detail = loadedDetail?.id === sessionId ? loadedDetail : null;
+  const practiceContext = detail?.transcript[0]?.practiceContext;
+  const transferContext = detail?.transcript[0]?.transferContext;
+  const requestSequence = useRef(0);
+  const loadCurrent = useCallback(() => {
+    const request = ++requestSequence.current;
+    setFailed(false);
+    if (isDetail) {
+      setDetail(null);
+      fetchConversationDetail(sessionId as string)
+        .then(value => { if (requestSequence.current === request) setDetail(value); })
+        .catch(() => { if (requestSequence.current === request) setFailed(true); });
+    } else {
+      setDetail(null);
+      fetchConversationHistory()
+        .then(value => { if (requestSequence.current === request) setSessions(value); })
+        .catch(() => { if (requestSequence.current === request) setFailed(true); });
+    }
+  }, [isDetail, sessionId]);
 
   useFocusEffect(
     useCallback(() => {
-      setFailed(false);
-      if (isDetail) {
-        fetchConversationDetail(sessionId as string)
-          .then(setDetail)
-          .catch(() => setFailed(true));
-      } else {
-        setDetail(null);
-        fetchConversationHistory()
-          .then(setSessions)
-          .catch(() => setFailed(true));
-      }
-    }, [isDetail, sessionId]),
+      loadCurrent();
+      return () => { requestSequence.current++; };
+    }, [loadCurrent]),
   );
 
   const loading = !failed && (isDetail ? !detail : !sessions);
@@ -67,7 +79,11 @@ export default function ConversationsScreen() {
         {/* Header */}
         <View style={styles.nav}>
           <Pressable
-            onPress={() => (isDetail ? router.setParams({ sessionId: '' }) : router.back())}
+            onPress={() => {
+              if (isDetail) router.setParams({ sessionId: '' });
+              else if (router.canGoBack()) router.back();
+              else router.replace('/');
+            }}
             accessibilityRole="button"
             accessibilityLabel="Back"
             hitSlop={8}
@@ -90,13 +106,7 @@ export default function ConversationsScreen() {
           <ErrorState
             title="Could not load your conversations"
             subtitle="Check your connection and try again."
-            onRetry={() => {
-              setFailed(false);
-              (isDetail
-                ? fetchConversationDetail(sessionId as string).then(setDetail)
-                : fetchConversationHistory().then(setSessions)
-              ).catch(() => setFailed(true));
-            }}
+            onRetry={loadCurrent}
           />
         )}
 
@@ -108,9 +118,36 @@ export default function ConversationsScreen() {
             <Text style={styles.detailMeta}>
               {detail.mode === 'mock_interview'
                 ? `Mock interview · ${detail.interviewRole ?? ''}`
+                : detail.mode === 'answer_practice' ? 'Answer revision'
+                : detail.mode === 'criterion_transfer' ? 'Guided application'
+                : detail.mode === 'weekly_challenge' ? 'Weekly challenge · deferred'
                 : 'Free chat'}{' '}
               · {formatDate(detail.createdAt)}
             </Text>
+            {practiceContext && (
+              <Card>
+                <Text style={styles.bubbleText}>Original question: {practiceContext.originalQuestion}</Text>
+                <Text style={styles.bubbleText}>Original answer: {practiceContext.originalAnswer}</Text>
+                <Text style={styles.bubbleText}>One improvement: {practiceContext.selectedFix}</Text>
+                <Text style={styles.bubbleText}>{practiceContext.instruction}</Text>
+                <Text style={styles.bubbleText}>Success criterion: {practiceContext.successCriterion}</Text>
+                <PrimaryButton label="View original interview"
+                  onPress={() => router.push({ pathname: '/conversations', params: { sessionId: practiceContext.sourceSessionId } })} />
+              </Card>
+            )}
+            {transferContext && (
+              <Card>
+                <Text style={styles.bubbleText}>Guided application · AI feedback</Text>
+                <Text style={styles.bubbleText}>New question: {transferContext.selection.task.question}</Text>
+                <Text style={styles.bubbleText}>Same criterion: {transferContext.selection.successCriterion}</Text>
+                <Text style={styles.bubbleText}>{transferContext.selection.instruction}</Text>
+                <PrimaryButton label="View source revision" onPress={() => router.push({ pathname: '/conversations', params: { sessionId: transferContext.selection.sourceRevisionSessionId } })} />
+                <PrimaryButton label="View original interview" onPress={() => router.push({ pathname: '/conversations', params: { sessionId: transferContext.selection.sourceInterviewSessionId } })} />
+              </Card>
+            )}
+            {detail.mode === 'answer_practice' && !detail.transcript.some(turn => turn.transferSelection !== undefined) && (
+              <Card><Text style={styles.bubbleText}>No new question is linked to this saved revision. You can practice the same answer again.</Text></Card>
+            )}
             {detail.transcript.map((msg, i) => (
               <View key={i} style={styles.msgGroup}>
                 <MessageBubble role={msg.role}>
@@ -118,15 +155,41 @@ export default function ConversationsScreen() {
                     {msg.content}
                   </Text>
                 </MessageBubble>
+                {msg.role === 'assistant' && msg.criterionCheck && (
+                  <Card>
+                    <Text style={styles.bubbleText}>AI feedback · {criterionStatusLabel(msg.criterionCheck.status)}</Text>
+                    {msg.criterionCheck.evidenceQuote && <Text style={styles.bubbleText}>Evidence: “{msg.criterionCheck.evidenceQuote}”</Text>}
+                    <Text style={styles.bubbleText}>{msg.criterionCheck.explanation}</Text>
+                    {criterionValidationLabel(msg.criterionCheck.validationReason) && <Text style={styles.bubbleText}>{criterionValidationLabel(msg.criterionCheck.validationReason)}</Text>}
+                    <Text style={styles.bubbleText}>This describes this guided answer; it does not establish mastery.</Text>
+                  </Card>
+                )}
+                {msg.role === 'assistant' && msg.transferSelection !== undefined && (
+                  <Card>
+                    <Text style={styles.bubbleText}>{msg.transferSelection ? 'AI suggestion: a new question' : 'No new question selected'}</Text>
+                    <Text style={styles.bubbleText}>{msg.transferReason}</Text>
+                    {msg.transferSelection && <PrimaryButton label="Try a new question" onPress={() => router.push({ pathname: '/conversation', params: { transferSource: msg.transferSelection!.sourceRevisionSessionId, transferSelection: msg.transferSelection!.selectionId } })} />}
+                  </Card>
+                )}
+                {msg.role === 'user' && msg.mistakes?.map((mistake, correctionIndex) => (
+                  <Card key={correctionIndex}>
+                    <Text style={styles.bubbleText}>{mistake.originalText} → {mistake.correctedText}</Text>
+                    {mistake.note ? <Text style={styles.bubbleText}>{mistake.note}</Text> : null}
+                  </Card>
+                ))}
               </View>
             ))}
-            <PrimaryButton
+            {detail.mode !== 'weekly_challenge' && <PrimaryButton
               label="Practice this again"
               onPress={() =>
-                router.push({ pathname: '/conversation', params: { scenario: detail.scenario } })
+                router.push({ pathname: '/conversation', params: transferContext
+                  ? { transferSource: transferContext.selection.sourceRevisionSessionId, transferSelection: transferContext.selection.selectionId }
+                  : practiceContext
+                  ? { practiceSource: practiceContext.sourceSessionId, practiceTarget: practiceContext.targetId }
+                  : { scenario: detail.scenario, ...(detail.mode === 'mock_interview' ? { mode: 'interview', role: detail.interviewRole ?? 'General' } : {}) } })
               }
               style={styles.detailCta}
-            />
+            />}
           </ScrollView>
         )}
 
@@ -169,7 +232,7 @@ export default function ConversationsScreen() {
                           {s.scenario}
                         </Text>
                         <Text style={styles.rowSub} numberOfLines={1}>
-                          {formatDate(s.createdAt)} · {s.messageCount}{' '}
+                          {s.mode === 'weekly_challenge' ? 'Weekly challenge · deferred · ' : s.mode === 'criterion_transfer' ? 'Guided application · ' : s.mode === 'answer_practice' ? 'Answer revision · ' : ''}{formatDate(s.createdAt)} · {s.messageCount}{' '}
                           {s.messageCount === 1 ? 'message' : 'messages'}
                         </Text>
                       </View>

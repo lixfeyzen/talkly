@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { conversationSessions, mistakePatterns, userMistakeStats } from "@/lib/db/schema";
+import { conversationSessions, mistakePatterns } from "@/lib/db/schema";
+import { getRecentCorrectionStats } from "@/lib/data/recent-corrections";
 import { getStreak, type StreakData } from "@/lib/data/streaks";
 import { getLatestReport } from "@/lib/data/interview-reports";
 
@@ -28,22 +29,13 @@ export type DashboardData = {
   latestReadiness: { score: number; sessionId: string; createdAt: string } | null;
 };
 
-export async function getDashboardData(userId: string): Promise<DashboardData> {
+export async function getDashboardData(userId: string, asOf = new Date()): Promise<DashboardData> {
   // 6 query INDEPENDEN dijalankan paralel (bukan sequential await): untuk
   // user global yang jauh dari region DB, ini memangkas 6x round-trip jadi 1x
   // wall-clock. Dashboard = layar paling sering dibuka -> dampak terasa.
   const [topWeaknesses, [sessionAgg], [correctionAgg], recentCorrections, streak, latest] =
     await Promise.all([
-      // Top weaknesses: dari tabel agregat yg di-maintain tiap sesi.
-      db
-        .select({
-          category: userMistakeStats.category,
-          occurrenceCount: userMistakeStats.occurrenceCount,
-        })
-        .from(userMistakeStats)
-        .where(eq(userMistakeStats.userId, userId))
-        .orderBy(desc(userMistakeStats.occurrenceCount))
-        .limit(5),
+      getRecentCorrectionStats(userId, asOf),
       // Ringkasan aktivitas: 2 angka dalam 1 query agregat.
       db
         .select({

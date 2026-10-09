@@ -8,6 +8,7 @@ import { GradientBackground } from '@/components/gradient-background';
 import { PrimaryButton, SectionLabel } from '@/components/ui';
 import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, HeroBg } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
+import { fetchSuggestedScenario } from '@/lib/conversations/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
 
 // Kata + kalimat vonis diturunkan dari skor (presentasi murni; data tak punya
@@ -15,16 +16,16 @@ import { ApiError, NetworkError } from '@/lib/api/client';
 function verdictFor(score: number): { word: string; sentence: string; bubble: string } {
   if (score >= 85) {
     return {
-      word: 'Interview ready',
-      sentence: 'You are in strong shape. Keep your answers sharp.',
-      bubble: 'Ready!',
+      word: 'Strong practice answers',
+      sentence: 'These practice answers are clear. Review the specific feedback below.',
+      bubble: 'Keep practising',
     };
   }
   if (score >= 70) {
     return {
-      word: 'Nearly ready',
-      sentence: 'You are close. A little polish and you will walk in calm.',
-      bubble: 'So close!',
+      word: 'Promising practice answers',
+      sentence: 'Use the feedback below to make your next answers clearer.',
+      bubble: 'Keep practising',
     };
   }
   if (score >= 50) {
@@ -42,19 +43,22 @@ function verdictFor(score: number): { word: string; sentence: string; bubble: st
 }
 
 // Rapor contoh untuk PREVIEW DESAIN dev-only (?preview=1, hanya saat __DEV__).
-// Mengikuti frame mockup "04 Readiness Report" dengan SCHEMA NYATA app (3
-// dimensi grammar/structure/content) supaya layout bisa dibanding 1:1 TANPA
-// memanggil AI. Tidak pernah tampil untuk user sungguhan.
+// Mengikuti frame mockup "04 Readiness Report" dengan SCHEMA NYATA app (4
+// dimensi grammar/structure/content/confidence) supaya layout bisa dibanding
+// 1:1 TANPA memanggil AI. Tidak pernah tampil untuk user sungguhan.
 const PREVIEW_REPORT: InterviewReportResponse = {
   score: 72,
   previousScore: 64,
   createdAt: '2026-07-04T09:12:00.000Z',
   report: {
+    rubricVersion: 'practice-v1',
+    interviewRole: 'Software Engineer',
     score: 72,
     dimensions: {
       grammar: { score: 70, comment: 'Cuida los tiempos verbales.' },
       structure: { score: 64, comment: 'Añade inicio y cierre claros.' },
       content: { score: 78, comment: 'Claro y fácil de seguir.' },
+      confidence: { score: 65, comment: 'Explica tu acción y el resultado sin añadir hechos nuevos.' },
     },
     strongestAnswer: { question: '“Why this role?”', why: 'Specific and genuine.' },
     weakestAnswer: { question: '“A conflict?”', why: 'Land the result.' },
@@ -68,7 +72,7 @@ const PREVIEW_REPORT: InterviewReportResponse = {
         question: 'Tell me about a difficult project.',
         original: '“I worked on a project, it was difficult, but in the end we finished it.”',
         upgraded:
-          'Our checkout kept failing during peak hours. I owned the fix before our biggest sale. I profiled the code and cached the slow query. Errors fell to near zero and sales rose 12%.',
+          'I worked on a difficult project. Despite the challenges, our team finished it.',
       },
     ],
   },
@@ -88,6 +92,8 @@ export default function InterviewReportScreen() {
   const missingSession = !sessionId && !isPreview;
   const [loading, setLoading] = useState(!missingSession && !isPreview);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [startingPractice, setStartingPractice] = useState(false);
+  const [practiceError, setPracticeError] = useState<string | null>(null);
   const error = missingSession ? 'Missing interview session.' : fetchError;
 
   useEffect(() => {
@@ -111,7 +117,7 @@ export default function InterviewReportScreen() {
       <GradientBackground>
         <View style={styles.centered}>
           <ActivityIndicator color={Ink} />
-          <Text style={styles.centerText}>Preparing your readiness report…</Text>
+          <Text style={styles.centerText}>Preparing your practice report…</Text>
         </View>
       </GradientBackground>
     );
@@ -132,24 +138,39 @@ export default function InterviewReportScreen() {
   }
 
   const { report } = data;
+  const isCurrentRubric = report.rubricVersion === 'practice-v1';
+  async function startFocusedPractice() {
+    if (startingPractice) return;
+    if (data?.practiceContext) {
+      router.push({ pathname: '/conversation', params: {
+        practiceSource: data.practiceContext.sourceSessionId,
+        practiceTarget: data.practiceContext.targetId,
+      } });
+      return;
+    }
+    setStartingPractice(true);
+    setPracticeError(null);
+    try {
+      const suggestion = await fetchSuggestedScenario();
+      router.push({ pathname: '/conversation', params: {
+        scenario: suggestion?.scenario ?? 'About yourself', focus: suggestion?.focusCategories.join(',') ?? '',
+        retryRole: report.interviewRole ?? '',
+      } });
+    } catch {
+      setPracticeError('Could not load a focused practice. Your report is still available. Try again.');
+    } finally {
+      setStartingPractice(false);
+    }
+  }
   // Label satu-kata (gaya mockup) untuk grid dimensi dua kolom.
   const dims = [
     { label: 'Grammar', d: report.dimensions.grammar },
     { label: 'Structure', d: report.dimensions.structure },
     { label: 'Content', d: report.dimensions.content },
+    ...(report.dimensions.confidence ? [{ label: isCurrentRubric ? 'Answer wording' : 'Legacy confidence score', d: report.dimensions.confidence }] : []),
   ];
   const verdict = verdictFor(data.score);
   const scorePct = Math.max(0, Math.min(100, data.score));
-  // "up N from last time" -- hanya muncul kalau ada mock sebelumnya.
-  const diff = data.previousScore != null ? data.score - data.previousScore : null;
-  const deltaLabel =
-    diff == null
-      ? null
-      : diff > 0
-        ? `up ${diff} from last time`
-        : diff < 0
-          ? `down ${Math.abs(diff)} from last time`
-          : 'same as last time';
 
   return (
     <View style={styles.root}>
@@ -172,24 +193,18 @@ export default function InterviewReportScreen() {
                 style={styles.navBtn}>
                 <Feather name="chevron-left" size={18} color="#FFFFFF" />
               </Pressable>
-              <Text style={styles.navTitle}>Readiness report</Text>
+              <Text style={styles.navTitle}>Practice report</Text>
               <View style={styles.navSpacer} />
             </View>
 
             <View style={styles.scoreBlock}>
-              <Text style={styles.scoreLabel}>Readiness score</Text>
+              <Text style={styles.scoreLabel}>Practice score</Text>
               <View style={styles.scoreRow}>
                 <Text style={styles.scoreValue}>{data.score}</Text>
                 <Text style={styles.scoreOutOf}>/ 100</Text>
               </View>
               <View style={styles.verdictRow}>
                 <Text style={styles.verdictWord}>{verdict.word}</Text>
-                {deltaLabel ? (
-                  <>
-                    <View style={styles.verdictDot} />
-                    <Text style={styles.verdictDelta}>{deltaLabel}</Text>
-                  </>
-                ) : null}
               </View>
               <View style={styles.heroTrack}>
                 <View style={[styles.heroFill, { width: `${scorePct}%` }]} />
@@ -219,6 +234,16 @@ export default function InterviewReportScreen() {
               </View>
             </View>
 
+            {/* Batasi arti penilaian pada jawaban latihan yang benar-benar diamati. */}
+            <View style={styles.dimClarify}>
+              <Feather name="zap" size={14} color="#92400E" style={styles.dimClarifyIcon} />
+              <Text style={styles.dimClarifyText}>
+                Feedback is based on the text of these practice answers. It does not measure
+                pronunciation, personal confidence, or predict a hiring decision.
+                {!isCurrentRubric && " This archived report used older scoring instructions. Its scores are not compared with the current rubric."}
+              </Text>
+            </View>
+
             {/* Strongest (mint) / Needs work (pink) */}
             <View style={styles.highlightRow}>
               <View style={[styles.highlightTile, styles.strongTile]}>
@@ -236,7 +261,7 @@ export default function InterviewReportScreen() {
               <View style={[styles.highlightTile, styles.needsTile]}>
                 <View style={styles.highlightHead}>
                   <Feather name="alert-triangle" size={14} color="#3D2A31" />
-                  <Text style={[styles.highlightKicker, { color: '#3D2A31' }]}>Needs work</Text>
+                  <Text style={[styles.highlightKicker, { color: '#3D2A31' }]}>{report.topFixes.length > 0 ? 'Needs work' : 'Answer to review'}</Text>
                 </View>
                 <Text style={[styles.highlightQ, { color: '#3D2A31' }]}>
                   {report.weakestAnswer.question}
@@ -248,7 +273,7 @@ export default function InterviewReportScreen() {
             </View>
 
             {/* Top fixes: daftar bernomor */}
-            <View style={styles.section}>
+            {report.topFixes.length > 0 && <View style={styles.section}>
               <SectionLabel style={styles.sectionLabel}>Top fixes</SectionLabel>
               {report.topFixes.map((fix, i) => (
                 <View key={i} style={styles.fixRow}>
@@ -258,10 +283,10 @@ export default function InterviewReportScreen() {
                   <Text style={styles.fixText}>{fix}</Text>
                 </View>
               ))}
-            </View>
+            </View>}
 
             {/* Answer upgrade: kartu abu, jawaban asli -> versi lebih kuat */}
-            <View style={styles.section}>
+            {report.answerUpgrades.length > 0 && <View style={styles.section}>
               <SectionLabel style={styles.sectionLabel}>Answer upgrade</SectionLabel>
               {report.answerUpgrades.map((u, i) => (
                 <View key={i} style={styles.upgradeCard}>
@@ -275,11 +300,23 @@ export default function InterviewReportScreen() {
                   <Text style={styles.upgradeStronger}>{u.upgraded}</Text>
                 </View>
               ))}
-            </View>
+            </View>}
 
             {/* Aksi */}
             <View style={styles.cta}>
-              <PrimaryButton label="Practice the weak spots" onPress={() => router.push('/interview')} />
+              {data.practiceContext ? (
+                <Text style={styles.fixText}>One improvement: {data.practiceContext.selectedFix}</Text>
+              ) : (
+                <Text style={styles.dimComment}>No linked practice target. General practice is not tied to an answer in this report.</Text>
+              )}
+              <PrimaryButton label={data.practiceContext ? 'Revise this answer' : 'General language practice'} onPress={startFocusedPractice} loading={startingPractice} />
+              {practiceError && <Text style={styles.errorText}>{practiceError}</Text>}
+              <Pressable accessibilityRole="button" style={styles.backHome}
+                onPress={() => report.interviewRole
+                  ? router.push({ pathname: '/conversation', params: { mode: 'interview', role: report.interviewRole } })
+                  : router.push('/interview')}>
+                <Text style={styles.backHomeText}>Try another mock interview</Text>
+              </Pressable>
               <Pressable
                 onPress={() => router.replace('/')}
                 accessibilityRole="button"
@@ -314,7 +351,7 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' },
 
   // Hero band gelap
-  hero: { backgroundColor: HeroBg, paddingBottom: 22, overflow: 'hidden' },
+  hero: { backgroundColor: HeroBg, paddingBottom: 42, overflow: 'hidden' },
   heroGlow: {
     position: 'absolute',
     top: -30,
@@ -417,7 +454,7 @@ const styles = StyleSheet.create({
     borderColor: HairlineBorder,
   },
   dimHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  dimLabel: { fontSize: 13.5, fontWeight: '700', color: '#111114' },
+  dimLabel: { flexShrink: 1, marginRight: 6, fontSize: 13.5, fontWeight: '700', color: '#111114' },
   dimScore: { fontSize: 15, fontWeight: '800', color: '#111114', fontVariant: ['tabular-nums'] },
   dimTrack: {
     height: 5,
@@ -429,6 +466,20 @@ const styles = StyleSheet.create({
   },
   dimFill: { height: '100%', borderRadius: 999, backgroundColor: '#111114' },
   dimComment: { fontSize: 11.5, lineHeight: 15, color: '#60646C', marginTop: 0 },
+  dimConfidenceFill: { height: '100%', borderRadius: 999, backgroundColor: Pastel.lilacInk },
+  dimClarify: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 7,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FDE9C8',
+    marginTop: 2,
+  },
+  dimClarifyIcon: { marginTop: 1 },
+  dimClarifyText: { fontSize: 10.5, lineHeight: 14, color: '#92400E' },
 
   // Highlights
   highlightRow: { flexDirection: 'row', gap: 10 },

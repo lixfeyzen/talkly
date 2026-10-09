@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { users, userMistakeStats } from "@/lib/db/schema";
+import { users } from "@/lib/db/schema";
+import { getRecentCorrectionStats } from "@/lib/data/recent-corrections";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { INTERVIEW_ROLES, type InterviewRole } from "@/lib/ai/interview";
 import { buildPlan, daysUntil } from "@/lib/interview-plan/plan";
@@ -31,7 +32,7 @@ function todayIso(): string {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }
@@ -47,17 +48,9 @@ export async function GET(req: NextRequest) {
       return jsonCors({ set: false });
     }
 
-    const stats = await db
-      .select({
-        category: userMistakeStats.category,
-        occurrenceCount: userMistakeStats.occurrenceCount,
-      })
-      .from(userMistakeStats)
-      .where(eq(userMistakeStats.userId, auth.userId))
-      .orderBy(desc(userMistakeStats.occurrenceCount))
-      .limit(5);
-
-    const plan = buildPlan(user.interviewDate, todayIso(), user.role as InterviewRole, stats);
+    const asOf = new Date();
+    const stats = await getRecentCorrectionStats(auth.userId, asOf);
+    const plan = buildPlan(user.interviewDate, asOf.toISOString().slice(0, 10), user.role as InterviewRole, stats);
     if ("expired" in plan) {
       return jsonCors({ set: true, expired: true, interviewDate: user.interviewDate, role: user.role });
     }
@@ -75,7 +68,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }
@@ -111,7 +104,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }

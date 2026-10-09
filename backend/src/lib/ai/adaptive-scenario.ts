@@ -1,7 +1,7 @@
 import type { MistakeCategory } from "@/lib/ai/mistake-categories";
 
 // Skenario adaptif (fitur #3): pilih latihan berikutnya yang SENGAJA memaksa
-// user memakai pola yang masih lemah, berdasarkan agregat user_mistake_stats.
+// user memakai pola yang masih lemah, berdasarkan koreksi tercatat selama 28 hari terakhir.
 // Fungsi murni (tanpa DB/AI) supaya gampang dites.
 
 export type WeaknessStat = { category: string; occurrenceCount: number };
@@ -69,7 +69,7 @@ export function suggestScenario(stats: WeaknessStat[]): SuggestedScenario | null
     focusCategories,
     reason:
       focusCategories.length === 2
-        ? `Your most frequent mistakes are ${LABELS[primary]} (${primaryCount}×) and ${LABELS[focusCategories[1]]}. This practice targets both.`
-        : `Your most frequent mistake is ${LABELS[primary]} (${primaryCount}×). This practice targets it.`,
+        ? `Your recent recorded patterns are ${LABELS[primary]} (${primaryCount}×) and ${LABELS[focusCategories[1]]}. This practice targets both.`
+        : `Your recent recorded pattern is ${LABELS[primary]} (${primaryCount}×). This practice targets it.`,
   };
 }

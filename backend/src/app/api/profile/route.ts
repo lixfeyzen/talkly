@@ -13,7 +13,7 @@ export function OPTIONS() {
 // Set/ubah profil user: bahasa native dan/atau nama panggilan (dari
 // onboarding maupun pengaturan). Hanya field yang dikirim yang di-update.
 export async function POST(req: NextRequest) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }

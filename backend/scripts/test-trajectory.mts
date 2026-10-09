@@ -26,6 +26,7 @@ function check(label: string, condition: boolean) {
 }
 
 const NOW = new Date("2026-07-04T12:00:00Z");
+const comparable = { role: "General", rubricVersion: "practice-v1" };
 const daysAgo = (n: number) => new Date(NOW.getTime() - n * 86_400_000);
 
 // ===== Bagian 1: fungsi murni (tanpa DB) =====
@@ -34,15 +35,15 @@ const empty = buildTrajectory([], [], NOW);
 check("UNIT: user baru -> struktur kosong + insight ajakan (bukan crash)",
   empty.scores.length === 0 && empty.trends.length === 0 && empty.insight.includes("starts here"));
 
-const oneScore = buildTrajectory([{ score: 61, createdAt: daysAgo(2) }], [], NOW);
+const oneScore = buildTrajectory([{ ...comparable, score: 61, createdAt: daysAgo(2) }], [], NOW);
 check("UNIT: 1 rapor -> insight ajak mock kedua, sebut skornya",
   oneScore.scores.length === 1 && oneScore.insight.includes("61"));
 
 const up = buildTrajectory(
   [
-    { score: 52, createdAt: daysAgo(21) },
-    { score: 60, createdAt: daysAgo(10) },
-    { score: 74, createdAt: daysAgo(1) },
+    { ...comparable, score: 52, createdAt: daysAgo(21) },
+    { ...comparable, score: 60, createdAt: daysAgo(10) },
+    { ...comparable, score: 74, createdAt: daysAgo(1) },
   ],
   [],
   NOW,
@@ -53,8 +54,8 @@ check("UNIT: skor naik -> insight 'up 22 points'", up.insight.includes("up 22 po
 
 const down = buildTrajectory(
   [
-    { score: 70, createdAt: daysAgo(20) },
-    { score: 65, createdAt: daysAgo(1) },
+    { ...comparable, score: 70, createdAt: daysAgo(20) },
+    { ...comparable, score: 65, createdAt: daysAgo(1) },
   ],
   [],
   NOW,
@@ -78,13 +79,13 @@ const tr = buildTrajectory([], mistakes, NOW, categoryLabel);
 const tense = tr.trends.find((t) => t.category === "tense_usage");
 const article = tr.trends.find((t) => t.category === "article_usage");
 const word = tr.trends.find((t) => t.category === "word_order");
-check("UNIT: tren membaik dihitung benar (10->4 = -60%)", tense?.changePct === -60);
-check("UNIT: tren memburuk dihitung benar (2->3 = +50%)", article?.changePct === 50);
+check("UNIT: jumlah catatan turun dihitung benar (10->4 = -60%)", tense?.changePct === -60);
+check("UNIT: jumlah catatan naik dihitung benar (2->3 = +50%)", article?.changePct === 50);
 check("UNIT: kategori baru tanpa pembanding -> changePct null", word?.changePct === null);
 check("UNIT: data di luar 2 jendela diabaikan",
   tr.trends.every((t) => t.category !== "plural_agreement"));
-check("UNIT: tanpa rapor tapi ada perbaikan -> insight sebut label & %",
-  tr.insight.includes("tense usage") && tr.insight.includes("60%"));
+check("UNIT: tanpa rapor -> sebut jumlah catatan dan batas maknanya",
+  tr.insight.includes("tense usage") && tr.insight.includes("cannot establish improvement"));
 
 // ===== Bagian 2: alur data terhadap DB live =====
 
@@ -98,16 +99,16 @@ async function main() {
   try {
     const [s1] = await db
       .insert(conversationSessions)
-      .values({ userId: u.id, scenario: "Mock interview: General", targetLanguage: "English", mode: "mock_interview" })
+      .values({ userId: u.id, scenario: "Mock interview: General", targetLanguage: "English", mode: "mock_interview", interviewRole: "General" })
       .returning({ id: conversationSessions.id });
     const [s2] = await db
       .insert(conversationSessions)
-      .values({ userId: u.id, scenario: "Mock interview: General", targetLanguage: "English", mode: "mock_interview" })
+      .values({ userId: u.id, scenario: "Mock interview: General", targetLanguage: "English", mode: "mock_interview", interviewRole: "General" })
       .returning({ id: conversationSessions.id });
 
     await db.insert(interviewReports).values([
-      { userId: u.id, sessionId: s1.id, score: 55, report: {}, createdAt: daysAgo(15) },
-      { userId: u.id, sessionId: s2.id, score: 72, report: {}, createdAt: daysAgo(2) },
+      { userId: u.id, sessionId: s1.id, score: 55, report: {rubricVersion: "practice-v1"}, createdAt: daysAgo(15) },
+      { userId: u.id, sessionId: s2.id, score: 72, report: {rubricVersion: "practice-v1"}, createdAt: daysAgo(2) },
     ]);
     await db.insert(mistakePatterns).values([
       { userId: u.id, sessionId: s1.id, category: "tense_usage", originalText: "a", correctedText: "b", createdAt: daysAgo(20) },
@@ -125,7 +126,7 @@ async function main() {
       .from(mistakePatterns)
       .where(eq(mistakePatterns.userId, u.id));
 
-    const live = buildTrajectory(reports, mrows, NOW, categoryLabel);
+    const live = buildTrajectory(reports.map(r => ({...r, ...comparable})), mrows, NOW, categoryLabel);
     check("DB: 2 skor terbaca urut & benar", live.scores.length === 2 && live.scores[0].score === 55 && live.scores[1].score === 72);
     check("DB: insight gabungan skor naik + tren membaik",
       live.insight.includes("up 17 points") && live.insight.includes("tense usage"));

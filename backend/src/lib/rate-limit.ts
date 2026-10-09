@@ -14,6 +14,8 @@ const LIMITS = {
   ai: { perMinute: 12, perDay: 200 },
   // Registrasi per-IP (anti pabrik akun).
   register: { perMinute: 5, perDay: 20 },
+  loginIp: { perMinute: 20, perDay: 300 },
+  loginAccount: { perMinute: 10, perDay: 100 },
 } as const;
 
 export type RateAction = keyof typeof LIMITS;

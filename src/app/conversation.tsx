@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { randomUUID } from 'expo-crypto';
 import {
   StyleSheet,
   TextInput,
@@ -12,15 +13,17 @@ import {
   Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Chip, MessageBubble, BubbleTextColor, ListenPill, TypingDots, PrimaryButton } from '@/components/ui';
 import { Spacing, MaxContentWidth, Ink, Placeholder, HairlineBorder, Danger, Success } from '@/constants/theme';
-import { sendMessage, type Mistake, type MistakeCategory } from '@/lib/conversations/api';
-import { INTERVIEW_OPENER } from '@/lib/interviews/api';
+import { sendMessage, fetchConversationDetail, criterionStatusLabel, criterionValidationLabel,
+  type Mistake, type MistakeCategory, type FrozenTaskSelection, type TransferContext, type CriterionCheck } from '@/lib/conversations/api';
+import { buildInterviewOpener, INTERVIEW_ROLES, fetchReport, type AnswerPracticeContext } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
+import { WEEKLY_CHALLENGE_ENABLED, isWeeklyMode } from '@/lib/features/v1';
 import { transcribeAudio, fetchTtsAudioUri } from '@/lib/speech/api';
 import {
   useAudioRecorder,
@@ -41,7 +44,8 @@ const SCENARIOS = [
 const TARGET_LANGUAGE = 'English';
 const CORRECTION_ACCENT = '#8B5CF0';
 
-type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[] };
+type Message = { role: 'user' | 'assistant'; content: string; mistakes?: Mistake[];
+  transferSelection?: FrozenTaskSelection | null; transferReason?: string; criterionCheck?: CriterionCheck };
 
 // Percakapan contoh untuk PREVIEW DESAIN dev-only (?preview=1, hanya saat __DEV__).
 // Menyalin frame mockup "02 Conversation" agar komponen bisa dibandingkan 1:1
@@ -64,6 +68,12 @@ const PREVIEW_MESSAGES: Message[] = [
 ];
 
 export default function ConversationScreen() {
+  const { mode } = useLocalSearchParams<{ mode?: string | string[] }>();
+  if (!WEEKLY_CHALLENGE_ENABLED && isWeeklyMode(mode)) return <Redirect href="/" />;
+  return <ActiveConversationScreen />;
+}
+
+function ActiveConversationScreen() {
   const scrollRef = useRef<ScrollView>(null);
 
   const params = useLocalSearchParams<{
@@ -72,13 +82,43 @@ export default function ConversationScreen() {
     mode?: string;
     role?: string;
     preview?: string;
+    retryRole?: string;
+    practiceSource?: string;
+    practiceTarget?: string;
+    transferSource?: string;
+    transferSelection?: string;
   }>();
+  const [practiceContext, setPracticeContext] = useState<AnswerPracticeContext | null>(null);
+  const [practiceLocked, setPracticeLocked] = useState(false);
+  const [transferContext, setTransferContext] = useState<TransferContext | null>(null);
+  const [transferLocked, setTransferLocked] = useState(false);
+  const [transferLoadError, setTransferLoadError] = useState<string | null>(null);
   const focusCategories =
     typeof params.focus === 'string' && params.focus.length > 0
       ? (params.focus.split(',') as MistakeCategory[])
       : undefined;
-  const isInterview = params.mode === 'interview' && typeof params.role === 'string';
-  const interviewRole = isInterview ? (params.role as string) : undefined;
+  const retryRole = INTERVIEW_ROLES.find(role => role === params.retryRole);
+  const practiceSource = typeof params.practiceSource === 'string' ? params.practiceSource : undefined;
+  const practiceTargetId = typeof params.practiceTarget === 'string' ? params.practiceTarget : undefined;
+  const transferSource = typeof params.transferSource === 'string' ? params.transferSource : undefined;
+  const transferSelectionId = typeof params.transferSelection === 'string' ? params.transferSelection : undefined;
+  const conflictingReferences = Boolean((practiceSource || practiceTargetId) && (transferSource || transferSelectionId));
+  const isTransfer = transferLocked || (!practiceLocked && Boolean(transferSource || transferSelectionId));
+  const isAnswerPractice = practiceLocked || (!isTransfer && Boolean(practiceSource || practiceTargetId));
+  const missingPracticeReference = isAnswerPractice && !practiceLocked && (!practiceSource || !practiceTargetId);
+  const practiceReady = Boolean(practiceContext && (practiceLocked || (
+    practiceContext.sourceSessionId === practiceSource && practiceContext.targetId === practiceTargetId
+  )));
+  const transferReady = Boolean(transferContext && (transferLocked || (!conflictingReferences &&
+    transferContext.selection.sourceRevisionSessionId === transferSource && transferContext.selection.selectionId === transferSelectionId)));
+  const isBoundPractice = isAnswerPractice || isTransfer;
+  const boundReady = isTransfer ? transferReady : practiceReady;
+  const missingTransferReference = isTransfer && !transferLocked && (!transferSource || !transferSelectionId || conflictingReferences);
+  const interviewRole = !isBoundPractice && params.mode === 'interview'
+    ? INTERVIEW_ROLES.find(role => role === params.role)
+    : undefined;
+  const isInterview = Boolean(interviewRole);
+  const interviewOpener = interviewRole ? buildInterviewOpener(interviewRole) : '';
   // Preview DESAIN dev-only: render frame mockup "02 Conversation" 1:1 (header,
   // pesan, koreksi, tombol report, input) TANPA AI. Hanya di __DEV__ + ?preview=1.
   const isPreview = __DEV__ && params.preview === '1';
@@ -91,12 +131,14 @@ export default function ConversationScreen() {
         : SCENARIOS[0],
   );
   const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [practiceLoadError, setPracticeLoadError] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>(() => {
+    if (isBoundPractice) return [];
     if (isInterview) {
       return [
         {
           role: 'assistant',
-          content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+          content: interviewOpener,
         },
       ];
     }
@@ -107,6 +149,45 @@ export default function ConversationScreen() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasPendingSend, setHasPendingSend] = useState(false);
+  const sendInFlight = useRef(false);
+  const pendingSend = useRef<{ params: Parameters<typeof sendMessage>[0]; index: number } | null>(null);
+
+  useEffect(() => {
+    if (practiceLocked || transferLocked || isTransfer || !practiceSource) return;
+    let active = true;
+    fetchReport(practiceSource)
+      .then(report => {
+        const context = report.practiceContext;
+        if (!context || context.targetId !== practiceTargetId) throw new Error('No verified target');
+        if (active) {
+          setPracticeContext(context);
+          setPracticeLoadError(null);
+          setMessages([{ role: 'assistant', content: context.originalQuestion }]);
+        }
+      })
+      .catch(() => {
+        if (active) setPracticeLoadError('This answer revision is unavailable. Reopen the original report to choose a current practice.');
+      });
+    return () => { active = false; };
+  }, [practiceSource, practiceTargetId, practiceLocked, transferLocked, isTransfer]);
+
+  useEffect(() => {
+    if (transferLocked || practiceLocked || !transferSource || !transferSelectionId || conflictingReferences) return;
+    let active = true;
+    fetchConversationDetail(transferSource).then(detail => {
+      const selection = detail.mode === 'answer_practice' ? detail.transcript.find(turn =>
+        turn.transferSelection?.selectionId === transferSelectionId && turn.transferSelection.sourceRevisionSessionId === transferSource)?.transferSelection : null;
+      if (!selection) throw new Error('No saved new question');
+      if (active) {
+        setTransferContext({ kind: 'guided_application', selection });
+        setTransferLoadError(null);
+        ttsCache.current.clear();
+        setMessages([{ role: 'assistant', content: selection.task.question }]);
+      }
+    }).catch(() => { if (active) setTransferLoadError('This new question is unavailable. Reopen your saved revision to choose a saved question.'); });
+    return () => { active = false; };
+  }, [transferSource, transferSelectionId, transferLocked, practiceLocked, conflictingReferences]);
 
   // --- Voice mode ---
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -126,7 +207,12 @@ export default function ConversationScreen() {
         if (!uri) throw new Error('no recording uri');
         const mime = Platform.OS === 'web' ? 'audio/webm' : 'audio/m4a';
         const text = await transcribeAudio(uri, mime);
-        setInput((prev) => (prev ? `${prev} ${text}` : text));
+        // Mock interview: jawaban suara langsung terkirim, tanpa diedit -- seperti interview asli.
+        if (voiceFirst) {
+          if (!text.trim()) throw new Error('empty transcript'); // diam/terlalu pelan -> pesan "Couldn't understand"
+          await handleSend(text);
+        }
+        else setInput((prev) => (prev ? `${prev} ${text}` : text));
       } catch {
         setError("Couldn't understand the recording, try again.");
       } finally {
@@ -145,9 +231,10 @@ export default function ConversationScreen() {
     setRecording(true);
   }
 
-  async function playReply(index: number, text: string) {
+  // silent: putar otomatis boleh gagal diam-diam (mis. browser memblokir autoplay); tombol Listen tetap ada.
+  async function playReply(index: number, text: string, silent = false) {
     if (speakingIndex !== null) return;
-    setError(null);
+    if (!silent) setError(null);
     setSpeakingIndex(index);
     try {
       let uri = ttsCache.current.get(index);
@@ -165,10 +252,21 @@ export default function ConversationScreen() {
       });
       player.play();
     } catch {
-      setError("Couldn't play the audio, try again.");
+      if (!silent) setError("Couldn't play the audio, try again.");
       setSpeakingIndex(null);
     }
   }
+
+  // Mock interview = suara dulu. Ketik tetap tersedia lewat "Type instead" (mis. tanpa mikrofon).
+  const [typeMode, setTypeMode] = useState(false);
+  const voiceFirst = isInterview && !typeMode;
+  const openerPlayed = useRef(false);
+  useEffect(() => {
+    if (!isInterview || openerPlayed.current) return;
+    openerPlayed.current = true;
+    void playReply(0, interviewOpener, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- putar pertanyaan pembuka sekali saat layar dibuka
+  }, [isInterview]);
 
   const [interviewProgress, setInterviewProgress] = useState<{
     questionNumber: number;
@@ -179,7 +277,7 @@ export default function ConversationScreen() {
   // Ganti skenario dari chip di atas chat (free-chat): mulai sesi bersih supaya
   // backend membuat percakapan baru dgn konteks skenario yang dipilih.
   function switchScenario(next: string) {
-    if (next === scenario || sending) return;
+    if (isBoundPractice || next === scenario || sending || pendingSend.current) return;
     setScenario(next);
     setSessionId(undefined);
     setMessages([]);
@@ -190,64 +288,104 @@ export default function ConversationScreen() {
   // Mulai ulang sesi ini dari menu ⋮ (tanpa keluar layar). Free-chat: chat
   // dikosongkan; interview: kembali ke pertanyaan pembuka.
   function startOver() {
+    if (sendInFlight.current) return;
+    pendingSend.current = null;
+    setHasPendingSend(false);
     setMenuOpen(false);
     setSessionId(undefined);
     setInput('');
     setError(null);
     setInterviewProgress(null);
+    if (isTransfer) ttsCache.current.clear();
     setMessages(
       isInterview
         ? [
             {
               role: 'assistant',
-              content: `Hi! I'll be your interviewer for this ${interviewRole} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`,
+              content: interviewOpener,
             },
           ]
-        : [],
+        : isTransfer && transferContext ? [{ role: 'assistant', content: transferContext.selection.task.question }]
+        : practiceContext ? [{ role: 'assistant', content: practiceContext.originalQuestion }] : [],
     );
   }
 
-  async function handleSend() {
-    if (!input.trim() || sending) return;
-    const userText = input.trim();
-    setInput('');
+  // textOverride: jawaban suara mock interview dikirim langsung tanpa lewat kotak ketik.
+  async function handleSend(textOverride?: string) {
+    if (isBoundPractice && !boundReady) return;
+    const draft = (textOverride ?? input).trim();
+    if (sendInFlight.current || (!pendingSend.current && !draft)) return;
+    if (!pendingSend.current) {
+      if (isAnswerPractice) setPracticeLocked(true);
+      if (isTransfer) setTransferLocked(true);
+      const userText = draft;
+      pendingSend.current = { index: messages.length, params: {
+        requestId: randomUUID(), sessionId, scenario: isBoundPractice ? undefined : scenario ?? undefined,
+        targetLanguage: TARGET_LANGUAGE, focusCategories: sessionId || isBoundPractice ? undefined : focusCategories,
+        mode: !sessionId ? isTransfer ? 'criterion_transfer' : isAnswerPractice ? 'answer_practice' : isInterview ? 'mock_interview' : undefined : undefined,
+        interviewRole: !sessionId && isInterview ? interviewRole : undefined, message: userText,
+        practiceTarget: !sessionId && practiceContext
+          && isAnswerPractice
+          ? { sourceSessionId: practiceContext.sourceSessionId, targetId: practiceContext.targetId }
+          : undefined,
+        transferTarget: !sessionId && isTransfer && transferContext
+          ? { sourceRevisionSessionId: transferContext.selection.sourceRevisionSessionId, selectionId: transferContext.selection.selectionId }
+          : undefined,
+      }};
+      setMessages((prev) => [...prev, { role: 'user', content: userText }]);
+      setInput('');
+    }
+    const pending = pendingSend.current;
+    sendInFlight.current = true;
+    setHasPendingSend(true);
     setError(null);
-    setMessages((prev) => [...prev, { role: 'user', content: userText }]);
     setSending(true);
-
     try {
-      const res = await sendMessage({
-        sessionId,
-        scenario: scenario ?? undefined,
-        targetLanguage: TARGET_LANGUAGE,
-        focusCategories: sessionId ? undefined : focusCategories,
-        mode: !sessionId && isInterview ? 'mock_interview' : undefined,
-        interviewRole: !sessionId && isInterview ? interviewRole : undefined,
-        message: userText,
-      });
+      const res = await sendMessage(pending.params);
       setSessionId(res.sessionId);
       if (res.interview) setInterviewProgress(res.interview);
+      if (res.practiceContext) setPracticeContext(res.practiceContext);
+      if (res.transferContext) setTransferContext(res.transferContext);
       setMessages((prev) => {
         const next = [...prev];
-        next[next.length - 1] = { ...next[next.length - 1], mistakes: res.mistakes };
-        next.push({ role: 'assistant', content: res.reply });
+        next[pending.index] = { ...next[pending.index], mistakes: res.mistakes };
+        next.push({ role: 'assistant', content: res.reply,
+          ...(res.transferSelection !== undefined ? { transferSelection: res.transferSelection, transferReason: res.transferReason } : {}),
+          ...(res.criterionCheck ? { criterionCheck: res.criterionCheck } : {}) });
         return next;
       });
+      pendingSend.current = null;
+      setHasPendingSend(false);
+      // Pertanyaan berikutnya diucapkan otomatis, seperti pewawancara sungguhan.
+      if (isInterview && !res.interview?.finished) void playReply(pending.index + 1, res.reply, true);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 502) {
-        setError('The AI is having trouble right now, try again in a moment.');
+      const code = err instanceof ApiError ? (err.body as { error?: string } | null)?.error : undefined;
+      if (err instanceof ApiError && ([400, 404].includes(err.status) || code === 'session_changed')) {
+        setInput(pending.params.message);
+        setMessages((prev) => prev.filter((_, i) => i !== pending.index));
+        pendingSend.current = null;
+        setHasPendingSend(false);
+        setError('The session changed. Your answer is back in the message box.');
+      } else if (code === 'request_in_progress') {
+        setError('Your answer is still processing. Retry shortly to retrieve the result.');
+      } else if (err instanceof ApiError && err.status === 429) {
+        setError('Practice limit reached. Your answer is kept here; retry after the limit resets.');
       } else {
-        setError('Message failed to send, try again.');
+        setError('Could not confirm delivery. Retry this answer to recover the same request.');
       }
     } finally {
+      sendInFlight.current = false;
       setSending(false);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }
   }
 
-  const headerTitle = isPreview || isInterview ? 'Mock interview' : (scenario ?? 'Practice');
+  const headerTitle = isTransfer ? 'New question' : isAnswerPractice ? 'Revise answer' : isPreview || isInterview ? 'Mock interview' : (scenario ?? 'Practice');
   const headerSub = isPreview
     ? 'Tell me about yourself'
+    : isTransfer ? transferReady && transferContext ? `${transferContext.selection.interviewRole} · Guided application` : 'Loading your saved new question'
+    : isAnswerPractice
+    ? practiceReady && practiceContext ? `${practiceContext.interviewRole} · Answer ${practiceContext.answerNumber}` : 'Loading your original answer'
     : isInterview
     ? `${interviewRole}${
         interviewProgress && !interviewProgress.finished
@@ -290,7 +428,7 @@ export default function ConversationScreen() {
             </View>
 
             {/* Chip skenario (free-chat): ganti konteks tanpa keluar layar */}
-            {!isInterview && (
+            {!isInterview && !isBoundPractice && (
               <View style={styles.scenarioBar}>
                 {(scenario && !SCENARIOS.includes(scenario) ? [scenario, ...SCENARIOS] : SCENARIOS).map(
                   (s) => (
@@ -312,14 +450,53 @@ export default function ConversationScreen() {
               style={styles.flex}
               contentContainerStyle={styles.messagesContent}
               showsVerticalScrollIndicator={false}>
-              {messages.length === 0 && (
+              {isAnswerPractice && !practiceReady && (
+                <View style={styles.practiceCard}>
+                  {!practiceLoadError && !missingPracticeReference && <ActivityIndicator color={Ink} />}
+                  <Text style={styles.practiceText}>{practiceLoadError ?? (missingPracticeReference
+                    ? 'Missing answer revision reference. Reopen the original report.'
+                    : 'Loading your original question and one improvement…')}</Text>
+                </View>
+              )}
+              {isTransfer && !transferReady && (
+                <View style={styles.practiceCard}>
+                  {!transferLoadError && !missingTransferReference && <ActivityIndicator color={Ink} />}
+                  <Text style={styles.practiceText}>{transferLoadError ?? (missingTransferReference
+                    ? 'Missing new question reference. Reopen your saved revision.' : 'Loading the saved question and criterion…')}</Text>
+                </View>
+              )}
+              {isTransfer && transferReady && transferContext && (
+                <View style={styles.practiceCard}>
+                  <Text style={styles.practiceLabel}>Guided application</Text>
+                  <Text style={styles.practiceText}>Answer the new question using the same criterion. You will receive AI feedback.</Text>
+                  <Text style={[styles.practiceLabel, styles.practiceGap]}>Same criterion</Text>
+                  <Text style={styles.practiceText}>{transferContext.selection.successCriterion}</Text>
+                  <Text style={styles.practiceText}>{transferContext.selection.instruction}</Text>
+                  <Text style={styles.practiceText}>{transferContext.selection.task.id === 'polite_request'
+                    ? 'This is hypothetical. Write the polite request you would say; do not claim it happened.'
+                    : 'Use another real example when available. If none fits, say so. Do not invent one.'}</Text>
+                </View>
+              )}
+              {isAnswerPractice && practiceContext && practiceReady && (
+                <View style={styles.practiceCard}>
+                  <Text style={styles.practiceLabel}>Your original answer</Text>
+                  <Text style={styles.practiceText}>{practiceContext.originalAnswer}</Text>
+                  <Text style={[styles.practiceLabel, styles.practiceGap]}>One improvement</Text>
+                  <Text style={styles.practiceText}>{practiceContext.selectedFix}</Text>
+                  <Text style={styles.practiceText}>{practiceContext.instruction}</Text>
+                  <Text style={[styles.practiceLabel, styles.practiceGap]}>Success criterion</Text>
+                  <Text style={styles.practiceText}>{practiceContext.successCriterion}</Text>
+                  <Text style={styles.practiceText}>Answer the same question below in your own words. Use only your real experience.</Text>
+                </View>
+              )}
+              {messages.length === 0 && !isBoundPractice && (
                 <View style={styles.emptyHint}>
                   <Text style={styles.emptyHintText}>
                     Say hello to start. I&apos;ll reply and gently fix any mistakes as we chat.
                   </Text>
                 </View>
               )}
-              {messages.map((msg, i) => (
+              {(!isBoundPractice || boundReady) && messages.map((msg, i) => (
                 <View key={i} style={styles.msgGroup}>
                   <MessageBubble role={msg.role}>
                     <Text style={[styles.bubbleText, { color: BubbleTextColor[msg.role] }]}>
@@ -332,6 +509,23 @@ export default function ConversationScreen() {
                       disabled={speakingIndex !== null}
                       onPress={() => playReply(i, msg.content)}
                     />
+                  )}
+                  {msg.role === 'assistant' && msg.criterionCheck && (
+                    <View style={styles.practiceCard}>
+                      <Text style={styles.practiceLabel}>AI feedback · {criterionStatusLabel(msg.criterionCheck.status)}</Text>
+                      {msg.criterionCheck.evidenceQuote && <Text style={styles.practiceText}>Evidence: “{msg.criterionCheck.evidenceQuote}”</Text>}
+                      <Text style={styles.practiceText}>{msg.criterionCheck.explanation}</Text>
+                      {criterionValidationLabel(msg.criterionCheck.validationReason) && <Text style={styles.practiceText}>{criterionValidationLabel(msg.criterionCheck.validationReason)}</Text>}
+                      <Text style={styles.practiceText}>This describes this guided answer; it does not establish mastery.</Text>
+                    </View>
+                  )}
+                  {isAnswerPractice && msg.role === 'assistant' && msg.transferSelection !== undefined && (
+                    <View style={styles.practiceCard}>
+                      <Text style={styles.practiceLabel}>{msg.transferSelection ? 'Try the criterion on a new question' : 'No new question selected'}</Text>
+                      <Text style={styles.practiceText}>{msg.transferReason}</Text>
+                      {msg.transferSelection && <PrimaryButton label="Try a new question" disabled={sending || hasPendingSend}
+                        onPress={() => router.push({ pathname: '/conversation', params: { transferSource: msg.transferSelection!.sourceRevisionSessionId, transferSelection: msg.transferSelection!.selectionId } })} />}
+                    </View>
                   )}
                   {!isInterview && msg.mistakes && msg.mistakes.length > 0 && (
                     <View style={styles.correctionCard}>
@@ -365,11 +559,14 @@ export default function ConversationScreen() {
             </ScrollView>
 
             {error && <Text style={styles.error}>{error}</Text>}
+            {error && hasPendingSend && !sending && (
+              <PrimaryButton label="Retry this answer" onPress={() => handleSend()} />
+            )}
 
             {(interviewProgress?.finished || isPreview) && (
               <View style={styles.reportWrap}>
                 <PrimaryButton
-                  label="View my readiness report"
+                  label="View my practice report"
                   icon="file-text"
                   iconLeft
                   onPress={() =>
@@ -378,11 +575,54 @@ export default function ConversationScreen() {
                 />
               </View>
             )}
-            {!interviewProgress?.finished && (
+            {!isInterview && !isBoundPractice && retryRole && messages.some(message => message.role === 'user') && (
+              <View style={styles.reportWrap}>
+                <PrimaryButton label="Try another interview for this role" disabled={sending || hasPendingSend}
+                  onPress={() => router.push({ pathname: '/conversation', params: { mode: 'interview', role: retryRole } })} />
+              </View>
+            )}
+            {isAnswerPractice && practiceContext && sessionId && (
+              <View style={styles.reportWrap}>
+                <PrimaryButton label="View saved revision" disabled={sending || hasPendingSend}
+                  onPress={() => router.push({ pathname: '/conversations', params: { sessionId } })} />
+              </View>
+            )}
+            {isTransfer && transferContext && sessionId && (
+              <View style={styles.reportWrap}>
+                <PrimaryButton label="View saved application" disabled={sending || hasPendingSend}
+                  onPress={() => router.push({ pathname: '/conversations', params: { sessionId } })} />
+              </View>
+            )}
+            {!interviewProgress?.finished && voiceFirst && (
+              <View style={styles.voiceWrap}>
+                <Pressable
+                  onPress={toggleRecord}
+                  disabled={sending || transcribing || hasPendingSend}
+                  accessibilityRole="button"
+                  accessibilityLabel={recording ? 'Stop and send your answer' : 'Answer by voice'}
+                  style={({ pressed }) => [
+                    styles.micBig,
+                    { backgroundColor: recording ? Danger : Ink, opacity: pressed || sending || transcribing ? 0.7 : 1 },
+                  ]}>
+                  {transcribing || sending ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Feather name={recording ? 'square' : 'mic'} size={28} color="#FFFFFF" />
+                  )}
+                </Pressable>
+                <Text style={styles.micLabel}>
+                  {recording ? 'Speaking… tap to finish your answer' : transcribing ? 'Sending your answer…' : sending ? 'Interviewer is thinking…' : 'Tap and answer out loud, like the real interview'}
+                </Text>
+                <Pressable onPress={() => setTypeMode(true)} disabled={recording} hitSlop={8} accessibilityRole="button">
+                  <Text style={styles.typeLink}>Type instead</Text>
+                </Pressable>
+              </View>
+            )}
+            {!interviewProgress?.finished && !voiceFirst && (
               <View style={styles.inputRow}>
                 <Pressable
                   onPress={toggleRecord}
-                  disabled={sending || transcribing}
+                  disabled={sending || transcribing || hasPendingSend || (isBoundPractice && !boundReady)}
                   accessibilityRole="button"
                   accessibilityLabel={recording ? 'Stop recording' : 'Record voice'}
                   style={({ pressed }) => [
@@ -399,15 +639,16 @@ export default function ConversationScreen() {
                   <TextInput
                     placeholder={recording ? 'Recording... tap stop when done' : 'Message'}
                     placeholderTextColor={Placeholder}
+                    editable={!sending && !hasPendingSend && (!isBoundPractice || boundReady)}
                     value={input}
                     onChangeText={setInput}
-                    onSubmitEditing={handleSend}
+                    onSubmitEditing={() => handleSend()}
                     style={styles.input}
                   />
                 </View>
                 <Pressable
-                  onPress={handleSend}
-                  disabled={sending || !input.trim()}
+                  onPress={() => handleSend()}
+                  disabled={sending || !input.trim() || (isBoundPractice && !boundReady)}
                   accessibilityRole="button"
                   accessibilityLabel="Send"
                   style={({ pressed }) => [
@@ -437,7 +678,7 @@ export default function ConversationScreen() {
                   <View style={styles.flex}>
                     <Text style={styles.menuItemText}>Start over</Text>
                     <Text style={styles.menuItemSub}>
-                      {isInterview ? 'Restart from the first question' : 'Clear this chat and begin again'}
+                      {isInterview ? 'Restart from the first question' : isTransfer ? 'Try this same new question again' : isAnswerPractice ? 'Try this same answer revision again' : 'Clear this chat and begin again'}
                     </Text>
                   </View>
                 </Pressable>
@@ -452,6 +693,10 @@ export default function ConversationScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  practiceCard: { padding: 14, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: HairlineBorder, gap: 6 },
+  practiceLabel: { fontSize: 12, fontWeight: '700', color: Ink },
+  practiceText: { fontSize: 14, lineHeight: 20, color: '#60646C' },
+  practiceGap: { marginTop: 8 },
   emptyHint: { paddingHorizontal: 24, paddingTop: 40, alignItems: 'center' },
   emptyHintText: {
     fontSize: 14,
@@ -561,6 +806,10 @@ const styles = StyleSheet.create({
   error: { color: Danger, fontSize: 14, fontWeight: '500', paddingHorizontal: 18 },
   reportWrap: { paddingHorizontal: 18, paddingVertical: 8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 18, paddingVertical: 8 },
+  voiceWrap: { alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 14 },
+  micBig: { width: 72, height: 72, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  micLabel: { fontSize: 13, fontWeight: '500', color: '#60646C', textAlign: 'center' },
+  typeLink: { fontSize: 13, fontWeight: '600', color: Ink, textDecorationLine: 'underline' },
   iconTile: {
     width: 44,
     height: 44,

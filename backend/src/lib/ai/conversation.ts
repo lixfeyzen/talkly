@@ -1,12 +1,23 @@
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/ai/openai";
-import { MISTAKE_CATEGORIES, type MistakeCategory } from "@/lib/ai/mistake-categories";
+import { MISTAKE_CATEGORIES, MISTAKE_DETECTION_RULE, mistakeCategoryRules, type MistakeCategory } from "@/lib/ai/mistake-categories";
 import { HUMAN_STYLE_INSTRUCTION } from "@/lib/ai/style";
+import { FEEDBACK_GUIDANCE_VERSION, renderFeedbackGuidance, filterGroundedCorrections } from "@/lib/ai/feedback-guidance";
+import type { AnswerPracticeContext } from "@/lib/practice/interview-target";
+import { taskChoiceSchema, criterionCheckSchema } from "@/lib/practice/criterion-transfer";
+import type { FrozenTaskSelection, TransferContext, CriterionCheck } from "@/lib/practice/criterion-transfer";
 
-export type ChatTurn = { role: "user" | "assistant"; content: string };
+export type ChatTurn = {
+  role: "user" | "assistant"; content: string;
+  mistakes?: TurnResult["mistakes"]; requestId?: string; createdAt?: string;
+  feedbackGuidanceVersion?: string;
+  practiceContext?: AnswerPracticeContext;
+  transferSelection?: FrozenTaskSelection | null; transferReason?: string;
+  transferContext?: TransferContext; criterionCheck?: CriterionCheck;
+};
 
-const turnResultSchema = z.object({
+export const turnResultSchema = z.object({
   reply: z.string().describe("Balasan AI dalam karakter roleplay, bahasa target, wajar & natural"),
   mistakes: z.array(
     z.object({
@@ -18,11 +29,21 @@ const turnResultSchema = z.object({
         .describe(
           "Penjelasan 1 kalimat kenapa itu salah, ditulis dalam BAHASA NATIVE user",
         ),
+      // v3: label jujur; server membuang style_preference (filterGroundedCorrections).
+      severity: z
+        .enum(["blocks_understanding", "grammar_error", "style_preference"])
+        .describe("blocks_understanding = makna jadi kabur; grammar_error = jelas salah tata bahasa; style_preference = bahasa Inggrisnya sudah benar, hanya bisa ditulis lain"),
     }),
   ),
 });
 
-export type TurnResult = z.infer<typeof turnResultSchema>;
+export const revisionTurnResultSchema = turnResultSchema.extend({ taskSelection: taskChoiceSchema });
+export const transferTurnResultSchema = turnResultSchema.extend({ criterionCheck: criterionCheckSchema });
+export type TurnResult = z.infer<typeof turnResultSchema> & {
+  feedbackGuidanceVersion?: string;
+  taskSelection?: z.infer<typeof taskChoiceSchema>;
+  criterionCheck?: CriterionCheck;
+};
 
 function buildSystemPrompt(
   scenario: string,
@@ -45,10 +66,10 @@ function buildSystemPrompt(
     `The user's native language is ${native} -- consider mistake patterns typical of ${native} speakers when detecting mistakes.`,
     `Reply ONLY in ${targetLanguage} (do not mix other languages into the "reply" field), naturally, in-scenario, and briefly (1-3 sentences) so the conversation flows like a real chat. This rule has NO exceptions: even if the user writes in another language, keep replying in ${targetLanguage} and gently encourage them to continue in ${targetLanguage}.`,
     HUMAN_STYLE_INSTRUCTION,
-    `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages). Also catch word-order errors, especially misplaced adverbs (e.g. "She speaks very well French" should be "She speaks French very well"). Each mistakes entry must describe exactly ONE error with ONE category -- if a single phrase contains several errors, report them as SEPARATE entries, each with its own correct category (e.g. "They has many client" contains TWO separate mistakes: verb_conjugation "has" -> "have" AND plural_agreement "client" -> "clients"). Report EVERY mistake present in the message -- do not stop after the first few; a single message can easily contain four or more separate mistakes. If there are no mistakes, return an empty mistakes array -- do NOT invent mistakes that are not there.`,
+    `Besides replying, detect grammar/vocabulary mistakes in the user's LAST message (not your own messages).`,
+    MISTAKE_DETECTION_RULE,
     `The "note" field of each mistake MUST be written in ${native} and ONLY in ${native} -- never any other language, regardless of what language appears in the conversation or the user's message.`,
-    `The mistake category MUST be one of: ${MISTAKE_CATEGORIES.join(", ")}. Pick the MOST SPECIFIC category: plural_agreement covers singular/plural noun errors (e.g. "five year" -> "five years") including uncountable nouns, which never take "many" or plural -s (e.g. "many feedbacks" -> "a lot of feedback"); vocabulary_choice covers wrong word choice including wrong adverbs (e.g. "I much enjoy" -> "I really enjoy"); tense_usage covers wrong or missing tense, including a missing auxiliary for perfect tenses (e.g. "He finish the task already" -> "He has already finished the task"); preposition_usage covers wrong, EXTRA, or missing prepositions (an extra "about" or "of" after a verb is preposition_usage); verb_conjugation covers verbs that do not match their subject (e.g. "the teams meets weekly" -> "the teams meet weekly"); word_order is ONLY for words standing in the wrong position -- if the fix removes or replaces a word instead of moving it, it is NOT word_order; use "other" ONLY when nothing else fits.`,
-    `Every "correctedText" must be natural, correct ${targetLanguage} exactly as a fluent speaker would phrase it -- never output a correction that is itself ungrammatical. It must also be the FULLY corrected version of the quoted fragment: fix every error inside it, including articles and prepositions.`,
+    mistakeCategoryRules(targetLanguage),
   ];
   if (focusCategories.length > 0) {
     // Fitur #3 (skenario adaptif): sesi ini menargetkan kelemahan spesifik
@@ -77,7 +98,11 @@ export async function runConversationTurn(
   // merusak dimensi lain; trade-off variasi reply antar-sesi dipantau saat
   // ada user nyata. Override dipakai eval utk eksperimen temperature lain.
   temperatureOverride?: number,
+  // Appended so existing evaluation model/temperature argument positions stay valid.
+  responseMode?: "answer_revision" | "criterion_transfer",
 ): Promise<TurnResult> {
+  const responseSchema = responseMode === "answer_revision" ? revisionTurnResultSchema
+    : responseMode === "criterion_transfer" ? transferTurnResultSchema : turnResultSchema;
   const completion = await openai.chat.completions.parse({
     model: modelOverride ?? "gpt-4o-2024-08-06",
     temperature: temperatureOverride ?? 0.2,
@@ -85,13 +110,12 @@ export async function runConversationTurn(
       {
         role: "system",
         content:
-          systemPromptOverride ??
-          buildSystemPrompt(scenario, targetLanguage, focusCategories, nativeLanguage),
+          `${systemPromptOverride ?? buildSystemPrompt(scenario, targetLanguage, focusCategories, nativeLanguage)} ${renderFeedbackGuidance("correction")}`,
       },
       ...history.map((turn) => ({ role: turn.role, content: turn.content })),
       { role: "user", content: userMessage },
     ],
-    response_format: zodResponseFormat(turnResultSchema, "turn_result"),
+    response_format: zodResponseFormat(responseSchema, "turn_result"),
   }, { timeout: 30_000 }); // konsisten dgn speech routes; cegah invocation nyangkut
 
   const parsed = completion.choices[0]?.message.parsed;
@@ -99,5 +123,5 @@ export async function runConversationTurn(
     throw new Error("OpenAI did not return a parsed structured response");
   }
 
-  return parsed;
+  return { ...parsed, mistakes: filterGroundedCorrections(parsed.mistakes, userMessage), feedbackGuidanceVersion: FEEDBACK_GUIDANCE_VERSION };
 }

@@ -18,15 +18,41 @@ export type InterviewRole = (typeof INTERVIEW_ROLES)[number];
 // interviewer tanpa panggilan AI.
 export const INTERVIEW_OPENER = 'Tell me about yourself and your background.';
 
+// Keep the complete displayed opener aligned with backend lib/ai/interview.ts.
+export function buildInterviewOpener(role: InterviewRole): string {
+  return `Hi! I'll be your interviewer for this ${role} mock interview. There are 5 questions. Answer naturally, like a real interview. First: ${INTERVIEW_OPENER}`;
+}
+
 export type ReportDimension = { score: number; comment: string };
+export type PracticeTarget = {
+  fixIndex: number;
+  answerNumber: number;
+  dimension: 'grammar' | 'structure' | 'content' | 'wording';
+  evidenceQuote: string;
+  instruction: string;
+  successCriterion: string;
+};
+export type AnswerPracticeContext = PracticeTarget & {
+  kind: 'answer_revision';
+  sourceSessionId: string;
+  targetId: string;
+  interviewRole: InterviewRole;
+  sourceQuestionBubble: string;
+  originalQuestion: string;
+  originalAnswer: string;
+  selectedFix: string;
+};
 
 export type InterviewReportData = {
+  rubricVersion?: string;
+  interviewRole?: InterviewRole;
   score: number;
-  dimensions: { grammar: ReportDimension; structure: ReportDimension; content: ReportDimension };
+  dimensions: { grammar: ReportDimension; structure: ReportDimension; content: ReportDimension; confidence?: ReportDimension };
   strongestAnswer: { question: string; why: string };
   weakestAnswer: { question: string; why: string };
   topFixes: string[];
   answerUpgrades: { question: string; original: string; upgraded: string }[];
+  practiceTarget?: PracticeTarget | null;
 };
 
 export type InterviewReportResponse = {
@@ -35,6 +61,7 @@ export type InterviewReportResponse = {
   createdAt: string;
   // Skor mock sebelumnya; null kalau ini interview pertama.
   previousScore: number | null;
+  practiceContext?: AnswerPracticeContext | null;
 };
 
 // POST = generate (idempoten di server: rapor yang sudah ada dikembalikan
@@ -45,4 +72,9 @@ export async function generateReport(sessionId: string): Promise<InterviewReport
     auth: true,
     timeoutMs: AI_TIMEOUT_MS,
   });
+}
+
+// Read an existing report/verified target without creating a report or making an AI call.
+export async function fetchReport(sessionId: string): Promise<InterviewReportResponse> {
+  return apiFetch<InterviewReportResponse>(`/api/interviews/${sessionId}/report`, { auth: true });
 }

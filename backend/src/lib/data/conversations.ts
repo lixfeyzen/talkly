@@ -66,7 +66,7 @@ export async function appendTurns(sessionId: string, newTurns: ChatTurn[]) {
     .where(eq(conversationSessions.id, sessionId));
 }
 
-type DetectedMistake = { category: MistakeCategory; originalText: string; correctedText: string };
+type DetectedMistake = { category: MistakeCategory; originalText: string; correctedText: string; note?: string };
 
 export async function recordMistakes(
   userId: string,
@@ -82,6 +82,7 @@ export async function recordMistakes(
       category: m.category,
       originalText: m.originalText,
       correctedText: m.correctedText,
+      note: m.note ?? null,
     })),
   );
 

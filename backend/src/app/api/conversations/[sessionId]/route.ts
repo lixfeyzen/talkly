@@ -13,7 +13,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) {
     return jsonCors({ error: "unauthorized" }, { status: 401 });
   }

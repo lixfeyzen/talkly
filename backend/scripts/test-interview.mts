@@ -65,16 +65,17 @@ check("UNIT: jawaban ke-5 -> wrap up, tanpa pertanyaan baru", promptLast.include
 // ===== Bagian 2: data layer lawan Neon =====
 
 const fakeReport: InterviewReport = {
-  score: 72,
-  dimensions: {
-    grammar: { score: 70, comment: "c" },
-    structure: { score: 68, comment: "c" },
-    content: { score: 78, comment: "c" },
-  },
-  strongestAnswer: { question: "q", why: "w" },
-  weakestAnswer: { question: "q", why: "w" },
-  topFixes: ["f1", "f2"],
-  answerUpgrades: [{ question: "q", original: "o", upgraded: "u" }],
+score: 72,
+dimensions: {
+  grammar: { score: 70, comment: "c" },
+  structure: { score: 68, comment: "c" },
+  content: { score: 78, comment: "c" },
+  confidence: { score: 65, comment: "c" },
+},
+strongestAnswer: { question: "q", why: "w" },
+weakestAnswer: { question: "q", why: "w" },
+topFixes: ["f1", "f2"],
+answerUpgrades: [{ question: "q", original: "o", upgraded: "u" }],
 };
 
 async function seedUser(email: string) {

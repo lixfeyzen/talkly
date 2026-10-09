@@ -28,7 +28,7 @@ export async function createUser(email: string, password: string) {
 
 export async function verifyCredentials(email: string, password: string) {
   const rows = await db
-    .select({ id: users.id, email: users.email, passwordHash: users.passwordHash })
+    .select({ id: users.id, email: users.email, passwordHash: users.passwordHash, authVersion: users.authVersion })
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
@@ -43,5 +43,5 @@ export async function verifyCredentials(email: string, password: string) {
     return { ok: false as const, reason: "wrong_password" as const };
   }
 
-  return { ok: true as const, user: { id: user.id, email: user.email } };
+  return { ok: true as const, user: { id: user.id, email: user.email, authVersion: user.authVersion } };
 }

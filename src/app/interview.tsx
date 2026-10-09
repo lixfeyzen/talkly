@@ -1,7 +1,7 @@
-import { useState, type ComponentProps } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { StyleSheet, Pressable, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -21,7 +21,7 @@ const MUTED_ICON = '#60646C';
 const HOW_IT_WORKS: { icon: FeatherName; text: string }[] = [
   { icon: 'message-square', text: 'Five questions, like a real interview' },
   { icon: 'pause', text: 'No corrections until the very end' },
-  { icon: 'file-text', text: 'A readiness report when you finish' },
+  { icon: 'file-text', text: 'Practice feedback when you finish' },
 ];
 
 // Ikon per role — dipetakan dari SVG di mockup ke padanan Feather.
@@ -36,7 +36,14 @@ const ROLE_ICON: Record<(typeof INTERVIEW_ROLES)[number], FeatherName> = {
 
 // Mulai mock interview (fitur #6): pilih role -> 5 pertanyaan -> rapor.
 export default function InterviewStartScreen() {
-  const [role, setRole] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ role?: string | string[] }>();
+  const requestedRole = typeof params.role === 'string'
+    ? INTERVIEW_ROLES.find(role => role === params.role) ?? null : null;
+  const [role, setRole] = useState<string | null>(requestedRole);
+  const manuallySelected = useRef(false);
+  useEffect(() => {
+    if (!manuallySelected.current) setRole(requestedRole);
+  }, [requestedRole]);
 
   return (
     <View style={styles.root}>
@@ -93,7 +100,7 @@ export default function InterviewStartScreen() {
                   return (
                     <Pressable
                       key={r}
-                      onPress={() => setRole(r)}
+                      onPress={() => { manuallySelected.current = true; setRole(r); }}
                       accessibilityRole="button"
                       accessibilityState={{ selected }}
                       style={({ pressed }) => [

@@ -12,12 +12,16 @@ export async function sendResetCodeEmail(to: string, code: string): Promise<void
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
+    if (process.env.NODE_ENV === "production") throw new Error("Password reset email is not configured");
     console.warn(
       `[DEV EMAIL FALLBACK] RESEND_API_KEY belum di-set. Kode reset untuk ${to}: ${code} (berlaku 15 menit)`,
     );
     return;
   }
 
+  if (process.env.NODE_ENV === "production" && !process.env.EMAIL_FROM) {
+    throw new Error("Password reset sender is not configured");
+  }
   const from = process.env.EMAIL_FROM ?? "Talkly <onboarding@resend.dev>";
 
   const res = await fetch("https://api.resend.com/emails", {
@@ -29,19 +33,18 @@ export async function sendResetCodeEmail(to: string, code: string): Promise<void
     body: JSON.stringify({
       from,
       to: [to],
-      subject: `${code} kode reset password Talkly`,
+      subject: "Your Talkly password reset code",
       text: [
-        `Kode reset password Talkly kamu: ${code}`,
+        `Your Talkly password reset code: ${code}`,
         "",
-        "Masukkan kode ini di aplikasi. Berlaku 15 menit.",
-        "Kalau kamu tidak meminta reset password, abaikan email ini.",
+        "Enter this code in the app within 15 minutes.",
+        "If you did not request this, you can ignore this email.",
       ].join("\n"),
     }),
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
   });
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Resend API failed (${res.status}): ${body.slice(0, 300)}`);
+    throw new Error(`Password reset email provider failed (${res.status})`);
   }
 }

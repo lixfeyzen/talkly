@@ -3,53 +3,38 @@ import { StyleSheet, ScrollView, ActivityIndicator, Pressable, View, Text } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import Svg, { Polyline, Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { GradientBackground } from '@/components/gradient-background';
-import { Card, EmptyState, SectionLabel } from '@/components/ui';
+import { Card, EmptyState, SectionLabel, PrimaryButton } from '@/components/ui';
 import {
   Spacing,
   MaxContentWidth,
   Ink,
   HairlineBorder,
   Placeholder,
-  Success,
-  Danger,
   Pastel,
 } from '@/constants/theme';
 import { fetchTrajectory, type Trajectory } from '@/lib/trajectory/api';
 import { categoryLabel } from '@/lib/dashboard/api';
 
-// Grafik garis skor readiness lintas-waktu. SVG polos (react-native-svg sudah
-// ada) -- tanpa lib chart baru untuk satu line chart.
+// Individual historical report scores; no connected progress curve or delta.
 
 const CHART_W = 320;
 const CHART_H = 160;
 const PAD = 28;
 
 function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
-  // Skala Y tetap 0-100 (skor readiness memang 0-100) -- perbandingan antar
-  // waktu jujur, tidak di-zoom biar kelihatan dramatis.
+  // Keep the original 0-100 scale for each report.
   const xStep = scores.length > 1 ? (CHART_W - PAD * 2) / (scores.length - 1) : 0;
   const toX = (i: number) => PAD + i * xStep;
   const toY = (score: number) => PAD + (1 - score / 100) * (CHART_H - PAD * 2);
-  const points = scores.map((p, i) => `${toX(i)},${toY(p.score)}`).join(' ');
-  // Titik terakhir + selisih vs skor pertama (data turunan, bukan math chart baru).
+  // Label the latest point without treating differences as learning evidence.
   const li = scores.length - 1;
   const last = li >= 0 ? scores[li] : null;
   const lx = last ? toX(li) : 0;
   const ly = last ? toY(last.score) : 0;
-  const delta = scores.length >= 2 ? scores[li].score - scores[0].score : null;
   const pillY = Math.max(2, ly - 34); // jangan keluar atas chart
-  const baseY = CHART_H - PAD;
-  // Area fill lilac di bawah garis (sesuai mockup).
-  const areaPath =
-    scores.length >= 2
-      ? `M ${toX(0)},${baseY} ` +
-        scores.map((p, i) => `L ${toX(i)},${toY(p.score)}`).join(' ') +
-        ` L ${toX(li)},${baseY} Z`
-      : null;
-  const READY = 80; // ambang "siap" (konstanta visual, bukan dari data)
 
   return (
     <Svg width="100%" height={CHART_H} viewBox={`0 0 ${CHART_W} ${CHART_H}`}>
@@ -64,21 +49,6 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
           strokeWidth={1}
         />
       ))}
-      {/* Area fill lilac di bawah garis + garis target READY 80 */}
-      {areaPath && <Path d={areaPath} fill={Pastel.lilac} opacity={0.25} />}
-      <Line
-        x1={PAD}
-        y1={toY(READY)}
-        x2={CHART_W - PAD}
-        y2={toY(READY)}
-        stroke={Pastel.lilacInk}
-        strokeWidth={1}
-        strokeDasharray="4 4"
-        opacity={0.45}
-      />
-      <SvgText x={PAD + 2} y={toY(READY) - 5} fill={Pastel.lilacInk} fontSize={9} fontWeight="700" opacity={0.75}>
-        READY · {READY}
-      </SvgText>
       {[0, 50, 100].map((v) => (
         <SvgText
           key={v}
@@ -90,20 +60,10 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
           {v}
         </SvgText>
       ))}
-      {scores.length > 1 && (
-        <Polyline
-          points={points}
-          fill="none"
-          stroke={Ink}
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      )}
       {scores.map((p, i) => (
         <Circle key={i} cx={toX(i)} cy={toY(p.score)} r={4} fill={Ink} />
       ))}
-      {/* Emphasis titik terakhir: halo lilac + value pill + badge delta */}
+      {/* Latest report value only. */}
       {last && (
         <>
           <Circle cx={lx} cy={ly} r={9} fill={Pastel.lilac} opacity={0.55} />
@@ -112,17 +72,6 @@ function ScoreChart({ scores }: { scores: Trajectory['scores'] }) {
           <SvgText x={lx} y={pillY + 14} fill="#FFFFFF" fontSize={12} fontWeight="700" textAnchor="middle">
             {last.score}
           </SvgText>
-          {delta !== null && (
-            <SvgText
-              x={lx - 22}
-              y={ly + 4}
-              fill={delta >= 0 ? Success : Danger}
-              fontSize={11}
-              fontWeight="700"
-              textAnchor="end">
-              {delta >= 0 ? `+${delta}` : `${delta}`}
-            </SvgText>
-          )}
         </>
       )}
     </Svg>
@@ -174,7 +123,7 @@ export default function TrajectoryScreen() {
             <Text style={styles.backText}>Back</Text>
           </Pressable>
 
-          <Text style={styles.title}>Am I getting better?</Text>
+          <Text style={styles.title}>Your practice history</Text>
 
           {/* Insight — jawaban satu kalimat (kartu cream, warna fitur Trajectory) */}
           <View style={styles.insightCard}>
@@ -191,15 +140,16 @@ export default function TrajectoryScreen() {
               </Svg>
             </View>
             <View style={styles.insightBody}>
-              <Text style={styles.insightLabel}>The trend</Text>
+              <Text style={styles.insightLabel}>Practice record</Text>
               <Text style={styles.insightText}>{data.insight}</Text>
             </View>
           </View>
 
           {/* Grafik skor */}
-          <SectionLabel style={styles.sectionLabel}>Readiness over time</SectionLabel>
+          <SectionLabel style={styles.sectionLabel}>Practice scores over time</SectionLabel>
           {data.scores.length > 0 ? (
             <Card style={styles.chartCard}>
+              <Text style={styles.emptyText}>Each point is one report. Questions and scoring instructions may differ; score differences do not establish learning.</Text>
               <ScoreChart scores={data.scores} />
               <View style={styles.chartFooter}>
                 <Text style={styles.axisDate}>{data.scores[0].date}</Text>
@@ -209,6 +159,7 @@ export default function TrajectoryScreen() {
                   </Text>
                 )}
               </View>
+              {data.scores.map((score, index) => <Text key={index} style={styles.emptyText}>{score.date} · {score.role ?? 'Archived report'} · {score.score}/100</Text>)}
             </Card>
           ) : (
             // EMPTY state persis component sheet mockup (judul + sub + CTA).
@@ -219,46 +170,22 @@ export default function TrajectoryScreen() {
               onCta={() => router.push('/interview')}
             />
           )}
+          <PrimaryButton label="View guided practice history" onPress={() => router.push('/conversations')} />
 
           {/* Tren kesalahan 14 hari vs 14 hari sebelumnya */}
           <View style={styles.trendsHeader}>
-            <SectionLabel>Mistake trends</SectionLabel>
-            <Text style={styles.trendsCaption}>2 weeks vs before</Text>
+            <SectionLabel>Recorded corrections</SectionLabel>
+            <Text style={styles.trendsCaption}>Last 14 days / prior 14</Text>
           </View>
           {data.trends.length > 0 ? (
             <View style={styles.trendList}>
-              {data.trends.map((t) => {
-                const pct = t.changePct;
-                let icon: 'arrow-down' | 'arrow-up' | 'minus' | null = null;
-                let color = '#60646C';
-                let text: string;
-                if (pct === null) {
-                  // Kategori baru: belum ada pembanding 14 hari sebelumnya.
-                  text = `New (${t.recentCount})`;
-                } else if (pct < 0) {
-                  icon = 'arrow-down';
-                  color = Success;
-                  text = `${Math.abs(pct)}% fewer`;
-                } else if (pct > 0) {
-                  icon = 'arrow-up';
-                  color = Danger;
-                  text = `${pct}% more`;
-                } else {
-                  icon = 'minus';
-                  text = 'Steady';
-                }
-                return (
-                  <View key={t.category} style={styles.trendRow}>
-                    <Text style={styles.trendLabel} numberOfLines={1}>
-                      {categoryLabel(t.category)}
-                    </Text>
-                    <View style={styles.trendChange}>
-                      {icon && <Feather name={icon} size={14} color={color} />}
-                      <Text style={[styles.trendChangeText, { color }]}>{text}</Text>
-                    </View>
-                  </View>
-                );
-              })}
+              <Text style={styles.emptyText}>Counts depend on how much you practise. Fewer records do not prove improvement.</Text>
+              {data.trends.map(t => (
+                <View key={t.category} style={styles.trendRow}>
+                  <Text style={styles.trendLabel} numberOfLines={1}>{categoryLabel(t.category)}</Text>
+                  <Text style={styles.trendChangeText}>{t.recentCount} / {t.previousCount}</Text>
+                </View>
+              ))}
             </View>
           ) : (
             <Card>

@@ -1,3 +1,5 @@
+import { createHmac } from "node:crypto";
+import { consumeQuota, clientIp } from "@/lib/rate-limit";
 import { NextRequest } from "next/server";
 import { verifyCredentials } from "@/lib/auth/credentials";
 import { loginSchema } from "@/lib/validations/auth";
@@ -20,13 +22,21 @@ export async function POST(req: NextRequest) {
   }
 
   const { email, password } = parsed.data;
+  // Store a keyed digest, not the email address, in the shared quota table.
+  const accountKey = createHmac("sha256", process.env.JWT_SECRET!).update(email).digest("hex");
+  for (const [subject, action] of [
+    [`ip:${clientIp(req.headers)}`, "loginIp"], [`account:${accountKey}`, "loginAccount"],
+  ] as const) {
+    const quota = await consumeQuota(subject, action);
+    if (!quota.allowed) return jsonCors({ error: "rate_limited", retryAfterSec: quota.retryAfterSec }, { status: 429 });
+  }
   const result = await verifyCredentials(email, password);
 
   if (!result.ok) {
     return jsonCors({ error: "invalid_credentials" }, { status: 401 });
   }
 
-  const token = signAuthToken({ userId: result.user.id, email: result.user.email });
+  const token = signAuthToken({ userId: result.user.id, email: result.user.email, authVersion: result.user.authVersion });
 
   return jsonCors({ token, user: result.user });
 }

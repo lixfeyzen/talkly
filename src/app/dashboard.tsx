@@ -8,6 +8,24 @@ import { GradientBackground } from '@/components/gradient-background';
 import { Card, StatTile, SectionLabel, GhostButton, BottomNav, EmptyState } from '@/components/ui';
 import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius, Success } from '@/constants/theme';
 import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboard/api';
+import { apiFetch } from '@/lib/api/client';
+import { WEEKLY_CHALLENGE_ENABLED } from '@/lib/features/v1';
+
+// Weekly challenges progress type (match backend /api/challenges/progress)
+interface ChallengeProgress {
+  totalWeeks: number;
+  completedCount: number;
+  currentWeek: number;
+  nextLockedWeek: number;
+}
+
+async function fetchChallengeProgress(): Promise<ChallengeProgress | null> {
+  try {
+    return await apiFetch<ChallengeProgress>('/api/challenges/progress', { auth: true });
+  } catch {
+    return null;
+  }
+}
 
 // Tone lilac-dalam untuk kartu readiness (dari mockup) — lebih pekat dari
 // Pastel.lilacInk supaya angka besar & verdict kontras di atas lilac.
@@ -36,8 +54,8 @@ function formatLastPracticed(iso: string | null): string {
 // Verdict tenang & ringkas dari skor readiness (presentasi saja, tidak mengubah
 // data). Ambang 80/60 dipertahankan; teks dipendekkan agar sebaris dgn skor.
 function readinessVerdict(score: number): string {
-  if (score >= 80) return 'Interview ready';
-  if (score >= 60) return 'Nearly ready';
+  if (score >= 80) return 'Review your answers';
+  if (score >= 60) return 'Keep practising';
   return 'Getting started';
 }
 
@@ -45,12 +63,14 @@ export default function DashboardScreen() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [challengeProgress, setChallengeProgress] = useState<ChallengeProgress | null>(null);
 
   useEffect(() => {
     fetchDashboard()
       .then(setData)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
+    if (WEEKLY_CHALLENGE_ENABLED) fetchChallengeProgress().then(setChallengeProgress);
   }, []);
 
   if (loading) {
@@ -94,11 +114,47 @@ export default function DashboardScreen() {
           ) : (
             <>
               {/* Ringkasan aktivitas */}
+              <Text style={styles.mutedLabel}>Activity totals across all sessions</Text>
               <View style={styles.statRow}>
                 <StatTile pastel="pink" icon="zap" value={data.streak.currentStreak} label="Day streak" />
                 <StatTile pastel="ice" icon="message-circle" value={data.activity.totalSessions} label="Sessions" />
                 <StatTile pastel="cream" icon="edit-3" value={data.activity.totalCorrections} label="Corrections" />
               </View>
+
+              {/* Weekly Challenges — posisi #2, progress bar + CTA minggu ini */}
+              {WEEKLY_CHALLENGE_ENABLED && challengeProgress && (
+                <Pressable
+                  onPress={() => router.push('/weekly-challenge')}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+                  <Card style={styles.challengeCard}>
+                    <View style={styles.challengeHeader}>
+                      <View style={styles.challengeHeaderLeft}>
+                        <View style={styles.challengeTile}>
+                          <Feather name="calendar" size={18} color={Pastel.iceInk} />
+                        </View>
+                        <View style={styles.flex1}>
+                          <Text style={styles.challengeTitle}>Weekly challenges</Text>
+                          <Text style={styles.challengeSub}>
+                            {challengeProgress.completedCount} of {challengeProgress.totalWeeks} completed
+                          </Text>
+                        </View>
+                      </View>
+                      <Feather name="chevron-right" size={18} color={MUTED} />
+                    </View>
+                    <View style={styles.challengeProgressTrack}>
+                      <View
+                        style={[
+                          styles.challengeProgressFill,
+                          { width: `${(challengeProgress.completedCount / challengeProgress.totalWeeks) * 100}%` },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.challengeThisWeek}>
+                      This week: Week {challengeProgress.currentWeek}
+                    </Text>
+                  </Card>
+                </Pressable>
+              )}
 
               {/* Last practiced */}
               <Card style={styles.infoCard}>
@@ -123,7 +179,7 @@ export default function DashboardScreen() {
                   style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
                   <Card style={styles.readinessCard}>
                     <View style={styles.flex1}>
-                      <Text style={[styles.miniLabel, styles.lilacLabel]}>Latest readiness</Text>
+                      <Text style={[styles.miniLabel, styles.lilacLabel]}>Latest practice report</Text>
                       <View style={styles.readinessScoreRow}>
                         <Text style={styles.readinessScore}>{data.latestReadiness.score}</Text>
                         <Text style={styles.readinessOutOf}>/ 100</Text>
@@ -148,7 +204,7 @@ export default function DashboardScreen() {
                     <Feather name="trending-up" size={18} color={Pastel.creamInk} />
                   </View>
                   <View style={styles.flex1}>
-                    <Text style={styles.trajectoryTitle}>Am I getting better?</Text>
+                    <Text style={styles.trajectoryTitle}>Practice history</Text>
                     <Text style={styles.trajectorySub}>See your trajectory over time</Text>
                   </View>
                   <Feather name="chevron-right" size={18} color={CREAM_MUTED} />
@@ -158,7 +214,7 @@ export default function DashboardScreen() {
               {/* Kelemahan utama */}
               {data.topWeaknesses.length > 0 && (
                 <View style={styles.section}>
-                  <SectionLabel style={styles.sectionPad}>Top weaknesses</SectionLabel>
+                  <SectionLabel style={styles.sectionPad}>Correction focus · last 28 days</SectionLabel>
                   {data.topWeaknesses.map((w) => (
                     <View key={w.category} style={styles.weaknessRow}>
                       <Text style={styles.weaknessTitle} numberOfLines={1}>
@@ -175,7 +231,7 @@ export default function DashboardScreen() {
               {/* Contoh koreksi terbaru */}
               {data.recentCorrections.length > 0 && (
                 <View style={styles.section}>
-                  <SectionLabel style={styles.sectionPad}>Recent corrections</SectionLabel>
+                  <SectionLabel style={styles.sectionPad}>Latest corrections</SectionLabel>
                   {data.recentCorrections.map((c, i) => (
                     <View key={i} style={styles.correctionRow}>
                       <Text style={styles.correctionOriginal} numberOfLines={1}>
@@ -296,6 +352,44 @@ const styles = StyleSheet.create({
   },
   trajectoryTitle: { fontSize: 15, fontWeight: '700', color: Pastel.creamInk },
   trajectorySub: { fontSize: 13, color: CREAM_MUTED, marginTop: 1 },
+
+  // Weekly challenges card
+  challengeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+    backgroundColor: Pastel.ice,
+    borderColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  challengeTile: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  challengeTitle: { fontSize: 15, fontWeight: '700', color: Pastel.iceInk },
+  challengeSub: { fontSize: 13, color: CREAM_MUTED, marginTop: 1 },
+  challengeHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  challengeHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 13, flex: 1 },
+  challengeProgressTrack: {
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 3,
+    marginTop: 10,
+    overflow: 'hidden',
+  },
+  challengeProgressFill: {
+    height: '100%',
+    backgroundColor: Pastel.iceInk,
+    borderRadius: 3,
+  },
+  challengeThisWeek: { fontSize: 13, fontWeight: '600', color: Pastel.iceInk, marginTop: 8 },
 
   // Seksi daftar (label + baris, gap 9 spt mockup)
   section: { gap: 9 },

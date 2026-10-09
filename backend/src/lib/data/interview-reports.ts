@@ -1,6 +1,7 @@
-import { and, desc, eq, lt, ne } from "drizzle-orm";
+import { and, desc, eq, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { interviewReports } from "@/lib/db/schema";
+import { interviewReports, conversationSessions } from "@/lib/db/schema";
+import { PRACTICE_RUBRIC_VERSION } from "@/lib/ai/report-rubric";
 import type { InterviewReport } from "@/lib/ai/interview-report";
 
 // Satu sesi = satu rapor (unique sessionId). Generate ulang -> replace,
@@ -26,29 +27,40 @@ export async function getReportForSession(userId: string, sessionId: string) {
   return rows[0] ?? null;
 }
 
-// Skor mock TEPAT SEBELUM sesi ini (untuk "up N from last time"). Null kalau
-// ini interview pertama. Dibandingkan by createdAt, kecualikan sesi ini sendiri.
+// Historical compatibility field, filtered by owner/role/rubric.
+// This is a previous report value, not proof of equivalent tasks or learning.
 export async function getPreviousScore(
   userId: string,
   beforeCreatedAt: Date,
   exceptSessionId: string,
 ) {
-  const rows = await db
+  const rubric = sql<string | null>`${interviewReports.report}->>'rubricVersion'`;
+  const [reference] = await db
+    .select({ role: conversationSessions.interviewRole, rubricVersion: rubric })
+    .from(interviewReports)
+    .innerJoin(conversationSessions, eq(conversationSessions.id, interviewReports.sessionId))
+    .where(and(
+      eq(interviewReports.userId, userId), eq(conversationSessions.userId, userId),
+      eq(interviewReports.sessionId, exceptSessionId),
+    )).limit(1);
+  if (!reference?.role || reference.rubricVersion !== PRACTICE_RUBRIC_VERSION) return null;
+
+  const [previous] = await db
     .select({ score: interviewReports.score })
     .from(interviewReports)
-    .where(
-      and(
-        eq(interviewReports.userId, userId),
-        ne(interviewReports.sessionId, exceptSessionId),
-        lt(interviewReports.createdAt, beforeCreatedAt),
-      ),
-    )
-    .orderBy(desc(interviewReports.createdAt))
-    .limit(1);
-  return rows[0]?.score ?? null;
+    .innerJoin(conversationSessions, eq(conversationSessions.id, interviewReports.sessionId))
+    .where(and(
+      eq(interviewReports.userId, userId), eq(conversationSessions.userId, userId),
+      ne(interviewReports.sessionId, exceptSessionId),
+      lt(interviewReports.createdAt, beforeCreatedAt),
+      eq(conversationSessions.interviewRole, reference.role),
+      eq(rubric, reference.rubricVersion),
+    ))
+    .orderBy(desc(interviewReports.createdAt)).limit(1);
+  return previous?.score ?? null;
 }
 
-// Buat tile "Latest readiness score" di dashboard.
+// Buat tile "Latest practice report" di dashboard.
 export async function getLatestReport(userId: string) {
   const rows = await db
     .select({

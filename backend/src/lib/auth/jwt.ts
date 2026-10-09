@@ -11,6 +11,7 @@ const EXPIRES_IN: jwt.SignOptions["expiresIn"] = "30d";
 export type AuthTokenPayload = {
   userId: string;
   email: string;
+  authVersion?: number;
 };
 
 export function signAuthToken(payload: AuthTokenPayload): string {
@@ -19,7 +20,11 @@ export function signAuthToken(payload: AuthTokenPayload): string {
 
 export function verifyAuthToken(token: string): AuthTokenPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
+    if (typeof payload === "string" || typeof payload.userId !== "string" || !payload.userId
+      || typeof payload.email !== "string"
+      || (payload.authVersion !== undefined && (!Number.isInteger(payload.authVersion) || payload.authVersion < 0))) return null;
+    return payload as AuthTokenPayload;
   } catch {
     return null;
   }

@@ -42,6 +42,7 @@ await saveReport(u.id, finished.id, {
     grammar: { score: 62, comment: "Beberapa kesalahan tense saat bercerita tentang pengalaman kerja." },
     structure: { score: 65, comment: "Jawaban cenderung melompat-lompat; struktur STAR belum konsisten." },
     content: { score: 76, comment: "Contoh proyekmu kuat dan relevan dengan role yang dilamar." },
+    confidence: { score: 60, comment: "Coba mulai jawaban dengan 'Saya' bukan 'Mungkin' atau 'Bisa saja'." },
   },
   strongestAnswer: {
     question: "Walk me through how you would handle a customer who says the price is too high.",

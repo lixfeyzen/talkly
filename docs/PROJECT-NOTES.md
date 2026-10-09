@@ -5,6 +5,144 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Gerbang koreksi interview v4b (live, 20 jawaban BARU) — 2026-10-09: LULUS
+
+Izin Yohanes "sure" (batas US$0,16). Terpakai **US$0,117670**, 33 panggilan (20 giliran + 13 cek), 20/20 selesai.
+Total biaya uji kualitas US$0,472757. Alat: `work/c-gate-v4b/` (kunci & syarat dikunci sidik sebelum uji; 20 jawaban
+ditulis SETELAH pemeriksa dirancang dan tak pernah dilihatnya; 10 bersih berbahasa polos, 10 berisi kesalahan tanam).
+Yang diuji = alur produksi: prompt interview v4 → `filterGroundedCorrections` → `finalizeInterviewCorrections`
+(pemeriksa kedua + penjelasan AI dihapus). Hasil (Claude + 2 penilai AI, sepakat bulat):
+- Merusak 0 (syarat 0) · tak perlu 0 (syarat ≤1) · tertangkap 10/10 (syarat ≥5) → **LULUS**.
+- 10 jawaban bersih: 0 koreksi tersimpan. Pemeriksa membuang 3 usulan keliru (spreadsheet→spreadsheets, the users→users,
+  in→by the third week); ketiga penilai: benar dibuang. Penyaring label gaya membuang 2.
+Sisa catatan (bukan syarat): "was"→"were" tampil ambigu bila kata sama muncul 2x dalam jawaban (1 dari 10); kategori
+masih kadang salah (I6-2 "preposition_usage"); latensi tambahan per giliran BELUM diukur; layar Riwayat (baris
+penjelasan kini kosong untuk koreksi interview) belum dilihat langsung — logika tampilnya sudah ada (`mistake.note ?`).
+Batas bukti: jawaban sintetis tulisan AI, 1 kali jalan, penilai AI — bukan pelamar nyata. Mode chat bebas TIDAK diuji.
+Kode: `correction-check.ts` (`finalizeInterviewCorrections`, gagal → tak ada koreksi tersimpan) disambung di
+`conversations/route.ts` hanya untuk `mock_interview`. Tes offline: core 12/12, opener 51/51, answer-practice 45/45,
+transfer 57/57, persistence 15/15, learning 14/14, harness Codex 63/63, budget-guard 21/21. Bukti:
+`runs/live-2026-10-09T13-37-12-356Z-5e8b9f37/grading-final.json`.
+
+## Uji pemeriksa kedua (`correction-check.ts`) — 2026-10-09: GAGAL syarat 5/5, tapi 3 jenis terburuk tersaring
+
+Izin Yohanes "sure" (maks US$0,05). Terpakai **US$0,023949**, 15 panggilan gpt-4o (temperature 0), pada 19 koreksi
+tersimpan dari uji v4 (label penilai dibaca SESUDAH semua panggilan). Total biaya uji kualitas US$0,355087.
+- Koreksi benar tetap lolos 14/14 → LULUS (syarat ≥13).
+- Koreksi merusak terbuang 3/5 → GAGAL (syarat 5/5). Yang terbuang = ketiga koreksi yang mengubah bahasa Inggris
+  yang sudah benar ("write down", "with theirs", "concept"). Yang lolos = 2 perbaikan benar berpenjelasan salah:
+  pemeriksa mengulang aturan salah yang sama ("'Can' needed for ability", "'Used to' requires a gerund") → model yang
+  sama tidak bisa menangkap salah paham yang ia miliki sendiri.
+- Kode: `backend/src/lib/ai/correction-check.ts` (+ tes di test-core-regressions), BELUM disambung ke route.
+Bukti: `work/c-verifier-v4/runs/live-2026-10-09T13-21-28-938Z-0e893ff6/evidence.json`.
+
+## Uji presisi koreksi interview v4 (live) — 2026-10-09: GAGAL syarat "0 merusak"
+
+Izin Yohanes "sure" (maks US$0,13). Terpakai **US$0,103613**, 20 panggilan gpt-4o, 20/20 selesai.
+Total biaya uji kualitas sejauh ini US$0,331138. Alat: `work/c-precision-v4/` (workspace Codex; runner, kunci,
+syarat lulus dikunci sidik sebelum uji). Kunci 20 jawaban (18 kesalahan tanam) diperiksa 2 penilai AI sebelum dikunci.
+Hasil (3 penilai: Claude + 2 AI independen; label paling ketat menang; A & B identik):
+- Tertangkap dengan perbaikan benar 16/18 (89%) → LULUS (syarat ≥9). Terlewat: "I am fresh graduate", "since January".
+- Koreksi tak perlu 0 → LULUS (syarat ≤1). 15 jawaban baru: 0 koreksi pada bahasa yang sudah benar — TAPI frasa
+  janggal-namun-benar sengaja dibuang dari 15 jawaban itu sebelum uji; 5 jawaban lama (masih janggal) justru tempat
+  semua koreksi merusak. Jawaban pelamar nyata penuh frasa janggal-namun-benar → kasus lama lebih mewakili.
+- Koreksi merusak **5** → GAGAL (syarat 0):
+  - 3 di 5 jawaban lama (hampir bersih): "wrote down"→"write down" & "with them"→"with theirs" (SAMA persis dgn v3),
+    "step"→"concept" (mengubah makna).
+  - 2 perbaikan benar tapi penjelasannya salah: "another person can see" (catatan: butuh "can"; sebenarnya kurang -s),
+    "am used to working" (catatan: "setelah used to → gerund", tanpa "be").
+- Penjaga gratis tidak terpicu di uji ini (model tak lagi membuat "a unfamiliar"/"class project"); label
+  style_preference membuang 4 saran gaya. Kategori sering salah label (≈8 dari 19) — data statistik ikut miring.
+Sesuai syarat yang disepakati: koreksi interview TIDAK boleh sampai ke peserta nyata sebelum ada perbaikan yang lulus
+(peserta saat ini 0 → belum ada kode yang diubah untuk karantina). Bukti: `runs/live-2026-10-09T13-08-26-255Z-73c4c035/`
+(`grading-final.json`, `grader-claude.json`, `evidence.json`).
+
+## Usul "hapus koreksi interview" DITARIK + perbaikan v4 (offline) — 2026-10-09
+
+Keputusan: koreksi per-jawaban interview TETAP ada, diperbaiki di sumbernya. Alasan:
+- Menghapusnya mengosongkan chip Targeted, hitung mundur tugas, dashboard & trajectory untuk pengguna
+  interview saja; rapor akhir tidak mengisi data itu (data koreksi ditulis `completeTurnRequest`, turn-requests.ts).
+- Di v3 keempat koreksi palsu muncul di jalur interview; jalur lain (model & appendix sama) 0 palsu.
+  Prompt interview hanya punya 4 kalimat soal koreksi, tanpa aturan kategori & "ragu → jangan". (Dugaan, belum diuji live.)
+- Peserta 0 → belum ada yang dirugikan; tidak perlu dimatikan buru-buru.
+Perubahan:
+- `mistake-categories.ts`: `MISTAKE_DETECTION_RULE` + `mistakeCategoryRules()` = aturan deteksi yang dulu hanya di
+  prompt chat. `conversation.ts` memakainya (prompt chat IDENTIK per byte, sha256 d75cc246…); `interview.ts` kini
+  memakai aturan yang sama (prompt 1.328 → 3.035 huruf).
+- `filterGroundedCorrections`: buang koreksi yang cuma mengubah tanda hubung/spasi, dan "an"→"a" di depan kata
+  berbunyi vokal (heuristik ejaan; pengecualian uni-/eu-/one). Offline menangkap 2 dari 4 koreksi palsu v3.
+Bukti offline: test:core 10/10 (tes saringan baru), interview-opener 50/50, answer-practice 45/45,
+criterion-transfer 57/57, validations 17/17, confidence-helper 27/27, persistence 15/15, learning 14/14, tsc & eslint
+bersih, harness Codex offline 63/63 (`runs/offline-2026-10-09T12-54-28-847Z-d15cebab`). BELUM diuji model sungguhan.
+Gerbang: sebelum peserta nyata pertama, koreksi interview wajib lulus ambang (aplikasi, ditetapkan sebelum uji):
+0 koreksi yang membuat bahasa Inggris salah · ≤1 koreksi tak perlu per 20 jawaban · menangkap ≥ separuh kesalahan
+yang sengaja ditanam. Gagal → karantina (tidak disimpan & tidak ditampilkan) saat itu.
+
+## Uji live v3 — 2026-10-09: koreksi masih GAGAL, rapor & revisi membaik
+
+Izin Yohanes "sure" (batas US$0,13). Terpakai US$0,088846 (±Rp1.584), 16 panggilan, integrasi 62/62.
+Total biaya uji kualitas sejauh ini US$0,227525.
+- Koreksi per-jawaban interview: 4 koreksi palsu (sama dengan v2), satu malah salah ("an unfamiliar"→"a unfamiliar");
+  semua diberi label grammar_error → label severity tidak jujur, saringan v3 tak menolong di sini.
+- Membaik: K2 tak lagi dikoreksi palsu; K5 koreksi gaya terbuang otomatis; rapor memakai placeholder
+  [specific skill or technology] alih-alih mengarang; revisi (G3) & penerapan (G4) benar.
+- Penilaian kriteria tetap 5/8 cocok kunci (K3 memburuk, K5 & K8 tetap salah).
+- Koreksi mode interview disembunyikan saat interview TAPI tersimpan → tampil di Riwayat & dihitung jadi "kelemahan".
+Kesimpulan: tiga kali perbaikan prompt (v1→v3) tidak mengatasi koreksi palsu gpt-4o di mode interview.
+Bukti: runs/live-2026-10-09T12-22-52-947Z-4753488b/penilaian-makna-claude-20261009.json (workspace audit Codex).
+Alat uji: runner.cjs + withV3Fields untuk jawaban palsu offline (cadangan _backup-20261009-v3/). Izin v3 TERPAKAI.
+
+## Perbaikan inti: koreksi v3 + suara langsung — 2026-10-09 (belum diuji model sungguhan)
+
+Akar over-correction: prompt mendorong "Report EVERY mistake... four or more", berlawanan dengan larangan
+mengarang. Perbaikan STRUKTURAL (contoh kasus uji sengaja tidak dimasukkan ke prompt):
+- `feedback-guidance.ts` v3: aturan PRECISION FIRST; `filterGroundedCorrections` membuang severity
+  `style_preference` (data lama tanpa label tetap lolos).
+- `conversation.ts`: skema koreksi + `severity`; kalimat "Report EVERY" diganti "hanya yang pasti salah".
+- `interview-report.ts`: upgrade jawaban + `addsNewFacts`; server membuang yang true; detail kurang
+  ditulis sebagai [add ...]. Tipe rapor menerima rapor lama tanpa kolom itu.
+- `conversation.tsx` (mode interview saja): tombol mikrofon besar, hasil rekaman langsung terkirim
+  tanpa diedit, pertanyaan AI diputar otomatis (gagal diam-diam bila autoplay diblokir), "Type instead"
+  tetap ada. Mode lain tidak berubah.
+Bukti: tsc frontend+backend & eslint bersih; cek penyaring 9/9; test:core 9/9, interview-opener 50/50,
+answer-practice 45/45, criterion-transfer 57/57, learning 14/14, persistence 15/15 (AI simulasi);
+tampilan tombol suara & "Type instead" dilihat di browser (375x812, tanpa backend).
+BELUM: uji mutu dengan model sungguhan (perlu izin biaya ±Rp1.300); rekam-suara→kirim→suara balik
+dengan backend & mikrofon sungguhan; HP fisik. Biaya tambahan suara AI otomatis ±US$0,02/sesi (estimasi).
+
+## Uji ulang mutu AI v2 (live) — 2026-10-07: GAGAL
+
+Izin Yohanes: batas mutlak US$0,13 (opsi A). Terpakai US$0,072857 (±Rp1.299), 15 panggilan
+gpt-4o-2024-08-06, integrasi 61/61. Mutu MAKNA gagal, tidak lebih baik dari v1:
+- 4 koreksi tak perlu (v1: 3): "with them"→"with theirs" (koreksinya malah salah), "step"→"feature",
+  "class-project"→"class project" (sama dengan v1), K2 "the dashboard"→"a dashboard".
+- Kasus terkendali 5/8 cocok kunci (v1: 6/8). Salah: K2, K5 (pasif "by me" tak dikenali), K8.
+- Rapor masih mengarang pengalaman di answerUpgrades (isolate code / create test case).
+- Benar: "I go"→"I went"; komentar rapor berbahasa Indonesia.
+Bukti: work/c-current-flow/runs/live-2026-10-06T22-14-18-248Z-28647698/penilaian-makna-claude-20261007.json
+(workspace audit Codex). Batas uji: satu run, n=1/kasus, kunci buatan AI, penilai Claude.
+Alat uji diubah agar batas US$0,13 bisa jalan: plan.json (budget 130000, contextTokens 12000),
+budget-guard.cjs (payload dikunci = contextTokens), test-budget-guard.cjs (angka dari plan; 21/21),
+fixtures.json (+9 jawaban untuk bank pertanyaan baru). Cadangan: work/c-current-flow/_backup-20261007-batasA/.
+Izin approval-quality-v2-capA-20261007 sudah TERPAKAI (sekali pakai).
+
+## Validasi bisnis + ragam pertanyaan interview — 2026-10-07
+
+Riset pasar/pengguna/harga → vonis: masalah terbukti, bisnis BELUM terbukti layak, bukan startup
+besar. Rincian & sumber: `docs/RENCANA-VALIDASI-BISNIS.md`.
+Bank pertanyaan `backend/src/lib/ai/interview.ts` diperluas: perilaku 5→12, per role 2→4
+(pembuka & penutup tetap). Diukur 5.000 pasangan sesi acak (General): kombinasi 40→528;
+peluang ≥2 dari 3 soal tengah sama 40,6%→9,0%.
+Bukti: tsc lolos; pemeriksaan logika 30/30; test:core 9/9; test-interview-opener 50/50,
+test-answer-practice 45/45, test-criterion-transfer 57/57 (AI simulasi, PostgreSQL sementara),
+hasil sama dengan kode sebelum perubahan. Bagian LIVE test:interview (menulis ke Neon) TIDAK
+dijalankan, menunggu izin. Node sempat crash di PGlite saat RAM penuh; ulang = lolos.
+Snapshot sebelum perubahan: `refs/backup/sebelum-bagian2` (bukan commit kerja; hapus:
+`git update-ref -d refs/backup/sebelum-bagian2`). Belum di-commit atas permintaan Yohanes.
+Sesi interview yang sedang berjalan saat versi ini dipasang bisa berganti pertanyaan tengahnya.
+Penghapusan Streak/Free chat dari Home DIBATALKAN: layar itu rancangan yang sudah disetujui dan
+buktinya hanya dugaan.
+
 ## Persiapan akun v4 dan kontrak biaya — 2026-10-06
 
 Kandidat akun v4 siap ditinjau di workspace audit; belum dipasang pada aplikasi/cloud.

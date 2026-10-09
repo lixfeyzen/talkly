@@ -4,6 +4,7 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  authVersion: integer("auth_version").notNull().default(0),
   // Nama panggilan untuk sapaan ("Hi Mateo") -- opsional, diisi saat
   // onboarding/settings. NULL = app fallback ke potongan email.
   name: text("name"),
@@ -102,6 +103,7 @@ export const mistakePatterns = pgTable("mistake_patterns", {
   // Kutipan kalimat asli + koreksinya, buat ditampilkan di dashboard progres.
   originalText: text("original_text").notNull(),
   correctedText: text("corrected_text").notNull(),
+  note: text("note"), // Native-language explanation; old corrections stay nullable.
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   // dashboard "recent corrections" + trajectory: "WHERE user_id=? ORDER BY
@@ -148,6 +150,37 @@ export const userMistakeStats = pgTable(
   ],
 );
 
+// Weekly challenges (stretch #7: skenario tantangan mingguan, unlock tiap minggu).
+// Status flow: locked → available → completed.
+// Unlock rule: minggu N+1 available kalau minggu N completed.
+// Scenario ditentukan dari kategori kelemahan terbesar user (dari userMistakeStats).
+export const weeklyChallenges = pgTable(
+  "weekly_challenges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    weekNumber: integer("week_number").notNull(),
+    // locked | available | completed
+    status: text("status").notNull().default("locked"),
+    // Skenario challenge (mis. "Job interview", "Tell me about yourself")
+    scenario: text("scenario").notNull(),
+    // Kategori focus challenge (dari kelemahan user) — nullable karena
+    // challenge minggu 1 belum ada data kelemahan.
+    focusCategory: text("focus_category"),
+    // Skor 0-100 (isi setelah selesai).
+    score: integer("score"),
+    // Kapan challenge selesai.
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique().on(table.userId, table.weekNumber),
+    index("weekly_challenges_user_status_idx").on(table.userId, table.status),
+  ],
+);
+
 // Rate limiting fixed-window, DIHITUNG DI DB (tahan restart & serverless --
 // pola yang sama dengan brute-force lock reset password). subject = userId
 // atau "ip:<alamat>"; bucket = "<aksi>:<m|d>:<jendela ISO>". Baris lama
@@ -166,3 +199,20 @@ export const usageCounters = pgTable(
     unique().on(table.subject, table.bucket),
   ],
 );
+
+// One logical send, including its recoverable AI result and committed response.
+export const conversationTurnRequests = pgTable("conversation_turn_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  requestId: uuid("request_id").notNull(),
+  payloadHash: text("payload_hash").notNull(),
+  sessionId: uuid("session_id").references(() => conversationSessions.id, { onDelete: "cascade" }),
+  leaseToken: uuid("lease_token").notNull(),
+  leaseExpiresAt: timestamp("lease_expires_at", { withTimezone: true }).notNull(),
+  result: jsonb("result"),
+  response: jsonb("response"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  unique().on(table.userId, table.requestId),
+  index("conversation_turn_requests_user_created_idx").on(table.userId, table.createdAt),
+]);

@@ -25,7 +25,12 @@
     "test:history": "tsx --env-file=.env.local scripts/test-history.mts",
     "test:ratelimit": "tsx --env-file=.env.local scripts/test-ratelimit.mts",
     "eval:model": "tsx --env-file=.env.local scripts/eval-model.mts",
-    "eval:report": "tsx scripts/eval-report.mts"
+    "eval:report": "tsx scripts/eval-report.mts",
+    "test:core": "node scripts/test-core-regressions.mjs",
+    "test:confidence": "tsx --test src/lib/ai/confidence.test.ts",
+    "test:confidence-helper": "tsx scripts/test-confidence-helper.mts",
+    "test:persistence": "node --wasm-num-compilation-tasks=1 --no-wasm-tier-up scripts/test-persistence.mjs",
+    "test:learning": "node --wasm-num-compilation-tasks=1 --no-wasm-tier-up scripts/test-learning-loop.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -39,6 +44,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",

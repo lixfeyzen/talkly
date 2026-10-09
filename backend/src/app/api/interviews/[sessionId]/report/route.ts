@@ -5,11 +5,12 @@ import { users } from "@/lib/db/schema";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { getSessionForUser } from "@/lib/data/conversations";
 import { saveReport, getReportForSession, getPreviousScore } from "@/lib/data/interview-reports";
-import { generateInterviewReport } from "@/lib/ai/interview-report";
+import { generateInterviewReport, type InterviewReport } from "@/lib/ai/interview-report";
 import { isInterviewFinished, type InterviewRole } from "@/lib/ai/interview";
 import type { ChatTurn } from "@/lib/ai/conversation";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
 import { consumeQuota } from "@/lib/rate-limit";
+import { resolvePracticeContext } from "@/lib/practice/interview-target";
 
 export function OPTIONS() {
   return corsPreflight();
@@ -19,20 +20,24 @@ type Params = { params: Promise<{ sessionId: string }> };
 
 // Ambil rapor yang sudah ada (dipakai saat buka ulang riwayat).
 export async function GET(req: NextRequest, ctx: Params) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) return jsonCors({ error: "unauthorized" }, { status: 401 });
 
   const { sessionId } = await ctx.params;
   const row = await getReportForSession(auth.userId, sessionId);
   if (!row) return jsonCors({ error: "report_not_found" }, { status: 404 });
   const previousScore = await getPreviousScore(auth.userId, row.createdAt, sessionId);
-  return jsonCors({ score: row.score, report: row.report, createdAt: row.createdAt, previousScore });
+  const session = await getSessionForUser(sessionId, auth.userId);
+  const practiceContext = session?.mode === "mock_interview" && session.interviewRole
+    ? resolvePracticeContext(row.report as InterviewReport, session.transcript as ChatTurn[], session.interviewRole as InterviewRole, sessionId)
+    : null;
+  return jsonCors({ score: row.score, report: row.report, createdAt: row.createdAt, previousScore, practiceContext });
 }
 
 // Generate rapor setelah interview selesai. Idempoten: rapor yang sudah ada
 // dikembalikan tanpa memanggil AI lagi (hemat biaya, hasil stabil).
 export async function POST(req: NextRequest, ctx: Params) {
-  const auth = getAuthFromRequest(req);
+  const auth = await getAuthFromRequest(req);
   if (!auth) return jsonCors({ error: "unauthorized" }, { status: 401 });
 
   const { sessionId } = await ctx.params;
@@ -54,7 +59,8 @@ export async function POST(req: NextRequest, ctx: Params) {
   const existing = await getReportForSession(auth.userId, sessionId);
   if (existing) {
     const previousScore = await getPreviousScore(auth.userId, existing.createdAt, sessionId);
-    return jsonCors({ score: existing.score, report: existing.report, createdAt: existing.createdAt, previousScore });
+    const practiceContext = resolvePracticeContext(existing.report as InterviewReport, history, session.interviewRole as InterviewRole, sessionId);
+    return jsonCors({ score: existing.score, report: existing.report, createdAt: existing.createdAt, previousScore, practiceContext });
   }
 
   // Pagar biaya AI: hanya jalur generate-baru (rapor cached di atas gratis).
@@ -80,7 +86,8 @@ export async function POST(req: NextRequest, ctx: Params) {
     );
     const saved = await saveReport(auth.userId, sessionId, report);
     const previousScore = await getPreviousScore(auth.userId, saved.createdAt, sessionId);
-    return jsonCors({ score: saved.score, report: saved.report, createdAt: saved.createdAt, previousScore });
+    const practiceContext = resolvePracticeContext(saved.report as InterviewReport, history, session.interviewRole as InterviewRole, sessionId);
+    return jsonCors({ score: saved.score, report: saved.report, createdAt: saved.createdAt, previousScore, practiceContext });
   } catch (err) {
     console.error("Interview report generation failed:", err);
     return jsonCors({ error: "ai_service_unavailable" }, { status: 502 });

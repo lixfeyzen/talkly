@@ -64,20 +64,20 @@ export function buildPlan(
         type: "review",
         title: "Final review",
         description:
-          "Light day: review your most frequent mistakes and do one short warm-up answer. No new material the day before.",
+          "Light day: review your frequent corrections from the last 28 days and do one short warm-up answer.",
         focusCategories: weaknesses.slice(0, 3).map((w) => w.category),
       },
     };
   }
 
-  // H-2 dan H-3: full mock interview -> rapor kesiapan terbaru.
+  // H-2 dan H-3: full mock interview -> masukan jawaban latihan.
   if (daysLeft <= 3) {
     return {
       daysLeft,
       todayTask: {
         type: "mock",
         title: `Full mock interview: ${role}`,
-        description: `${daysLeft} days out: do a complete 5-question mock and read your readiness report.`,
+        description: `${daysLeft} days out: do a complete 5-question mock and read your practice feedback.`,
       },
     };
   }
@@ -88,10 +88,10 @@ export function buildPlan(
     daysLeft,
     todayTask: {
       type: "practice",
-      title: "Targeted practice",
+      title: suggestion ? "Targeted practice" : "General practice",
       description: suggestion
         ? suggestion.reason
-        : "Build session history first. Every conversation teaches the app your weak spots.",
+        : "No recent correction focus is available. Practise one answer in your own words.",
       scenario: suggestion?.scenario ?? "Tell me about yourself",
       focusCategories: suggestion?.focusCategories,
     },

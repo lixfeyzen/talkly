@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Pressable, ActivityIndicator, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 import { TalklyMark } from '@/components/talkly-mark';
-import { Chip, ListRow, SectionLabel, BottomNav, HeroCard } from '@/components/ui';
+import { Chip, ListRow, SectionLabel, BottomNav, HeroCard, PrimaryButton, GhostButton } from '@/components/ui';
 import { Spacing, MaxContentWidth, Ink, Pastel } from '@/constants/theme';
 import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type DashboardData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
 import { fetchInterviewPlan, type InterviewPlanResponse } from '@/lib/interview-plan/api';
+import { INTERVIEW_ROLES } from '@/lib/interviews/api';
 import { notificationsSupported, configureNotificationHandler } from '@/lib/notifications';
 
 // Tone lilac-dalam khusus kartu countdown (dari mockup) — lebih pekat dari
@@ -28,17 +29,26 @@ export default function HomeScreen() {
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashFailed, setDashFailed] = useState(false);
   const [suggestion, setSuggestion] = useState<SuggestedScenario | null>(null);
+  const [suggestionFailed, setSuggestionFailed] = useState(false);
   const [plan, setPlan] = useState<InterviewPlanResponse | null>(null);
+  const [planFailed, setPlanFailed] = useState(false);
+  const requestSequence = useRef(0);
+  const savedRole = plan?.set ? INTERVIEW_ROLES.find(role => role === plan.role) : undefined;
+
+  function openInterview() {
+    router.push({ pathname: '/interview', ...(savedRole ? { params: { role: savedRole } } : {}) });
+  }
 
   function openPlanTask() {
     if (!plan || !plan.set || plan.expired) return;
     const task = plan.todayTask;
     if (task.type === 'mock') {
-      router.push('/interview');
+      openInterview();
     } else if (task.type === 'practice') {
       router.push({
         pathname: '/conversation',
-        params: { scenario: task.scenario ?? '', focus: task.focusCategories?.join(',') ?? '' },
+        params: { scenario: task.scenario ?? '', focus: task.focusCategories?.join(',') ?? '',
+          ...(savedRole ? { retryRole: savedRole } : {}) },
       });
     } else {
       router.push('/dashboard');
@@ -64,21 +74,33 @@ export default function HomeScreen() {
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
+  const loadHome = useCallback(() => {
+      const sequence = ++requestSequence.current;
+      setDash(null);
+      setSuggestion(null);
+      setPlan(null);
+      setDashFailed(false);
+      setSuggestionFailed(false);
+      setPlanFailed(false);
       fetchDashboard()
         .then((d) => {
+          if (sequence !== requestSequence.current) return;
           setDash(d);
           setDashFailed(false);
         })
-        .catch(() => setDashFailed(true));
+        .catch(() => { if (sequence === requestSequence.current) { setDash(null); setDashFailed(true); } });
       fetchSuggestedScenario()
-        .then(setSuggestion)
-        .catch(() => {});
+        .then(value => { if (sequence === requestSequence.current) setSuggestion(value); })
+        .catch(() => { if (sequence === requestSequence.current) { setSuggestion(null); setSuggestionFailed(true); } });
       fetchInterviewPlan()
-        .then(setPlan)
-        .catch(() => {});
-    }, []),
+        .then(value => { if (sequence === requestSequence.current) setPlan(value); })
+        .catch(() => { if (sequence === requestSequence.current) { setPlan(null); setPlanFailed(true); } });
+  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadHome();
+      return () => { requestSequence.current += 1; };
+    }, [loadHome]),
   );
 
   if (checking) {
@@ -127,13 +149,23 @@ export default function HomeScreen() {
             <View style={styles.greeting}>
               <Text style={styles.greetingTitle}>Hi {name},{'\n'}ready to practice?</Text>
               <Text style={styles.greetingCaption}>
-                A few quiet minutes now, steadier nerves later.
+                Practise an answer, then review one useful correction.
               </Text>
             </View>
           </View>
 
           {/* WHITE sheet */}
           <View style={styles.sheet}>
+            <PrimaryButton label="Start interview" icon="arrow-right" onPress={openInterview}
+              style={{ marginBottom: Spacing.three }} />
+            {(dashFailed || suggestionFailed || planFailed) && (
+              <View style={styles.planPrompt}>
+                {dashFailed && <Text style={styles.planPromptSub}>Your practice history could not be loaded.</Text>}
+                {suggestionFailed && <Text style={styles.planPromptSub}>Targeted practice could not be loaded.</Text>}
+                {planFailed && <Text style={styles.planPromptSub}>Your interview plan could not be loaded.</Text>}
+                <GhostButton label="Retry Home" onPress={loadHome} />
+              </View>
+            )}
             {/* Countdown */}
             {plan && plan.set && !plan.expired && (
               <Pressable
@@ -201,8 +233,8 @@ export default function HomeScreen() {
 
             {/* Chips */}
             <View style={styles.chipsWrap}>
-              <Chip label="Free chat" selected onPress={() => router.push('/conversation')} />
-              <Chip label="Mock interview" onPress={() => router.push('/interview')} />
+              <Chip label="Free chat" onPress={() => router.push('/conversation')} />
+              <Chip label="Mock interview" onPress={openInterview} />
               {suggestion && (
                 <Chip
                   label="Targeted"
@@ -212,6 +244,7 @@ export default function HomeScreen() {
                       params: {
                         scenario: suggestion.scenario,
                         focus: suggestion.focusCategories.join(','),
+                        ...(savedRole ? { retryRole: savedRole } : {}),
                       },
                     })
                   }
@@ -232,21 +265,21 @@ export default function HomeScreen() {
               <ListRow
                 pastel="lilac"
                 icon="target"
-                title="Interview readiness"
-                value={dash?.latestReadiness ? `${dash.latestReadiness.score} / 100` : 'not tested'}
+                title="Practice feedback"
+                value={dash?.latestReadiness ? `${dash.latestReadiness.score} / 100` : dashFailed ? 'Unavailable' : dash ? 'no report yet' : '...'}
                 onPress={() =>
                   dash?.latestReadiness
                     ? router.push({
                         pathname: '/interview-report',
                         params: { sessionId: dash.latestReadiness.sessionId },
                       })
-                    : router.push('/interview')
+                    : openInterview()
                 }
               />
               <ListRow
                 pastel="cream"
                 icon="trending-up"
-                title="Am I getting better?"
+                title="Practice history"
                 value="trends"
                 onPress={() => router.push('/trajectory')}
               />

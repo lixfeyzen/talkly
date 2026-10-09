@@ -112,14 +112,19 @@ export async function resetPassword(
     return { ok: false, reason: "invalid_or_expired" };
   }
 
-  // Kode benar: tandai terpakai (single-use) + ganti password.
-  await db
-    .update(passwordResetCodes)
-    .set({ usedAt: now })
-    .where(eq(passwordResetCodes.id, row.id));
-
+  // Consume the valid code and change the password/session generation atomically.
+  // A concurrent attempt cannot reuse the code or change the password a second time.
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
-
-  return { ok: true };
+  const changed = await db.execute(sql`
+    WITH consumed AS (
+      UPDATE password_reset_codes SET used_at = ${now.toISOString()}::timestamptz
+      WHERE id = ${row.id} AND user_id = ${user.id} AND used_at IS NULL
+        AND expires_at > ${now.toISOString()}::timestamptz AND attempts < ${MAX_ATTEMPTS}
+        AND code_hash = ${hashCode(code)}
+      RETURNING user_id
+    )
+    UPDATE users SET password_hash = ${passwordHash}, auth_version = auth_version + 1
+    FROM consumed WHERE users.id = consumed.user_id RETURNING users.id
+  `);
+  return changed.rows.length ? { ok: true } : { ok: false, reason: "invalid_or_expired" };
 }
