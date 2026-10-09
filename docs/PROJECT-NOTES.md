@@ -5,6 +5,17 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Migrasi Neon 0011 + 0012 diterapkan — 2026-10-10
+
+Atas izin Yohanes ("sure"). Sebelum: 11 migrasi tercatat (0000–0010), tertunda 0011 & 0012; isi keduanya hanya
+menambah (tabel `conversation_turn_requests`, kolom `mistake_patterns.note` nullable, `users.auth_version` DEFAULT 0,
+FK, indeks; nol DROP/DELETE/UPDATE data). Dijalankan `npm run db:migrate` → "migrations applied successfully".
+Sesudah (dicek baca-saja): 13 tercatat, 0 tertunda, objek baru ada, **9 tabel lama jumlah barisnya identik**
+(users 5, conversation_sessions 8, interview_reports 1, mistake_patterns 8, user_mistake_stats 8, usage_counters 14,
+user_streaks 2, weekly_challenges 24, password_reset_codes 0). Rollback (tidak dijalankan) disimpan di scratchpad sesi.
+Belum: tes suite yang memakai Neon (test:auth, test:interview, dst.; nol panggilan AI, membuat & menghapus akun
+@example.com) dan melihat layar aplikasi langsung — keduanya menulis data uji → menunggu izin.
+
 ## Uji chat bebas (live) — 2026-10-09: LULUS (dinilai 2026-10-10)
 
 Izin "sure" (batas US$0,13). Terpakai **US$0,091134**, 20/20. Total biaya uji kualitas US$0,563891.
