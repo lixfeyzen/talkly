@@ -32,6 +32,17 @@ export function daysUntil(interviewDate: string, today: string): number {
   return Math.round((b - a) / 86_400_000);
 }
 
+// "Hari ini" menurut pengguna. App mengirim tanggal lokalnya (YYYY-MM-DD)
+// supaya hitung mundur tidak meleset sehari bagi zona waktu di depan UTC
+// (mis. WIB antara 00.00-07.00 masih "kemarin" di UTC). Nilai dari klien
+// hanya dipercaya kalau valid dan paling jauh 1 hari dari tanggal UTC server
+// (zona waktu dunia berkisar UTC-12 s.d. UTC+14); selain itu pakai UTC.
+export function resolveToday(clientToday: unknown, utcToday: string): string {
+  if (typeof clientToday !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(clientToday)) return utcToday;
+  if (Number.isNaN(Date.parse(clientToday))) return utcToday;
+  return Math.abs(daysUntil(clientToday, utcToday)) <= 1 ? clientToday : utcToday;
+}
+
 export function buildPlan(
   interviewDate: string,
   today: string,

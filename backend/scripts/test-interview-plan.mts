@@ -2,7 +2,7 @@
 // (tanpa DB), bagian 2 = kolom baru di users terhadap Neon live.
 import { db } from "../src/lib/db";
 import { users } from "../src/lib/db/schema";
-import { daysUntil, buildPlan } from "../src/lib/interview-plan/plan";
+import { daysUntil, buildPlan, resolveToday } from "../src/lib/interview-plan/plan";
 import { eq } from "drizzle-orm";
 
 let pass = 0;
@@ -19,6 +19,13 @@ function check(label: string, condition: boolean) {
 }
 
 // ===== Bagian 1: fungsi murni (tanpa DB) =====
+
+check("UNIT: resolveToday pakai tanggal lokal +1 hari (WIB dini hari)", resolveToday("2026-10-19", "2026-10-18") === "2026-10-19");
+check("UNIT: resolveToday pakai tanggal lokal -1 hari (zona barat)", resolveToday("2026-10-17", "2026-10-18") === "2026-10-17");
+check("UNIT: resolveToday tolak selisih 2 hari", resolveToday("2026-10-20", "2026-10-18") === "2026-10-18");
+check("UNIT: resolveToday tolak format salah", resolveToday("19/10/2026", "2026-10-18") === "2026-10-18");
+check("UNIT: resolveToday tolak tanpa nilai", resolveToday(undefined, "2026-10-18") === "2026-10-18");
+check("UNIT: resolveToday tolak tanggal kalender ngaco", resolveToday("2026-13-40", "2026-10-18") === "2026-10-18");
 
 check("UNIT: daysUntil hari sama = 0", daysUntil("2026-07-04", "2026-07-04") === 0);
 check("UNIT: daysUntil besok = 1", daysUntil("2026-07-05", "2026-07-04") === 1);

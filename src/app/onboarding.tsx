@@ -9,6 +9,7 @@ import { updateProfile, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
 import { INTERVIEW_ROLES, type InterviewRole } from '@/lib/interviews/api';
 import { setInterviewPlan } from '@/lib/interview-plan/api';
+import { localIsoDate } from '@/lib/dates';
 
 // Onboarding sekali setelah daftar, satu pertanyaan per layar (desain final
 // ungu, 2026-10-18): 1) nama panggilan (opsional) untuk sapaan "Hi Mateo",
@@ -25,16 +26,6 @@ const WHEN_OPTIONS = [
   { label: 'In 1 month', days: 30 },
 ] as const;
 
-// Sama persis dengan halaman Tanggal interview (UTC), karena server juga
-// menghitung sisa hari dengan tanggal UTC. Catatan: antara tengah malam dan
-// jam 7 pagi WIB, tanggal UTC masih kemarin, jadi hitung mundur bisa selisih
-// sehari. Perbaikan yang benar ada di server (pakai tanggal lokal pengguna),
-// lihat docs/audit-alur-dan-fitur-2026-10-18.md.
-function isoPlusDays(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -69,7 +60,7 @@ export default function OnboardingScreen() {
         trimmed ? { nativeLanguage: selected, name: trimmed } : { nativeLanguage: selected },
       );
       if (withPlan && role && whenDays !== null) {
-        await setInterviewPlan(isoPlusDays(whenDays), role);
+        await setInterviewPlan(localIsoDate(whenDays), role);
       }
       // Langsung ke mock interview pertama, menggantikan onboarding supaya
       // tombol kembali tidak membuka onboarding lagi (kembali menuju Home).

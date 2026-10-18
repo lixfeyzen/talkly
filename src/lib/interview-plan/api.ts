@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api/client';
 import type { InterviewRole } from '@/lib/interviews/api';
+import { localIsoDate } from '@/lib/dates';
 
 // Interview-Day Countdown: rencana persiapan mundur dari tanggal interview nyata.
 
@@ -24,7 +25,8 @@ export type InterviewPlanResponse =
     };
 
 export function fetchInterviewPlan(): Promise<InterviewPlanResponse> {
-  return apiFetch('/api/interview-plan', { auth: true });
+  // Kirim tanggal lokal supaya server menghitung sisa hari dari "hari ini" pengguna.
+  return apiFetch(`/api/interview-plan?today=${localIsoDate()}`, { auth: true });
 }
 
 export function setInterviewPlan(
@@ -34,7 +36,7 @@ export function setInterviewPlan(
   return apiFetch('/api/interview-plan', {
     method: 'POST',
     auth: true,
-    body: { interviewDate, role },
+    body: { interviewDate, role, today: localIsoDate() },
   });
 }
 

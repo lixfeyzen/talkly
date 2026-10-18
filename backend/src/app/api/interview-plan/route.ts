@@ -6,7 +6,7 @@ import { users } from "@/lib/db/schema";
 import { getRecentCorrectionStats } from "@/lib/data/recent-corrections";
 import { getAuthFromRequest } from "@/lib/auth/require-auth";
 import { INTERVIEW_ROLES, type InterviewRole } from "@/lib/ai/interview";
-import { buildPlan, daysUntil } from "@/lib/interview-plan/plan";
+import { buildPlan, daysUntil, resolveToday } from "@/lib/interview-plan/plan";
 import { jsonCors, corsPreflight } from "@/lib/http/cors";
 
 export function OPTIONS() {
@@ -24,6 +24,8 @@ const setPlanSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .refine((s) => !Number.isNaN(Date.parse(s)), "invalid calendar date"),
   role: z.enum(INTERVIEW_ROLES),
+  // Tanggal lokal pengguna (opsional, divalidasi resolveToday).
+  today: z.string().optional(),
 });
 
 // "Hari ini" versi date-only UTC -- konsisten dgn penyimpanan kolom date.
@@ -50,7 +52,8 @@ export async function GET(req: NextRequest) {
 
     const asOf = new Date();
     const stats = await getRecentCorrectionStats(auth.userId, asOf);
-    const plan = buildPlan(user.interviewDate, asOf.toISOString().slice(0, 10), user.role as InterviewRole, stats);
+    const today = resolveToday(req.nextUrl.searchParams.get("today"), asOf.toISOString().slice(0, 10));
+    const plan = buildPlan(user.interviewDate, today, user.role as InterviewRole, stats);
     if ("expired" in plan) {
       return jsonCors({ set: true, expired: true, interviewDate: user.interviewDate, role: user.role });
     }
@@ -82,7 +85,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const daysLeft = daysUntil(parsed.data.interviewDate, todayIso());
+  const daysLeft = daysUntil(parsed.data.interviewDate, resolveToday(parsed.data.today, todayIso()));
   if (!Number.isFinite(daysLeft) || daysLeft < 0) {
     return jsonCors({ error: "date_in_past" }, { status: 400 });
   }

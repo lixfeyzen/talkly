@@ -9,6 +9,7 @@ import { Chip, PrimaryButton, SectionLabel, Placeholder } from '@/components/ui'
 import { Spacing, MaxContentWidth, Ink, HairlineBorder, Danger, Radius, Font } from '@/constants/theme';
 import { INTERVIEW_ROLES, type InterviewRole } from '@/lib/interviews/api';
 import { setInterviewPlan } from '@/lib/interview-plan/api';
+import { localIsoDate } from '@/lib/dates';
 import { ApiError } from '@/lib/api/client';
 
 // Set tanggal interview nyata + role -> home menampilkan countdown + tugas
@@ -22,11 +23,8 @@ const QUICK_OPTIONS = [
   { label: 'In 1 month', days: 30 },
 ];
 
-function isoPlusDays(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
+// Tanggal lokal pengguna (bukan UTC), sama dengan yang dikirim ke server.
+const isoPlusDays = localIsoDate;
 
 export default function InterviewDateScreen() {
   const [role, setRole] = useState<InterviewRole | null>(null);
