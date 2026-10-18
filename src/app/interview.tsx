@@ -60,7 +60,8 @@ export default function InterviewStartScreen() {
 
             <View style={styles.backRow}>
               <Pressable
-                onPress={() => router.back()}
+                // Datang langsung dari onboarding tidak punya layar sebelumnya: ke Home.
+                onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
                 accessibilityRole="button"
                 accessibilityLabel="Back"
                 hitSlop={8}

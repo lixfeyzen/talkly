@@ -7,24 +7,58 @@ import { AuthButton, AuthPalette, GlowBackdrop } from '@/components/auth/auth-la
 import { Spacing, MaxContentWidth, Brand, Font, Placeholder } from '@/constants/theme';
 import { updateProfile, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
+import { INTERVIEW_ROLES, type InterviewRole } from '@/lib/interviews/api';
+import { setInterviewPlan } from '@/lib/interview-plan/api';
 
 // Onboarding sekali setelah daftar, satu pertanyaan per layar (desain final
-// ungu, 2026-10-18): 1) nama panggilan (opsional, bisa dilewati) untuk sapaan
-// "Hi Mateo", 2) bahasa sehari-hari yang dipakai AI menulis penjelasan koreksi.
-// Data yang dikirim sama persis dengan versi sebelumnya.
-const STEPS = 2;
+// ungu, 2026-10-18): 1) nama panggilan (opsional) untuk sapaan "Hi Mateo",
+// 2) bahasa sehari-hari untuk penjelasan koreksi, 3) posisi dan tanggal
+// interview (opsional), karena latihan per role dan hitung mundur bergantung
+// padanya. Sesudahnya pengguna langsung diarahkan ke mock interview pertama,
+// bukan ke Home yang penuh pilihan (audit alur 2026-10-18).
+const STEPS = 3;
+
+const WHEN_OPTIONS = [
+  { label: 'In 3 days', days: 3 },
+  { label: 'In 1 week', days: 7 },
+  { label: 'In 2 weeks', days: 14 },
+  { label: 'In 1 month', days: 30 },
+] as const;
+
+// Sama persis dengan halaman Tanggal interview (UTC), karena server juga
+// menghitung sisa hari dengan tanggal UTC. Catatan: antara tengah malam dan
+// jam 7 pagi WIB, tanggal UTC masih kemarin, jadi hitung mundur bisa selisih
+// sehari. Perbaikan yang benar ada di server (pakai tanggal lokal pengguna),
+// lihat docs/audit-alur-dan-fitur-2026-10-18.md.
+function isoPlusDays(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 export default function OnboardingScreen() {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [role, setRole] = useState<InterviewRole | null>(null);
+  const [whenDays, setWhenDays] = useState<number | null>(null);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleFinish() {
-    if (loading) return;
+  function handleLanguageNext() {
     if (!selected) {
       setError('Pick a language to continue.');
+      return;
+    }
+    setError(null);
+    setStep(3);
+  }
+
+  // withPlan=false: "Not sure yet", posisi dan tanggal dilewati.
+  async function handleFinish(withPlan: boolean) {
+    if (loading || !selected) return;
+    if (withPlan && (!role || whenDays === null)) {
+      setError(!role ? 'Pick a role, or choose Not sure yet.' : 'Pick when your interview is, or choose Not sure yet.');
       return;
     }
     setError(null);
@@ -34,7 +68,12 @@ export default function OnboardingScreen() {
       await updateProfile(
         trimmed ? { nativeLanguage: selected, name: trimmed } : { nativeLanguage: selected },
       );
-      router.replace('/');
+      if (withPlan && role && whenDays !== null) {
+        await setInterviewPlan(isoPlusDays(whenDays), role);
+      }
+      // Langsung ke mock interview pertama, menggantikan onboarding supaya
+      // tombol kembali tidak membuka onboarding lagi (kembali menuju Home).
+      router.replace({ pathname: '/interview', params: withPlan && role ? { role } : {} });
     } catch (err) {
       if (err instanceof NetworkError) {
         setError('Can’t reach the server. Try again in a moment.');
@@ -92,7 +131,7 @@ export default function OnboardingScreen() {
                   <Text style={styles.skipText}>Maybe later</Text>
                 </Pressable>
               </>
-            ) : (
+            ) : step === 2 ? (
               <>
                 <Text style={styles.title} accessibilityRole="header">
                   What language do you speak every day?
@@ -120,17 +159,71 @@ export default function OnboardingScreen() {
                 {error && <Text style={styles.error}>{error}</Text>}
 
                 <View style={styles.spacer} />
-                <AuthButton
-                  label="Start practicing"
-                  onPress={handleFinish}
-                  loading={loading}
-                />
+                <AuthButton label="Continue" onPress={handleLanguageNext} />
                 <Pressable
                   onPress={() => setStep(1)}
                   hitSlop={Spacing.two}
                   accessibilityRole="button"
                   style={styles.skip}>
                   <Text style={styles.skipText}>Back</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text style={styles.title} accessibilityRole="header">
+                  What role is your interview for?
+                </Text>
+                <Text style={styles.subtitle}>
+                  I’ll pick questions for this role and count down to the day.
+                </Text>
+                <View style={styles.grid}>
+                  {INTERVIEW_ROLES.map((r) => {
+                    const isSel = r === role;
+                    return (
+                      <Pressable
+                        key={r}
+                        onPress={() => setRole(r)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: isSel }}
+                        style={[styles.option, isSel && styles.optionSel]}>
+                        <Text style={styles.optionText}>{r}</Text>
+                        <View style={[styles.tick, isSel && styles.tickSel]} />
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <Text style={styles.groupLabel}>WHEN IS IT?</Text>
+                <View style={styles.gridTight}>
+                  {WHEN_OPTIONS.map((o) => {
+                    const isSel = o.days === whenDays;
+                    return (
+                      <Pressable
+                        key={o.days}
+                        onPress={() => setWhenDays(o.days)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: isSel }}
+                        style={[styles.option, isSel && styles.optionSel]}>
+                        <Text style={styles.optionText}>{o.label}</Text>
+                        <View style={[styles.tick, isSel && styles.tickSel]} />
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {error && <Text style={styles.error}>{error}</Text>}
+
+                <View style={styles.spacer} />
+                <AuthButton
+                  label="Start my first mock interview"
+                  onPress={() => handleFinish(true)}
+                  loading={loading}
+                />
+                <Pressable
+                  onPress={() => handleFinish(false)}
+                  hitSlop={Spacing.two}
+                  accessibilityRole="button"
+                  style={styles.skip}>
+                  <Text style={styles.skipText}>Not sure yet</Text>
                 </Pressable>
               </>
             )}
@@ -191,6 +284,14 @@ const styles = StyleSheet.create({
     outlineColor: Brand.violetLight,
   },
   grid: { marginTop: Spacing.four, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  gridTight: { marginTop: Spacing.two, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  groupLabel: {
+    marginTop: Spacing.four,
+    fontFamily: Font.bold,
+    fontSize: 12,
+    letterSpacing: 0.6,
+    color: AuthPalette.textSecondary,
+  },
   option: {
     flexBasis: '47%',
     flexGrow: 1,

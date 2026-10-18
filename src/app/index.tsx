@@ -271,8 +271,9 @@ export default function HomeScreen() {
 
             {/* Chips */}
             <View style={styles.chipsWrap}>
+              {/* Mock interview sudah ada sebagai tombol utama Start interview di atas
+                  (audit alur 2026-10-18), jadi chip duplikatnya dihapus. */}
               <Chip label="Free chat" onPress={() => router.push('/conversation')} />
-              <Chip label="Mock interview" onPress={openInterview} />
               {suggestion && (
                 <Chip
                   label="Targeted"
@@ -302,30 +303,17 @@ export default function HomeScreen() {
               />
               <ListRow
                 pastel="lilac"
-                icon="target"
-                title="Practice feedback"
-                value={dash?.latestReadiness ? `${dash.latestReadiness.score} / 100` : dashFailed ? 'Unavailable' : dash ? 'no report yet' : '...'}
-                onPress={() =>
-                  dash?.latestReadiness
-                    ? router.push({
-                        pathname: '/interview-report',
-                        params: { sessionId: dash.latestReadiness.sessionId },
-                      })
-                    : openInterview()
-                }
-              />
-              <ListRow
-                pastel="cream"
                 icon="trending-up"
-                title="Practice history"
-                value="trends"
-                onPress={() => router.push('/trajectory')}
-              />
-              <ListRow
-                pastel="pink"
-                icon="zap"
-                title="Streak"
-                value={dash ? `${dash.streak.currentStreak} days` : dashFailed ? '—' : '...'}
+                title="Your progress"
+                value={
+                  dash
+                    ? dash.latestReadiness
+                      ? `${dash.latestReadiness.score} / 100`
+                      : `${dash.streak.currentStreak}-day streak`
+                    : dashFailed
+                      ? '—'
+                      : '...'
+                }
                 onPress={() => router.push('/dashboard')}
               />
             </View>
