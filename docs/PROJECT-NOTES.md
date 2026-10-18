@@ -5,6 +5,20 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Uji ulang seluruh app di cabang design/ungu-final — 2026-10-19: LULUS lokal
+- 17 rangkaian tes backend: awalnya 14 lulus. 3 gagal karena perubahan cabang ini: validasi dan route
+  percakapan ikut memuat SDK OpenAI lewat job-post.ts (bagian murni dipindah ke `lib/ai/job-pack.ts`), dan mock
+  tema di test-core belum punya Font/Brand. Sesudah diperbaiki 17 dari 17 lulus; tsc dan eslint app+backend bersih.
+- Semua halaman dibuka di web 375x812 (welcome, login, register, forgot, home, interview, interview-job,
+  interview-date, conversation, conversations, dashboard, trajectory, settings, interview-report dari sesi
+  yang diselesaikan lewat API): tanpa geser samping, tanpa error konsol baru.
+- Temuan dan perbaikan: layar ber-akun yang dibuka tanpa sesi atau dengan token kedaluwarsa menampilkan
+  "We could not load your progress. Try again later" selamanya. Kini setiap 401 dari panggilan ber-auth
+  (kecuali /api/auth/me) membuang token dan pindah ke /login (`setUnauthorizedHandler` di client.ts, dipasang
+  di _layout.tsx); diuji tanpa token, dengan token palsu, lalu token asli tetap normal. Juga: fetch localhost
+  di weekly-challenge diganti apiFetch, ejaan Practise diseragamkan jadi Practice.
+- Belum: login pertama 9 detik belum terulang; label Free chat belum diubah; uji Android asli.
+
 ## Latihan dari lowongan (tempel lowongan, tanpa CV) — 2026-10-19: LULUS lokal
 - Alur: Interview → pilih role → "Practice for a specific job post" → tempel lowongan →
   pratinjau kebutuhan + 5 pertanyaan (pembuka & penutup tetap, 3 tengah dari lowongan) → mock interview biasa.

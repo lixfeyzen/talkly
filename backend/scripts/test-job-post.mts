@@ -4,7 +4,7 @@ process.env.JWT_SECRET ??= "test-secret-for-job-post";
 // Klien OpenAI butuh kunci saat dimuat; tes ini tidak pernah memanggil AI.
 process.env.OPENAI_API_KEY ??= "sk-test-not-used";
 
-const { validateJobPack, checkJobPack, signJobPack, verifyJobPack } = await import("../src/lib/ai/job-post");
+const { validateJobPack, checkJobPack, signJobPack, verifyJobPack } = await import("../src/lib/ai/job-pack");
 const { getJobInterviewQuestions } = await import("../src/lib/ai/interview");
 const { sendMessageSchema } = await import("../src/lib/validations/conversation");
 

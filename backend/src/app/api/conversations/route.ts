@@ -35,7 +35,7 @@ import {
   resolvePracticeContext, savedPracticeContext, buildAnswerPracticePrompt,
 } from "@/lib/practice/interview-target";
 import type { InterviewReport } from "@/lib/ai/interview-report";
-import { jobPackSchema, verifyJobPack, type JobPack } from "@/lib/ai/job-post";
+import { jobPackSchema, verifyJobPack, type JobPack } from "@/lib/ai/job-pack";
 import {
   findTaskSelection, savedTransferContext, freezeTaskSelection,
   buildTaskSelectionPrompt, buildTransferPrompt, validateCriterionCheck, buildTransferReply,

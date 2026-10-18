@@ -1,4 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { DarkTheme, DefaultTheme, ThemeProvider, Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { setUnauthorizedHandler } from '@/lib/api/client';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,6 +25,12 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   });
+
+  // Sesi kedaluwarsa di layar mana pun: ke layar masuk, bukan pesan coba lagi.
+  useEffect(() => {
+    setUnauthorizedHandler(() => router.replace('/login'));
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
   // Tahan splash sampai font siap supaya layar pertama tidak berkedip dari
   // font bawaan ke Plus Jakarta Sans. Kalau font gagal dimuat, tetap lanjut

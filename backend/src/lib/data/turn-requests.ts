@@ -5,7 +5,7 @@ import type { TurnResult } from "@/lib/ai/conversation";
 import type { StreakData } from "@/lib/data/streaks";
 import type { AnswerPracticeContext } from "@/lib/practice/interview-target";
 import type { FrozenTaskSelection, TransferContext } from "@/lib/practice/criterion-transfer";
-import type { JobPack } from "@/lib/ai/job-post";
+import type { JobPack } from "@/lib/ai/job-pack";
 
 export type TurnResponse = TurnResult & {
   sessionId: string;

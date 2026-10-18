@@ -192,7 +192,7 @@ function evaluateReport(confidence, version = confidence ? "practice-v1" : undef
     '@expo/vector-icons':{Feather:'Feather'},
     '@/components/gradient-background':{GradientBackground:'GradientBackground'},
     '@/components/ui':{PrimaryButton:'PrimaryButton',SectionLabel:'SectionLabel'},
-    '@/constants/theme':{Spacing:token,MaxContentWidth:480,Ink:'#000',Pastel:token,HairlineBorder:token,HeroBg:'#000'},
+    '@/constants/theme':{Spacing:token,MaxContentWidth:480,Ink:'#000',Pastel:token,HairlineBorder:token,HeroBg:'#000',Font:token,Brand:token},
     '@/lib/interviews/api':{generateReport:() => {}},
     '@/lib/conversations/api':{fetchSuggestedScenario:async() => null},
     '@/lib/api/client':{ApiError:Error,NetworkError:Error},

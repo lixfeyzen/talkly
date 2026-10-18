@@ -109,7 +109,7 @@ export function getInterviewQuestions(role: InterviewRole, sessionId: string): s
 }
 
 // Latihan dari lowongan: pembuka & penutup tetap dari bank (mutu konsisten),
-// 3 pertanyaan tengah dari lowongan yang sudah divalidasi (lib/ai/job-post.ts).
+// 3 pertanyaan tengah dari lowongan yang sudah divalidasi (lib/ai/job-pack.ts).
 export function getJobInterviewQuestions(jobQuestions: readonly string[]): string[] {
   return [OPENER, ...jobQuestions.slice(0, 3), CLOSER];
 }

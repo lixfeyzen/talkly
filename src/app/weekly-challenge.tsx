@@ -225,29 +225,9 @@ function ChallengeCard({
 
 async function handleStart(challenge: WeeklyChallenge) {
   try {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      router.replace('/login');
-      return;
-    }
-
-    const res = await fetch(
-      `http://localhost:3001/api/challenges/${challenge.weekNumber}/start`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error ?? 'Failed to start challenge');
-    }
-
-    await res.json(); // Challenge integration remains deferred outside v1.
+    // Lewat apiFetch: alamat server dari konfigurasi (bukan localhost) dan token
+    // dari penyimpanan yang benar di HP. Sesi kedaluwarsa ditangani terpusat.
+    await apiFetch(`/api/challenges/${challenge.weekNumber}/start`, { method: 'POST', auth: true });
 
     // Pindah ke halaman percakapan dengan scenario challenge.
     router.push(`/conversation?scenario=${encodeURIComponent(challenge.scenario)}&mode=weekly_challenge`);

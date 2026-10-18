@@ -1,5 +1,14 @@
 import { Platform } from 'react-native';
-import { getToken } from '@/lib/auth/token-storage';
+import { getToken, clearToken } from '@/lib/auth/token-storage';
+
+// Sesi kedaluwarsa atau belum login saat membuka layar yang butuh akun: semua
+// panggilan ber-auth yang dibalas 401 membuang token dan memanggil handler ini
+// (dipasang di _layout.tsx untuk pindah ke layar masuk). Cek login di awal
+// (/api/auth/me) dikecualikan karena layar pemanggilnya memutuskan sendiri.
+let unauthorizedHandler: (() => void) | null = null;
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
 
 // Backend Next.js jalan di port 3001 (lihat backend/: `next dev -p 3001`).
 // WEB: alamat API DITURUNKAN dari host halaman (localhost -> localhost:3001,
@@ -95,6 +104,10 @@ export async function apiFetch<T>(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
+    if (res.status === 401 && options.auth && path !== '/api/auth/me') {
+      await clearToken();
+      unauthorizedHandler?.();
+    }
     throw new ApiError(res.status, data);
   }
 

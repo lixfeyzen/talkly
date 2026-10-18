@@ -187,7 +187,7 @@ export default function HomeScreen() {
             <View style={styles.greeting}>
               <Text style={styles.greetingTitle}>Hi {name},{'\n'}ready to practice?</Text>
               <Text style={styles.greetingCaption}>
-                Practise an answer, then review one useful correction.
+                Practice an answer, then review one useful correction.
               </Text>
             </View>
           </View>

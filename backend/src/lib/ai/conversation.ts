@@ -1,4 +1,4 @@
-import type { JobPack } from "@/lib/ai/job-post";
+import type { JobPack } from "@/lib/ai/job-pack";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/ai/openai";

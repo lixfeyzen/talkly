@@ -172,7 +172,7 @@ export default function TrajectoryScreen() {
           </View>
           {data.trends.length > 0 ? (
             <View style={styles.trendList}>
-              <Text style={styles.emptyText}>Counts depend on how much you practise. Fewer records do not prove improvement.</Text>
+              <Text style={styles.emptyText}>Counts depend on how much you practice. Fewer records do not prove improvement.</Text>
               {data.trends.map(t => (
                 <View key={t.category} style={styles.trendRow}>
                   <Text style={styles.trendLabel} numberOfLines={1}>{categoryLabel(t.category)}</Text>

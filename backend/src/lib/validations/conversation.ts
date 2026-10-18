@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { MISTAKE_CATEGORIES } from "@/lib/ai/mistake-categories";
 import { INTERVIEW_ROLES } from "@/lib/ai/interview";
-import { signedJobPackSchema } from "@/lib/ai/job-post";
+import { signedJobPackSchema } from "@/lib/ai/job-pack";
 
 export const sendMessageSchema = z
   .object({
