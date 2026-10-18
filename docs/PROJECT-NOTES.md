@@ -15,8 +15,9 @@ Ketemu 3 yang belum ada, dua di antaranya wajib Google Play:
   pembersihan kuota membuat 1 gagal), uji di web 375x812 (password salah ditolak, benar ke /welcome, login
   sesudahnya 401), halaman web diuji dengan akun sekali pakai, sesi percakapan akun terhapus 0 (kontrol akun hidup 1).
 - Kebijakan privasi (wajib: https://support.google.com/googleplay/android-developer/answer/10144311).
-  Draf dari isi kode: `docs/kebijakan-privasi-draf-2026-10-19.md`. MENUNGGU email kontak dari Yohanes, lalu
-  dijadikan halaman web dan ditautkan dari app.
+  Dari isi kode: `docs/kebijakan-privasi-draf-2026-10-19.md`, kini halaman web `/privacy` (kontak dari Yohanes,
+  USER-TOLD 2026-10-19) dan baris Privacy policy di Settings. Diuji: tautan membuka /privacy, kontak dan tautan
+  /delete-account tampil, tanpa geser samping di 375 px.
 - Kirim ulang kode reset: kini hitung mundur 60 detik sesuai jeda server, lalu kirim ulang langsung di langkah kode.
 - Catatan: Resend menolak (422) pengiriman ke alamat selain email akun Resend sampai domain diverifikasi.
 

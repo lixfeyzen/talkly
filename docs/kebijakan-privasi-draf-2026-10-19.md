@@ -1,6 +1,6 @@
 # Draf kebijakan privasi Talkly (19 Oktober 2026)
 
-Status: DRAF, belum dipublikasikan. Google Play mewajibkan tautan kebijakan privasi di Play Console dan di dalam app, juga untuk app yang tidak memakai data sensitif (https://support.google.com/googleplay/android-developer/answer/10144311). Kebijakan itu juga harus mencantumkan kontak privasi, jadi bagian Contact di bawah masih menunggu email dari Yohanes.
+Status: sudah jadi halaman web `backend/src/app/privacy/page.tsx` (/privacy) dengan kontak dari Yohanes, ditautkan dari Settings; tayang saat versi kerja digabung dan dideploy. Google Play mewajibkan tautan kebijakan privasi di Play Console dan di dalam app, juga untuk app yang tidak memakai data sensitif (https://support.google.com/googleplay/android-developer/answer/10144311).
 
 Isinya diambil dari kode, bukan dikarang:
 1. Data akun: tabel users di backend/src/lib/db/schema.ts (email, password_hash, name, native_language, interview_date, interview_plan_role).
@@ -53,4 +53,4 @@ Talkly is not intended for children under 13.
 If this policy changes, we will update the date above and show the new version in the app.
 
 ## Contact
-[contact email, waiting for Yohanes]
+wiliamyohanes932@gmail.com

@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
   Text,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -23,7 +24,7 @@ import {
   updateProfile,
   NATIVE_LANGUAGE_OPTIONS,
 } from '@/lib/auth/api';
-import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
+import { API_BASE_URL, ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
 import {
   notificationsSupported,
   isDailyReminderEnabled,
@@ -260,6 +261,18 @@ export default function SettingsScreen() {
                 <SettingIcon name="lock" />
                 <Text style={[styles.rowTitle, styles.grow]}>Change password</Text>
                 <Feather name="chevron-right" size={18} color="#8B8F98" />
+              </Pressable>
+
+              <View style={styles.divider} />
+
+              {/* Kebijakan privasi (syarat Google Play: tautan di dalam app). */}
+              <Pressable
+                onPress={() => Linking.openURL(`${API_BASE_URL}/privacy`)}
+                accessibilityRole="link"
+                style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}>
+                <SettingIcon name="shield" />
+                <Text style={[styles.rowTitle, styles.grow]}>Privacy policy</Text>
+                <Feather name="external-link" size={16} color="#8B8F98" />
               </Pressable>
             </View>
           </View>
