@@ -9,7 +9,7 @@ import {
   AuthButton,
   AuthPalette,
 } from '@/components/auth/auth-layout';
-import { Spacing } from '@/constants/theme';
+import { Spacing, Font } from '@/constants/theme';
 import { login } from '@/lib/auth/api';
 import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
 
@@ -47,9 +47,10 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout
-      title={'Welcome back!\nReady to practice?'}
-      topQuestion="Don’t have an account?"
-      topAction="Sign up"
+      title="Welcome back."
+      subtitle="Sign in to keep practicing for your interview."
+      topQuestion="New to Talkly?"
+      topAction="Create account"
       onTopAction={() => router.push('/register')}>
       <AuthInput
         placeholder="Email"
@@ -93,8 +94,8 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  forgotLink: { alignSelf: 'center' },
-  forgotText: { color: AuthPalette.textPrimary, fontSize: 14, fontWeight: '600' },
-  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center' },
-  success: { color: AuthPalette.success, fontSize: 14, textAlign: 'center' },
+  forgotLink: { alignSelf: 'flex-end' },
+  forgotText: { color: AuthPalette.textPrimary, fontSize: 14, fontFamily: Font.bold },
+  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
+  success: { color: AuthPalette.success, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
 });

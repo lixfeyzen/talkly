@@ -64,7 +64,8 @@ export default function HomeScreen() {
     fetchCurrentUser()
       .then((user) => {
         if (!user) {
-          router.replace('/login');
+          // Orang yang belum masuk melihat layar pembuka dulu, bukan langsung login.
+          router.replace('/welcome');
           return;
         }
         if (!user.nativeLanguage) {

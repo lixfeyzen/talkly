@@ -28,8 +28,37 @@ export const Ink = '#111114';
 export const HeroBg = '#101014';
 export const HeroText = '#FFFFFF';
 
-// Placeholder input (samakan dengan AuthPalette.placeholder).
-export const Placeholder = '#8B8F98';
+// Placeholder input (samakan dengan AuthPalette.placeholder). #686770 di atas
+// #F4F4F5 = 5,1:1 (lolos WCAG AA); nilai lama #8B8F98 cuma 2,9:1.
+export const Placeholder = '#686770';
+
+// Identitas merek (desain final ungu, 2026-10-18, docs/sistem-desain-talkly-2026-10-18.md).
+// Ungu dipakai untuk logo, tombol utama layar awal, pilihan aktif, dan stabilo
+// kata yang sudah dikoreksi. Teks putih di atas violet = 6,65:1.
+export const Brand = {
+  violet: '#5B3FD9',
+  violetLight: '#8B5CF6',
+  violetDeep: '#4C2BC4',
+  // Stabilo kata yang benar (teks tinta di atasnya ~12:1).
+  highlight: '#E4D7FB',
+  // Cahaya lembut di atas layar awal.
+  glow: '#EFE8FF',
+  // Kanvas kertas hangat layar awal.
+  paper: '#FBFAF8',
+  // Kata yang salah dicoret abu, bukan merah (5,7:1 di atas putih).
+  strike: '#666571',
+  selectedBg: '#F3EDFF',
+} as const;
+
+// Plus Jakarta Sans dimuat di _layout.tsx. Font kustom di Android mengabaikan
+// fontWeight, jadi tiap ketebalan memakai nama keluarganya sendiri.
+export const Font = {
+  regular: 'PlusJakartaSans_400Regular',
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
+  extrabold: 'PlusJakartaSans_800ExtraBold',
+} as const;
 
 // Garis rambut pemisah kartu di atas putih (sinyal premium utama).
 export const HairlineBorder = '#ECEDEF';

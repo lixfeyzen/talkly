@@ -9,7 +9,7 @@ import {
   AuthButton,
   AuthPalette,
 } from '@/components/auth/auth-layout';
-import { Spacing } from '@/constants/theme';
+import { Spacing, Font } from '@/constants/theme';
 import { forgotPassword, resetPassword } from '@/lib/auth/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
 
@@ -71,7 +71,8 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthLayout
-      title={'No worries,\nlet’s reset it.'}
+      title="Reset your password"
+      subtitle={step === 'email' ? 'We’ll email you a 6-digit code.' : 'Enter the code and choose a new password.'}
       topQuestion="Remember your password?"
       topAction="Back to sign in"
       onTopAction={() => router.push('/login')}>
@@ -145,8 +146,8 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  hint: { color: AuthPalette.textSecondary, fontSize: 14, lineHeight: 20 },
-  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center' },
+  hint: { color: AuthPalette.textSecondary, fontSize: 14, lineHeight: 20, fontFamily: Font.medium },
+  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
   resendLink: { alignSelf: 'center', marginTop: Spacing.two },
-  resendText: { color: AuthPalette.textPrimary, fontSize: 14, fontWeight: '600' },
+  resendText: { color: AuthPalette.textPrimary, fontSize: 14, fontFamily: Font.bold },
 });

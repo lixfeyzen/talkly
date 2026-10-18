@@ -1,9 +1,11 @@
-import { Image } from 'expo-image';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+
+import { TalklyMark } from '@/components/talkly-mark';
+import { Brand } from '@/constants/theme';
 
 const DURATION = 600;
 
@@ -32,7 +34,9 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image style={styles.image} source={require('@/assets/images/expo-logo.png')} />;
+  // Splash memakai logo Talkly di kanvas kertas (dulu masih logo Expo di
+  // latar biru bawaan template).
+  const image = <TalklyMark size={76} />;
 
   return animate ? (
     <Animated.View
@@ -61,13 +65,9 @@ export function AnimatedSplashOverlay() {
 const styles = StyleSheet.create({
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    backgroundColor: Brand.paper,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
-  },
-  image: {
-    width: 76,
-    height: 71,
   },
 });

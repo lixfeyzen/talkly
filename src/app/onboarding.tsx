@@ -1,24 +1,29 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
-import { GradientBackground } from '@/components/gradient-background';
-import { Chip, PrimaryButton, Placeholder } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Danger, HairlineBorder } from '@/constants/theme';
+import { AuthButton, AuthPalette } from '@/components/auth/auth-layout';
+import { Spacing, MaxContentWidth, Brand, Font, Placeholder } from '@/constants/theme';
 import { updateProfile, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
 
-// Onboarding sekali setelah daftar: nama panggilan (opsional, utk sapaan
-// "Hi Mateo") + bahasa sehari-hari (dipakai AI menulis penjelasan koreksi).
+// Onboarding sekali setelah daftar, satu pertanyaan per layar (desain final
+// ungu, 2026-10-18): 1) nama panggilan (opsional, bisa dilewati) untuk sapaan
+// "Hi Mateo", 2) bahasa sehari-hari yang dipakai AI menulis penjelasan koreksi.
+// Data yang dikirim sama persis dengan versi sebelumnya.
+const STEPS = 2;
+
 export default function OnboardingScreen() {
+  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleContinue() {
-    if (!selected) return;
+  async function handleFinish() {
+    if (!selected || loading) return;
     setError(null);
     setLoading(true);
     try {
@@ -39,81 +44,177 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>First, what should I call you?</Text>
-          <TextInput
-            placeholder="Your first name (optional)"
-            placeholderTextColor={Placeholder}
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            maxLength={60}
-            style={styles.nameInput}
-          />
+    <View style={styles.page}>
+      <LinearGradient colors={[Brand.glow, Brand.paper]} style={styles.glow} pointerEvents="none" />
+      <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
+        <View
+          style={styles.progress}
+          accessibilityRole="progressbar"
+          accessibilityLabel={`Step ${step} of ${STEPS}`}>
+          {Array.from({ length: STEPS }, (_, i) => (
+            <View key={i} style={[styles.progressBar, i < step && styles.progressOn]} />
+          ))}
+        </View>
 
-          <Text style={styles.title}>What language do you speak every day?</Text>
-          <Text style={styles.subtitle}>
-            I will explain your corrections in this language. You can change it anytime.
-          </Text>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.inner}>
+            {step === 1 ? (
+              <>
+                <Text style={styles.title} accessibilityRole="header">
+                  First, what should I call you?
+                </Text>
+                <Text style={styles.subtitle}>I’ll use it to greet you before each practice.</Text>
+                <TextInput
+                  placeholder="Your first name"
+                  placeholderTextColor={Placeholder}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  autoFocus
+                  maxLength={60}
+                  returnKeyType="next"
+                  onSubmitEditing={() => setStep(2)}
+                  style={styles.nameInput}
+                />
+                <View style={styles.spacer} />
+                <AuthButton label="Continue" onPress={() => setStep(2)} />
+                <Pressable
+                  onPress={() => {
+                    setName('');
+                    setStep(2);
+                  }}
+                  hitSlop={Spacing.two}
+                  accessibilityRole="button"
+                  style={styles.skip}>
+                  <Text style={styles.skipText}>Maybe later</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text style={styles.title} accessibilityRole="header">
+                  What language do you speak every day?
+                </Text>
+                <Text style={styles.subtitle}>
+                  I’ll explain your corrections in this language. You can change it anytime.
+                </Text>
+                <View style={styles.grid}>
+                  {NATIVE_LANGUAGE_OPTIONS.map((opt) => {
+                    const isSel = opt.value === selected;
+                    return (
+                      <Pressable
+                        key={opt.value}
+                        onPress={() => setSelected(opt.value)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected: isSel }}
+                        style={[styles.option, isSel && styles.optionSel]}>
+                        <Text style={styles.optionText}>{opt.label}</Text>
+                        <View style={[styles.tick, isSel && styles.tickSel]} />
+                      </Pressable>
+                    );
+                  })}
+                </View>
 
-          <View style={styles.optionGrid}>
-            {NATIVE_LANGUAGE_OPTIONS.map((opt) => (
-              <Chip
-                key={opt.value}
-                label={opt.label}
-                selected={opt.value === selected}
-                onPress={() => setSelected(opt.value)}
-              />
-            ))}
+                {error && <Text style={styles.error}>{error}</Text>}
+
+                <View style={styles.spacer} />
+                <AuthButton
+                  label="Start practicing"
+                  onPress={handleFinish}
+                  disabled={!selected}
+                  loading={loading}
+                />
+                <Pressable
+                  onPress={() => setStep(1)}
+                  hitSlop={Spacing.two}
+                  accessibilityRole="button"
+                  style={styles.skip}>
+                  <Text style={styles.skipText}>Back</Text>
+                </Pressable>
+              </>
+            )}
           </View>
-
-          {error && <Text style={styles.error}>{error}</Text>}
-
-          <PrimaryButton
-            label="Continue"
-            onPress={handleContinue}
-            disabled={!selected}
-            loading={loading}
-            style={styles.button}
-          />
         </ScrollView>
       </SafeAreaView>
-    </GradientBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
-  content: { flexGrow: 1, justifyContent: 'center', padding: Spacing.four, gap: Spacing.three },
-  title: { fontSize: 26, lineHeight: 32, fontWeight: '800', color: Ink, textAlign: 'center' },
+  page: { flex: 1, backgroundColor: Brand.paper },
+  glow: { position: 'absolute', top: 0, left: 0, right: 0, height: 320 },
+  flex: { flex: 1 },
+  progress: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.three,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
+  },
+  progressBar: { flex: 1, height: 5, borderRadius: 9, backgroundColor: '#E6E3EE' },
+  progressOn: { backgroundColor: Brand.violet },
+  scroll: { flexGrow: 1 },
+  inner: {
+    flexGrow: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.five,
+    paddingBottom: Spacing.four,
+  },
+  title: {
+    fontFamily: Font.extrabold,
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -1,
+    color: AuthPalette.textPrimary,
+  },
   subtitle: {
+    marginTop: Spacing.two + 2,
+    fontFamily: Font.medium,
     fontSize: 15,
-    lineHeight: 21,
-    fontWeight: '500',
-    color: '#60646C',
-    textAlign: 'center',
-    marginBottom: Spacing.two,
+    lineHeight: 22,
+    color: AuthPalette.textSecondary,
   },
   nameInput: {
-    height: 52,
+    marginTop: Spacing.four,
+    backgroundColor: AuthPalette.inputBg,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: HairlineBorder,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
     fontSize: 16,
-    color: Ink,
-    textAlign: 'center',
-    marginBottom: Spacing.two,
+    fontFamily: Font.medium,
+    color: AuthPalette.inputText,
+    outlineColor: Brand.violetLight,
   },
-  optionGrid: {
+  grid: { marginTop: Spacing.four, flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  option: {
+    flexBasis: '47%',
+    flexGrow: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.two,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#ECECEE',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
-  error: { color: Danger, textAlign: 'center', fontSize: 14, fontWeight: '500' },
-  button: { marginTop: Spacing.three },
+  optionSel: { borderColor: Brand.violet, backgroundColor: Brand.selectedBg },
+  optionText: { fontFamily: Font.bold, fontSize: 14.5, color: AuthPalette.textPrimary, flexShrink: 1 },
+  tick: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: '#CFCFD4' },
+  tickSel: { borderColor: Brand.violet, backgroundColor: Brand.violet },
+  error: {
+    marginTop: Spacing.three,
+    color: AuthPalette.error,
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: Font.medium,
+  },
+  spacer: { flexGrow: 1, minHeight: Spacing.five },
+  skip: { alignSelf: 'center', marginTop: Spacing.three, padding: Spacing.one },
+  skipText: { fontFamily: Font.semibold, fontSize: 14, color: AuthPalette.textSecondary },
 });

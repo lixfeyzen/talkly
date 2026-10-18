@@ -11,6 +11,7 @@ import {
 } from '@/components/auth/auth-layout';
 import { register } from '@/lib/auth/api';
 import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
+import { Font } from '@/constants/theme';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -53,7 +54,8 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout
-      title={'Ace your next\nEnglish interview!'}
+      title="Create your account"
+      subtitle="Practice real interview questions out loud. Talkly fixes what you say and remembers your weak spots."
       topQuestion="Already have an account?"
       topAction="Sign in"
       onTopAction={() => router.push('/login')}>
@@ -86,5 +88,5 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center' },
+  error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
 });
