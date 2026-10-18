@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, ApiError } from '@/lib/api/client';
 import { saveToken, clearToken } from '@/lib/auth/token-storage';
 
 export type AuthUser = {
@@ -42,12 +42,17 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   return res.user;
 }
 
+// null = benar-benar belum login (401 atau tidak ada token tersimpan).
+// Error lain (server tidak terjangkau, timeout, 500) DILEMPAR -- caller
+// yang memutuskan: itu beda kasus dari belum login, jangan ikut dilempar
+// ke layar login saat server cuma lambat/sinyal putus.
 export async function fetchCurrentUser(): Promise<AuthUser | null> {
   try {
     const res = await apiFetch<{ user: AuthUser }>('/api/auth/me', { auth: true });
     return res.user;
-  } catch {
-    return null;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) return null;
+    throw err;
   }
 }
 

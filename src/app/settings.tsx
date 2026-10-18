@@ -62,16 +62,23 @@ export default function SettingsScreen() {
   const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
-    fetchCurrentUser().then((user) => {
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
-      setEmail(user.email);
-      setSelected(user.nativeLanguage ?? null);
-      setUserName(user.name ?? null);
-      setNameDraft(user.name ?? '');
-    });
+    fetchCurrentUser()
+      .then((user) => {
+        if (!user) {
+          router.replace('/login');
+          return;
+        }
+        setEmail(user.email);
+        setSelected(user.nativeLanguage ?? null);
+        setUserName(user.name ?? null);
+        setNameDraft(user.name ?? '');
+      })
+      .catch(() => {
+        // Error jaringan/server saat cek login, BUKAN 401 -- kemungkinan
+        // besar sudah login, jadi tetap di layar ini dan kabari, jangan
+        // lempar paksa ke /login.
+        setFeedback({ kind: 'error', text: 'Can’t reach the server. Try again in a moment.' });
+      });
     if (notificationsSupported) {
       isDailyReminderEnabled().then(setReminderOn);
     }

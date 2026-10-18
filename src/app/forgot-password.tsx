@@ -22,6 +22,7 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleRequestCode() {
+    if (!email || loading) return;
     setError(null);
     setLoading(true);
     try {
@@ -41,6 +42,7 @@ export default function ForgotPasswordScreen() {
   }
 
   async function handleReset() {
+    if (code.trim().length !== 6 || !newPassword || loading) return;
     setError(null);
     setLoading(true);
     try {
@@ -84,6 +86,8 @@ export default function ForgotPasswordScreen() {
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
+            returnKeyType="go"
+            onSubmitEditing={handleRequestCode}
           />
 
           {error && <Text style={styles.error}>{error}</Text>}
@@ -91,7 +95,7 @@ export default function ForgotPasswordScreen() {
           <AuthButton
             label="Send code"
             onPress={handleRequestCode}
-            disabled={!email}
+            disabled={!email || loading}
             loading={loading}
           />
         </>
@@ -106,11 +110,14 @@ export default function ForgotPasswordScreen() {
             maxLength={6}
             value={code}
             onChangeText={setCode}
+            onSubmitEditing={handleReset}
           />
           <AuthPasswordInput
             placeholder="New password (min. 8 characters)"
             value={newPassword}
             onChangeText={setNewPassword}
+            returnKeyType="go"
+            onSubmitEditing={handleReset}
           />
 
           {error && <Text style={styles.error}>{error}</Text>}
@@ -118,7 +125,7 @@ export default function ForgotPasswordScreen() {
           <AuthButton
             label="Reset password"
             onPress={handleReset}
-            disabled={code.trim().length !== 6 || !newPassword}
+            disabled={code.trim().length !== 6 || !newPassword || loading}
             loading={loading}
           />
 

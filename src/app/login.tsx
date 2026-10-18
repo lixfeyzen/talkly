@@ -11,7 +11,7 @@ import {
 } from '@/components/auth/auth-layout';
 import { Spacing } from '@/constants/theme';
 import { login } from '@/lib/auth/api';
-import { ApiError, NetworkError } from '@/lib/api/client';
+import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
 
 export default function LoginScreen() {
   const { resetDone } = useLocalSearchParams<{ resetDone?: string }>();
@@ -20,14 +20,20 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const canSubmit = !!email && !!password && !loading;
+
   async function handleSubmit() {
+    if (!canSubmit) return;
     setError(null);
     setLoading(true);
     try {
       await login(email, password);
       router.replace('/');
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
+      const limited = rateLimitMessage(err);
+      if (limited) {
+        setError(limited);
+      } else if (err instanceof ApiError && err.status === 401) {
         setError('Wrong email or password.');
       } else if (err instanceof NetworkError) {
         setError('Can’t reach the server. Try again in a moment.');
@@ -51,8 +57,15 @@ export default function LoginScreen() {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        onSubmitEditing={handleSubmit}
       />
-      <AuthPasswordInput placeholder="Password" value={password} onChangeText={setPassword} />
+      <AuthPasswordInput
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        returnKeyType="go"
+        onSubmitEditing={handleSubmit}
+      />
 
       <Pressable
         onPress={() => router.push('/forgot-password')}

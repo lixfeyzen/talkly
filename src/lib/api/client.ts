@@ -45,6 +45,18 @@ export class NetworkError extends Error {
   }
 }
 
+// 429 dari backend (rate limit) -> pesan yang menyebut kapan boleh coba lagi.
+// null = bukan 429, pemanggil pakai pesan error biasanya.
+export function rateLimitMessage(err: unknown): string | null {
+  if (!(err instanceof ApiError) || err.status !== 429) return null;
+  const sec = (err.body as { retryAfterSec?: unknown } | null)?.retryAfterSec;
+  if (typeof sec !== 'number' || !Number.isFinite(sec) || sec <= 0) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  const wait = sec < 120 ? `${Math.ceil(sec)} seconds` : `${Math.ceil(sec / 60)} minutes`;
+  return `Too many attempts. Try again in ${wait}.`;
+}
+
 export async function apiFetch<T>(
   path: string,
   options: { method?: string; body?: unknown; auth?: boolean; timeoutMs?: number } = {},

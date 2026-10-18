@@ -10,7 +10,7 @@ import {
   AuthPalette,
 } from '@/components/auth/auth-layout';
 import { register } from '@/lib/auth/api';
-import { ApiError, NetworkError } from '@/lib/api/client';
+import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -18,17 +18,29 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const canSubmit = !!email && !!password && !loading;
+
   async function handleSubmit() {
+    if (!canSubmit) return;
+    // Cek lokal dulu (aturan sama dengan backend) supaya salah ketik tidak
+    // makan jatah percobaan register.
+    if (password.length < 8 || !/\S/.test(password)) {
+      setError('Password needs at least 8 characters and can’t be only spaces.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       await register(email, password);
       router.replace('/');
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
+      const limited = rateLimitMessage(err);
+      if (limited) {
+        setError(limited);
+      } else if (err instanceof ApiError && err.status === 409) {
         setError('This email is already registered.');
       } else if (err instanceof ApiError && err.status === 400) {
-        setError('Password needs at least 8 characters and a valid email.');
+        setError('Please enter a valid email and a password of at least 8 characters.');
       } else if (err instanceof NetworkError) {
         setError('Can’t reach the server. Try again in a moment.');
       } else {
@@ -51,11 +63,14 @@ export default function RegisterScreen() {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        onSubmitEditing={handleSubmit}
       />
       <AuthPasswordInput
         placeholder="Password (min. 8 characters)"
         value={password}
         onChangeText={setPassword}
+        returnKeyType="go"
+        onSubmitEditing={handleSubmit}
       />
 
       {error && <Text style={styles.error}>{error}</Text>}

@@ -24,6 +24,9 @@ const HERO_BG = '#101014';
 
 export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
+  // Server tidak terjangkau saat cek login -- beda dari belum login (401):
+  // tawarkan coba lagi, jangan lempar paksa ke /login.
+  const [checkFailed, setCheckFailed] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [dash, setDash] = useState<DashboardData | null>(null);
@@ -55,24 +58,36 @@ export default function HomeScreen() {
     }
   }
 
+  const checkAuth = useCallback(() => {
+    setChecking(true);
+    setCheckFailed(false);
+    fetchCurrentUser()
+      .then((user) => {
+        if (!user) {
+          router.replace('/login');
+          return;
+        }
+        if (!user.nativeLanguage) {
+          router.replace('/onboarding');
+          return;
+        }
+        setEmail(user.email);
+        setUserName(user.name ?? null);
+        setChecking(false);
+      })
+      .catch(() => {
+        // Error jaringan/server, BUKAN 401 -- tidak berarti belum login.
+        setChecking(false);
+        setCheckFailed(true);
+      });
+  }, []);
+
   useEffect(() => {
-    fetchCurrentUser().then((user) => {
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
-      if (!user.nativeLanguage) {
-        router.replace('/onboarding');
-        return;
-      }
-      setEmail(user.email);
-      setUserName(user.name ?? null);
-      setChecking(false);
-    });
+    checkAuth();
     if (notificationsSupported) {
       configureNotificationHandler();
     }
-  }, []);
+  }, [checkAuth]);
 
   const loadHome = useCallback(() => {
       const sequence = ++requestSequence.current;
@@ -108,6 +123,16 @@ export default function HomeScreen() {
       <View style={[styles.root, styles.centered]}>
         <TalklyMark size={64} />
         <ActivityIndicator color="#FFFFFF" />
+      </View>
+    );
+  }
+
+  if (checkFailed) {
+    return (
+      <View style={[styles.root, styles.centered]}>
+        <TalklyMark size={64} />
+        <Text style={styles.checkFailedText}>Can’t reach the server. Try again in a moment.</Text>
+        <PrimaryButton label="Try again" onPress={checkAuth} />
       </View>
     );
   }
@@ -310,6 +335,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: HERO_BG },
   flex: { flex: 1 },
   centered: { justifyContent: 'center', alignItems: 'center', gap: Spacing.three },
+  checkFailedText: { color: '#FFFFFF', fontSize: 14, textAlign: 'center', paddingHorizontal: Spacing.four },
   scrollContent: { flexGrow: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
   hero: {
     backgroundColor: HERO_BG,
