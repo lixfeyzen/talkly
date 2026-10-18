@@ -60,6 +60,12 @@ export async function logout(): Promise<void> {
   await clearToken();
 }
 
+// Hapus akun dan semua datanya (syarat Google Play). Password wajib; salah = 403.
+export async function deleteAccount(password: string): Promise<void> {
+  await apiFetch('/api/auth/me', { method: 'DELETE', auth: true, body: { password } });
+  await clearToken();
+}
+
 export async function setNativeLanguage(nativeLanguage: string): Promise<void> {
   await apiFetch('/api/profile', {
     method: 'POST',

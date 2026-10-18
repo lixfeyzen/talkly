@@ -18,11 +18,12 @@ import { Spacing, MaxContentWidth, Ink, Danger, Success, HairlineBorder, Pastel,
 import {
   fetchCurrentUser,
   logout,
+  deleteAccount,
   setNativeLanguage,
   updateProfile,
   NATIVE_LANGUAGE_OPTIONS,
 } from '@/lib/auth/api';
-import { NetworkError } from '@/lib/api/client';
+import { ApiError, NetworkError, rateLimitMessage } from '@/lib/api/client';
 import {
   notificationsSupported,
   isDailyReminderEnabled,
@@ -51,6 +52,10 @@ export default function SettingsScreen() {
   const [userName, setUserName] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState('');
   const [savingName, setSavingName] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCurrentUser()
@@ -111,6 +116,29 @@ export default function SettingsScreen() {
   async function handleLogout() {
     await logout();
     router.replace('/login');
+  }
+
+  async function handleDeleteAccount() {
+    if (deleting) return;
+    if (!deletePassword) {
+      setDeleteError('Enter your password to confirm.');
+      return;
+    }
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount(deletePassword);
+      router.replace('/welcome');
+    } catch (err) {
+      setDeleteError(
+        rateLimitMessage(err)
+          ?? (err instanceof ApiError && err.status === 403 ? 'That password is not correct.'
+          : err instanceof NetworkError ? "Can't reach Talkly. Check your connection and try again."
+          : "Couldn't delete your account. Please try again."),
+      );
+    } finally {
+      setDeleting(false);
+    }
   }
 
   // Simpan nama panggilan (dipakai sapaan di Home). Kosong = tidak disimpan.
@@ -262,6 +290,50 @@ export default function SettingsScreen() {
             <Text style={styles.signOutText}>Sign out</Text>
           </Pressable>
 
+          {/* Hapus akun (syarat Google Play): tautan kecil, konfirmasi dengan password. */}
+          {!deleteOpen ? (
+            <Pressable
+              onPress={() => setDeleteOpen(true)}
+              accessibilityRole="button"
+              hitSlop={8}
+              style={({ pressed }) => [styles.deleteLink, { opacity: pressed ? 0.6 : 1 }]}>
+              <Text style={styles.deleteLinkText}>Delete account</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.deleteCard}>
+              <Text style={styles.deleteTitle}>Delete your account?</Text>
+              <Text style={styles.deleteBody}>
+                This permanently deletes your account, conversations, interview reports and progress. It can&apos;t be undone.
+              </Text>
+              <TextInput
+                value={deletePassword}
+                onChangeText={(v) => { setDeletePassword(v); if (deleteError) setDeleteError(null); }}
+                placeholder="Your password"
+                placeholderTextColor="#686770"
+                secureTextEntry
+                autoCapitalize="none"
+                accessibilityLabel="Password"
+                onSubmitEditing={handleDeleteAccount}
+                style={styles.deleteInput}
+              />
+              {deleteError && <Text style={styles.error} accessibilityLiveRegion="polite">{deleteError}</Text>}
+              <Pressable
+                onPress={handleDeleteAccount}
+                accessibilityRole="button"
+                disabled={deleting}
+                style={({ pressed }) => [styles.deleteButton, { opacity: pressed || deleting ? 0.8 : 1 }]}>
+                {deleting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.deleteButtonText}>Delete my account</Text>}
+              </Pressable>
+              <Pressable
+                onPress={() => { setDeleteOpen(false); setDeletePassword(''); setDeleteError(null); }}
+                accessibilityRole="button"
+                hitSlop={8}
+                style={({ pressed }) => [styles.deleteLink, { opacity: pressed ? 0.6 : 1 }]}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+            </View>
+          )}
+
           {/* Footer */}
           <Text style={styles.footer}>Talkly v1.0.0</Text>
         </ScrollView>
@@ -372,6 +444,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   signOutText: { fontSize: 15, fontFamily: Font.bold, color: Danger },
+
+  deleteLink: { alignSelf: 'center', paddingVertical: Spacing.two },
+  deleteLinkText: { fontSize: 13.5, fontFamily: Font.semibold, color: '#8B8F98', textDecorationLine: 'underline' },
+  deleteCard: {
+    gap: 10, padding: Spacing.three, borderRadius: Radius.lg, borderWidth: 1,
+    borderColor: '#F4D3CF', backgroundColor: '#FFFFFF',
+  },
+  deleteTitle: { fontSize: 16, fontFamily: Font.bold, color: Ink },
+  deleteBody: { fontSize: 14, lineHeight: 20, fontFamily: Font.regular, color: '#55565E' },
+  deleteInput: {
+    height: 48, borderRadius: Radius.md, borderWidth: 1, borderColor: HairlineBorder,
+    paddingHorizontal: 14, fontSize: 15, fontFamily: Font.regular, color: Ink, backgroundColor: '#FFFFFF',
+  },
+  deleteButton: { height: 48, borderRadius: Radius.md, backgroundColor: Danger, alignItems: 'center', justifyContent: 'center' },
+  deleteButtonText: { fontSize: 15, fontFamily: Font.bold, color: '#FFFFFF' },
+  cancelText: { fontSize: 14, fontFamily: Font.semibold, color: Ink },
 
   footer: { textAlign: 'center', fontSize: 12, color: '#A9ADB4', paddingTop: Spacing.one },
 

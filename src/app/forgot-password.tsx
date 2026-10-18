@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 
@@ -20,6 +20,17 @@ export default function ForgotPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // Server hanya mengirim 1 kode per menit per akun (RESEND_COOLDOWN_MS di
+  // backend/src/lib/auth/password-reset.ts), jadi kirim ulang ditahan 60 detik.
+  const [sentAt, setSentAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const [notice, setNotice] = useState<string | null>(null);
+  const waitSec = sentAt ? Math.max(0, 60 - Math.floor((now - sentAt) / 1000)) : 0;
+  useEffect(() => {
+    if (!sentAt) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [sentAt]);
 
   async function handleRequestCode() {
     if (loading) return;
@@ -31,6 +42,8 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     try {
       await forgotPassword(email);
+      setSentAt(Date.now());
+      setNow(Date.now());
       setStep('reset');
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
@@ -138,14 +151,39 @@ export default function ForgotPasswordScreen() {
             loading={loading}
           />
 
+          {notice && <Text style={styles.notice} accessibilityLiveRegion="polite">{notice}</Text>}
           <Pressable
-            onPress={() => {
-              setStep('email');
+            onPress={async () => {
+              if (waitSec > 0 || loading) return;
               setError(null);
+              setNotice(null);
+              setLoading(true);
+              try {
+                await forgotPassword(email);
+                setSentAt(Date.now());
+                setNow(Date.now());
+                setNotice('We sent a new code. Check your email.');
+              } catch (err) {
+                setError(err instanceof NetworkError ? 'Can’t reach the server. Try again in a moment.' : 'Couldn’t send the code, try again.');
+              } finally {
+                setLoading(false);
+              }
             }}
+            disabled={waitSec > 0}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: waitSec > 0 }}
             hitSlop={Spacing.two}
             style={styles.resendLink}>
-            <Text style={styles.resendText}>Resend code</Text>
+            <Text style={[styles.resendText, waitSec > 0 && styles.resendWait]}>
+              {waitSec > 0 ? `Resend code in 0:${String(waitSec).padStart(2, '0')}` : 'Resend code'}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => { setStep('email'); setError(null); setNotice(null); }}
+            accessibilityRole="button"
+            hitSlop={Spacing.two}
+            style={styles.resendLink}>
+            <Text style={styles.changeEmailText}>Use a different email</Text>
           </Pressable>
         </>
       )}
@@ -157,4 +195,7 @@ const styles = StyleSheet.create({
   error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
   resendLink: { alignSelf: 'center', marginTop: Spacing.two },
   resendText: { color: AuthPalette.textPrimary, fontSize: 14, fontFamily: Font.bold },
+  resendWait: { color: AuthPalette.textSecondary, fontFamily: Font.semibold },
+  changeEmailText: { color: AuthPalette.textSecondary, fontSize: 13.5, fontFamily: Font.semibold },
+  notice: { textAlign: 'center', color: AuthPalette.textSecondary, fontSize: 14, fontFamily: Font.medium, marginTop: Spacing.two },
 });

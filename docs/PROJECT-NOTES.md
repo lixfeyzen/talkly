@@ -5,6 +5,21 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Syarat toko aplikasi + sisa audit — 2026-10-19: LULUS lokal
+Disisir ulang atas pertanyaan Yohanes "anda yakin ga ada yg lain?": 4 dokumen temuan dibaca utuh, kode disisir.
+Ketemu 3 yang belum ada, dua di antaranya wajib Google Play:
+- Hapus akun (wajib: https://support.google.com/googleplay/android-developer/answer/13327111, di app + tautan web).
+  Dibuat: `DELETE /api/auth/me` (wajib password; salah = 403 supaya app tidak mengeluarkan user; semua tabel
+  terhapus lewat ON DELETE CASCADE, ditambah penghitung kuota milik akun), tombol Delete account di Settings,
+  halaman web `backend/src/app/delete-account`. Bukti: `npm run test:account-delete` 8/8 (uji rusak: mematikan
+  pembersihan kuota membuat 1 gagal), uji di web 375x812 (password salah ditolak, benar ke /welcome, login
+  sesudahnya 401), halaman web diuji dengan akun sekali pakai, sesi percakapan akun terhapus 0 (kontrol akun hidup 1).
+- Kebijakan privasi (wajib: https://support.google.com/googleplay/android-developer/answer/10144311).
+  Draf dari isi kode: `docs/kebijakan-privasi-draf-2026-10-19.md`. MENUNGGU email kontak dari Yohanes, lalu
+  dijadikan halaman web dan ditautkan dari app.
+- Kirim ulang kode reset: kini hitung mundur 60 detik sesuai jeda server, lalu kirim ulang langsung di langkah kode.
+- Catatan: Resend menolak (422) pengiriman ke alamat selain email akun Resend sampai domain diverifikasi.
+
 ## Uji ulang seluruh app di cabang design/ungu-final — 2026-10-19: LULUS lokal
 - 17 rangkaian tes backend: awalnya 14 lulus. 3 gagal karena perubahan cabang ini: validasi dan route
   percakapan ikut memuat SDK OpenAI lewat job-post.ts (bagian murni dipindah ke `lib/ai/job-pack.ts`), dan mock
