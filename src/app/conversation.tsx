@@ -18,7 +18,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Chip, MessageBubble, BubbleTextColor, ListenPill, TypingDots, PrimaryButton } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Placeholder, HairlineBorder, Danger, Success } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, Placeholder, HairlineBorder, Danger, Success, Font } from '@/constants/theme';
 import { sendMessage, fetchConversationDetail, criterionStatusLabel, criterionValidationLabel,
   type Mistake, type MistakeCategory, type FrozenTaskSelection, type TransferContext, type CriterionCheck } from '@/lib/conversations/api';
 import { buildInterviewOpener, INTERVIEW_ROLES, fetchReport, type AnswerPracticeContext } from '@/lib/interviews/api';
@@ -694,7 +694,7 @@ function ActiveConversationScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   practiceCard: { padding: 14, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: HairlineBorder, gap: 6 },
-  practiceLabel: { fontSize: 12, fontWeight: '700', color: Ink },
+  practiceLabel: { fontSize: 12, fontFamily: Font.bold, color: Ink },
   practiceText: { fontSize: 14, lineHeight: 20, color: '#60646C' },
   practiceGap: { marginTop: 8 },
   emptyHint: { paddingHorizontal: 24, paddingTop: 40, alignItems: 'center' },
@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: '#8B8F98',
     textAlign: 'center',
-    fontWeight: '500',
+    fontFamily: Font.medium,
     maxWidth: 280,
   },
   chatWrap: { flex: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
@@ -742,11 +742,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 13, paddingVertical: 14 },
-  menuItemText: { fontSize: 16, fontWeight: '600', color: Ink },
+  menuItemText: { fontSize: 16, fontFamily: Font.semibold, color: Ink },
   menuItemSub: { fontSize: 13, color: '#60646C', marginTop: 1 },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerTitle: { fontSize: 15, fontWeight: '700', color: Ink },
-  headerSub: { fontSize: 12, fontWeight: '500', color: '#60646C', marginTop: 1 },
+  headerTitle: { fontSize: 15, fontFamily: Font.bold, color: Ink },
+  headerSub: { fontSize: 12, fontFamily: Font.medium, color: '#60646C', marginTop: 1 },
   scenarioBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
   correctionHead: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 9 },
   correctionLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: '#8B8F98',
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     color: '#8B8F98',
     textDecorationLine: 'line-through',
   },
-  correctionFixed: { flex: 1, fontSize: 13.5, lineHeight: 19, fontWeight: '600', color: Ink },
+  correctionFixed: { flex: 1, fontSize: 13.5, lineHeight: 19, fontFamily: Font.semibold, color: Ink },
   correctionNoteRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -803,13 +803,13 @@ const styles = StyleSheet.create({
     borderTopColor: '#F2F3F5',
   },
   correctionNote: { flex: 1, fontSize: 12.5, lineHeight: 18, color: '#60646C' },
-  error: { color: Danger, fontSize: 14, fontWeight: '500', paddingHorizontal: 18 },
+  error: { color: Danger, fontSize: 14, fontFamily: Font.medium, paddingHorizontal: 18 },
   reportWrap: { paddingHorizontal: 18, paddingVertical: 8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 18, paddingVertical: 8 },
   voiceWrap: { alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingTop: 10, paddingBottom: 14 },
   micBig: { width: 72, height: 72, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  micLabel: { fontSize: 13, fontWeight: '500', color: '#60646C', textAlign: 'center' },
-  typeLink: { fontSize: 13, fontWeight: '600', color: Ink, textDecorationLine: 'underline' },
+  micLabel: { fontSize: 13, fontFamily: Font.medium, color: '#60646C', textAlign: 'center' },
+  typeLink: { fontSize: 13, fontFamily: Font.semibold, color: Ink, textDecorationLine: 'underline' },
   iconTile: {
     width: 44,
     height: 44,

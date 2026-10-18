@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, StatTile, SectionLabel, GhostButton, BottomNav, EmptyState } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius, Success } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, Radius, Success, Font } from '@/constants/theme';
 import { fetchDashboard, categoryLabel, type DashboardData } from '@/lib/dashboard/api';
 import { apiFetch } from '@/lib/api/client';
 import { WEEKLY_CHALLENGE_ENABLED } from '@/lib/features/v1';
@@ -269,11 +269,11 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     padding: Spacing.four,
   },
-  errorText: { color: Ink, fontSize: 15, fontWeight: '500', textAlign: 'center', lineHeight: 21 },
+  errorText: { color: Ink, fontSize: 15, fontFamily: Font.medium, textAlign: 'center', lineHeight: 21 },
   safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
   navSafe: { backgroundColor: '#FFFFFF' },
   content: { paddingHorizontal: Spacing.four, paddingTop: Spacing.two, paddingBottom: Spacing.four, gap: 10 },
-  title: { fontSize: 23, lineHeight: 28, fontWeight: '800', letterSpacing: -0.6, color: Ink },
+  title: { fontSize: 23, lineHeight: 28, fontFamily: Font.extrabold, letterSpacing: -0.6, color: Ink },
 
   flex1: { flex: 1 },
 
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   statRow: { flexDirection: 'row', gap: 10 },
 
   // Label mini di dalam kartu (11px, dari mockup)
-  miniLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
+  miniLabel: { fontSize: 11, fontFamily: Font.bold, letterSpacing: 0.5, textTransform: 'uppercase' },
   mutedLabel: { color: MUTED },
   lilacLabel: { color: LILAC_MUTED },
 
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoValue: { fontSize: 14.5, fontWeight: '600', color: Ink, marginTop: 2 },
+  infoValue: { fontSize: 14.5, fontFamily: Font.semibold, color: Ink, marginTop: 2 },
 
   // Latest readiness (kartu lilac datar, skor + verdict sebaris, chevron bulat)
   readinessCard: {
@@ -314,13 +314,13 @@ const styles = StyleSheet.create({
   readinessScore: {
     fontSize: 30,
     lineHeight: 30,
-    fontWeight: '800',
+    fontFamily: Font.extrabold,
     letterSpacing: -1,
     color: LILAC_DEEP,
     fontVariant: ['tabular-nums'],
   },
-  readinessOutOf: { fontSize: 14, fontWeight: '600', color: LILAC_MUTED },
-  readinessVerdict: { flexShrink: 1, fontSize: 15, fontWeight: '700', color: LILAC_DEEP, marginLeft: 4 },
+  readinessOutOf: { fontSize: 14, fontFamily: Font.semibold, color: LILAC_MUTED },
+  readinessVerdict: { flexShrink: 1, fontSize: 15, fontFamily: Font.bold, color: LILAC_DEEP, marginLeft: 4 },
   readinessChevron: {
     width: 30,
     height: 30,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  trajectoryTitle: { fontSize: 15, fontWeight: '700', color: Pastel.creamInk },
+  trajectoryTitle: { fontSize: 15, fontFamily: Font.bold, color: Pastel.creamInk },
   trajectorySub: { fontSize: 13, color: CREAM_MUTED, marginTop: 1 },
 
   // Weekly challenges card
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  challengeTitle: { fontSize: 15, fontWeight: '700', color: Pastel.iceInk },
+  challengeTitle: { fontSize: 15, fontFamily: Font.bold, color: Pastel.iceInk },
   challengeSub: { fontSize: 13, color: CREAM_MUTED, marginTop: 1 },
   challengeHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   challengeHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 13, flex: 1 },
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     backgroundColor: Pastel.iceInk,
     borderRadius: 3,
   },
-  challengeThisWeek: { fontSize: 13, fontWeight: '600', color: Pastel.iceInk, marginTop: 8 },
+  challengeThisWeek: { fontSize: 13, fontFamily: Font.semibold, color: Pastel.iceInk, marginTop: 8 },
 
   // Seksi daftar (label + baris, gap 9 spt mockup)
   section: { gap: 9 },
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 15,
   },
-  weaknessTitle: { flex: 1, fontSize: 14.5, fontWeight: '600', color: Ink },
+  weaknessTitle: { flex: 1, fontSize: 14.5, fontFamily: Font.semibold, color: Ink },
   weaknessBadge: {
     minWidth: 26,
     alignItems: 'center',
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     backgroundColor: '#F2F3F5',
   },
-  weaknessBadgeText: { fontSize: 13, fontWeight: '700', color: '#60646C', fontVariant: ['tabular-nums'] },
+  weaknessBadgeText: { fontSize: 13, fontFamily: Font.bold, color: '#60646C', fontVariant: ['tabular-nums'] },
 
   // Recent corrections row (sebaris: coret -> panah -> hijau)
   correctionRow: {
@@ -438,5 +438,5 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     textDecorationColor: 'rgba(217,45,32,0.5)',
   },
-  correctionFixed: { flexShrink: 1, fontSize: 13, fontWeight: '600', color: Success },
+  correctionFixed: { flexShrink: 1, fontSize: 13, fontFamily: Font.semibold, color: Success },
 });

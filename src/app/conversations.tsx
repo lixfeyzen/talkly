@@ -14,7 +14,7 @@ import {
   PrimaryButton,
   SectionLabel,
 } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, HairlineBorder, Pastel } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, HairlineBorder, Pastel, Font } from '@/constants/theme';
 import {
   fetchConversationHistory,
   fetchConversationDetail,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     borderColor: HairlineBorder,
   },
   navSpacer: { width: 38, height: 38 },
-  navTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700', color: Ink },
+  navTitle: { flex: 1, textAlign: 'center', fontSize: 16, fontFamily: Font.bold, color: Ink },
 
   listContent: { padding: Spacing.four, paddingTop: 6, gap: 8, flexGrow: 1 },
   sectionLabel: { paddingLeft: 2, marginBottom: 2 },
@@ -288,14 +288,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowBody: { flex: 1, minWidth: 0 },
-  rowTitle: { fontSize: 15, fontWeight: '700', color: Ink },
-  rowSub: { fontSize: 12.5, fontWeight: '500', color: '#8B8F98', marginTop: 2 },
+  rowTitle: { fontSize: 15, fontFamily: Font.bold, color: Ink },
+  rowSub: { fontSize: 12.5, fontFamily: Font.medium, color: '#8B8F98', marginTop: 2 },
   newCta: { marginTop: 10 },
 
   detailContent: { padding: Spacing.four, paddingTop: 4, gap: 10, flexGrow: 1 },
   detailMeta: {
     fontSize: 12.5,
-    fontWeight: '600',
+    fontFamily: Font.semibold,
     color: '#8B8F98',
     textAlign: 'center',
     marginBottom: 4,

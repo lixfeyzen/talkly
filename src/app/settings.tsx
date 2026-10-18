@@ -14,16 +14,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, Chip, SectionLabel, Toggle, BottomNav } from '@/components/ui';
-import {
-  Spacing,
-  MaxContentWidth,
-  Ink,
-  Danger,
-  Success,
-  HairlineBorder,
-  Pastel,
-  Radius,
-} from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, Danger, Success, HairlineBorder, Pastel, Radius, Font } from '@/constants/theme';
 import {
   fetchCurrentUser,
   logout,
@@ -298,7 +289,7 @@ const CARD_SHADOW = {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' },
   scrollContent: { flexGrow: 1, padding: Spacing.four, paddingBottom: Spacing.five, gap: 20 },
-  title: { fontSize: 23, lineHeight: 28, fontWeight: '800', letterSpacing: -0.6, color: Ink },
+  title: { fontSize: 23, lineHeight: 28, fontFamily: Font.extrabold, letterSpacing: -0.6, color: Ink },
 
   profileCard: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 15 },
   avatar: {
@@ -309,10 +300,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: Pastel.lilacInk, fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
+  avatarText: { color: Pastel.lilacInk, fontSize: 18, fontFamily: Font.extrabold, letterSpacing: 0.3 },
   profileText: { flex: 1, gap: 2 },
-  profileName: { fontSize: 16, fontWeight: '700', color: Ink, textTransform: 'capitalize' },
-  profileEmail: { fontSize: 13, fontWeight: '500', color: '#60646C' },
+  profileName: { fontSize: 16, fontFamily: Font.bold, color: Ink, textTransform: 'capitalize' },
+  profileEmail: { fontSize: 13, fontFamily: Font.medium, color: '#60646C' },
 
   section: { gap: 10 },
   sectionLabel: { paddingLeft: 2 },
@@ -338,8 +329,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rowTitle: { fontSize: 15, fontWeight: '600', color: Ink },
-  rowValue: { fontSize: 14, fontWeight: '600', color: '#60646C' },
+  rowTitle: { fontSize: 15, fontFamily: Font.semibold, color: Ink },
+  rowValue: { fontSize: 14, fontFamily: Font.semibold, color: '#60646C' },
   nameInput: {
     flex: 1,
     minWidth: 0,
@@ -350,7 +341,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFB',
     paddingHorizontal: 12,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Font.semibold,
     color: Ink,
     textAlign: 'right',
   },
@@ -360,14 +351,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: Ink,
   },
-  nameSaveText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  nameSaveText: { color: '#FFFFFF', fontSize: 13, fontFamily: Font.bold },
   rowSub: { fontSize: 12.5, color: '#8B8F98', marginTop: 1 },
   divider: { height: 1, backgroundColor: '#F2F3F5', marginHorizontal: 15 },
 
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   savingSpinner: { alignSelf: 'flex-start' },
-  ok: { fontSize: 14, fontWeight: '600', color: Success },
-  error: { fontSize: 14, fontWeight: '600', color: Danger },
+  ok: { fontSize: 14, fontFamily: Font.semibold, color: Success },
+  error: { fontSize: 14, fontFamily: Font.semibold, color: Danger },
 
   signOutRow: {
     flexDirection: 'row',
@@ -380,7 +371,7 @@ const styles = StyleSheet.create({
     borderColor: '#F4D3CF',
     backgroundColor: '#FFFFFF',
   },
-  signOutText: { fontSize: 15, fontWeight: '700', color: Danger },
+  signOutText: { fontSize: 15, fontFamily: Font.bold, color: Danger },
 
   footer: { textAlign: 'center', fontSize: 12, color: '#A9ADB4', paddingTop: Spacing.one },
 

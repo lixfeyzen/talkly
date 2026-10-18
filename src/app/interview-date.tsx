@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Chip, PrimaryButton, SectionLabel, Placeholder } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, HairlineBorder, Danger, Radius } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, HairlineBorder, Danger, Radius, Font } from '@/constants/theme';
 import { INTERVIEW_ROLES, type InterviewRole } from '@/lib/interviews/api';
 import { setInterviewPlan } from '@/lib/interview-plan/api';
 import { ApiError } from '@/lib/api/client';
@@ -43,7 +43,13 @@ export default function InterviewDateScreen() {
   const canSave = role !== null && isFormatValid && !isPast;
 
   async function handleSave() {
-    if (!canSave || saving) return;
+    if (saving) return;
+    // Tombol selalu aktif (desain final): sebutkan apa yang kurang.
+    if (!canSave) {
+      if (role === null) setError('Pick a role first.');
+      else if (!isPast) setError('Pick when your interview is, or type a date as YYYY-MM-DD.');
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -160,7 +166,6 @@ export default function InterviewDateScreen() {
           <PrimaryButton
             label="Start my countdown"
             onPress={handleSave}
-            disabled={!canSave}
             loading={saving}
             style={styles.saveButton}
           />
@@ -196,12 +201,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navTitle: { flex: 1, textAlign: 'center', fontSize: 15, fontWeight: '700', color: Ink },
+  navTitle: { flex: 1, textAlign: 'center', fontSize: 15, fontFamily: Font.bold, color: Ink },
   navSpacer: { width: 38, height: 38 },
   title: {
     fontSize: 26,
     lineHeight: 29,
-    fontWeight: '800',
+    fontFamily: Font.extrabold,
     letterSpacing: -0.7,
     color: Ink,
     marginTop: Spacing.three,
@@ -210,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: '#60646C',
-    fontWeight: '500',
+    fontFamily: Font.medium,
     marginTop: Spacing.two,
   },
   sectionLabel: { marginTop: Spacing.four, marginBottom: Spacing.two },
@@ -227,8 +232,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   whenCardSelected: { backgroundColor: Ink, borderColor: Ink },
-  whenText: { fontSize: 14, fontWeight: '600', color: Ink },
-  whenTextSelected: { color: '#FFFFFF', fontWeight: '700' },
+  whenText: { fontSize: 14, fontFamily: Font.semibold, color: Ink },
+  whenTextSelected: { color: '#FFFFFF', fontFamily: Font.bold },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,7 +247,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: Font.semibold,
     color: Ink,
     fontVariant: ['tabular-nums'],
     padding: 0,
@@ -254,6 +259,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     paddingLeft: 2,
   },
-  alertText: { fontSize: 13, fontWeight: '600', color: Danger },
+  alertText: { fontSize: 13, fontFamily: Font.semibold, color: Danger },
   saveButton: { marginTop: Spacing.four },
 });

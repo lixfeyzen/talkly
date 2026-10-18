@@ -14,7 +14,7 @@ import { Feather } from '@expo/vector-icons';
 import { apiFetch, ApiError } from '@/lib/api/client';
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, GhostButton, PrimaryButton, EmptyState } from '@/components/ui';
-import { Spacing, Ink, Pastel, HairlineBorder, Radius, Success } from '@/constants/theme';
+import { Spacing, Ink, Pastel, HairlineBorder, Radius, Success, Font } from '@/constants/theme';
 import { WEEKLY_CHALLENGE_ENABLED } from '@/lib/features/v1';
 
 // Warna sekunder (tidak ada di theme, pakai langsung).
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     color: Ink,
     marginBottom: Spacing.half,
   },
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     color: Ink,
   },
   summaryLabel: {
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   },
   weekNumber: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Font.semibold,
     color: Ink,
   },
   weekNumberLocked: {
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     color: Success,
   },
   challengeScenario: {

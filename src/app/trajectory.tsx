@@ -7,14 +7,7 @@ import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg
 
 import { GradientBackground } from '@/components/gradient-background';
 import { Card, EmptyState, SectionLabel, PrimaryButton } from '@/components/ui';
-import {
-  Spacing,
-  MaxContentWidth,
-  Ink,
-  HairlineBorder,
-  Placeholder,
-  Pastel,
-} from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, HairlineBorder, Placeholder, Pastel, Font } from '@/constants/theme';
 import { fetchTrajectory, type Trajectory } from '@/lib/trajectory/api';
 import { categoryLabel } from '@/lib/dashboard/api';
 
@@ -202,12 +195,12 @@ export default function TrajectoryScreen() {
 
 const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: Spacing.three, padding: Spacing.four },
-  errorText: { fontSize: 15, lineHeight: 21, color: '#60646C', fontWeight: '500', textAlign: 'center' },
+  errorText: { fontSize: 15, lineHeight: 21, color: '#60646C', fontFamily: Font.medium, textAlign: 'center' },
   safeArea: { flex: 1, alignSelf: 'center', width: '100%', maxWidth: MaxContentWidth },
   content: { padding: Spacing.four, paddingBottom: Spacing.five, gap: Spacing.three },
   backLink: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
-  title: { fontSize: 30, lineHeight: 37, fontWeight: '800', color: Ink, marginTop: Spacing.one },
+  backText: { color: Ink, fontSize: 15, fontFamily: Font.semibold },
+  title: { fontSize: 30, lineHeight: 37, fontFamily: Font.extrabold, color: Ink, marginTop: Spacing.one },
 
   // Insight card (cream) — "The trend"
   insightCard: {
@@ -228,21 +221,21 @@ const styles = StyleSheet.create({
   insightBody: { flex: 1 },
   insightLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     color: '#7A6B3A',
   },
-  insightText: { fontSize: 15, lineHeight: 21, fontWeight: '700', color: Pastel.creamInk, marginTop: 5 },
+  insightText: { fontSize: 15, lineHeight: 21, fontFamily: Font.bold, color: Pastel.creamInk, marginTop: 5 },
 
   sectionLabel: { marginTop: Spacing.two, paddingLeft: 2 },
 
   chartCard: { gap: 10 },
   chartFooter: { flexDirection: 'row', justifyContent: 'space-between' },
-  axisDate: { fontSize: 11, fontWeight: '500', color: Placeholder, fontVariant: ['tabular-nums'] },
-  axisDateLast: { color: Ink, fontWeight: '700' },
+  axisDate: { fontSize: 11, fontFamily: Font.medium, color: Placeholder, fontVariant: ['tabular-nums'] },
+  axisDateLast: { color: Ink, fontFamily: Font.bold },
 
-  emptyText: { fontSize: 14, lineHeight: 20, color: '#60646C', fontWeight: '500' },
+  emptyText: { fontSize: 14, lineHeight: 20, color: '#60646C', fontFamily: Font.medium },
 
   trendsHeader: {
     flexDirection: 'row',
@@ -251,7 +244,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     paddingLeft: 2,
   },
-  trendsCaption: { fontSize: 12, fontWeight: '500', color: '#8B8F98' },
+  trendsCaption: { fontSize: 12, fontFamily: Font.medium, color: '#8B8F98' },
 
   trendList: { gap: Spacing.two },
   trendRow: {
@@ -266,7 +259,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 9,
   },
-  trendLabel: { flex: 1, fontSize: 14.5, fontWeight: '600', color: Ink },
+  trendLabel: { flex: 1, fontSize: 14.5, fontFamily: Font.semibold, color: Ink },
   trendChange: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  trendChangeText: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  trendChangeText: { fontSize: 13, fontFamily: Font.bold, fontVariant: ['tabular-nums'] },
 });

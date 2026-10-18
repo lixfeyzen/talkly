@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { PrimaryButton, SectionLabel } from '@/components/ui';
-import { Ink, Pastel, HairlineBorder, HeroBg, MaxContentWidth } from '@/constants/theme';
+import { Ink, Pastel, HairlineBorder, HeroBg, MaxContentWidth, Font } from '@/constants/theme';
 import { INTERVIEW_ROLES } from '@/lib/interviews/api';
 
 type FeatherName = ComponentProps<typeof Feather>['name'];
@@ -40,6 +40,7 @@ export default function InterviewStartScreen() {
   const requestedRole = typeof params.role === 'string'
     ? INTERVIEW_ROLES.find(role => role === params.role) ?? null : null;
   const [role, setRole] = useState<string | null>(requestedRole);
+  const [needRole, setNeedRole] = useState(false);
   const manuallySelected = useRef(false);
   useEffect(() => {
     if (!manuallySelected.current) setRole(requestedRole);
@@ -136,14 +137,22 @@ export default function InterviewStartScreen() {
         />
         <SafeAreaView edges={['bottom']}>
           <View style={styles.footerInner}>
+            {needRole && !role && (
+              <Text style={styles.needRole} accessibilityLiveRegion="polite">
+                Pick a role to start.
+              </Text>
+            )}
             <PrimaryButton
               label="Start interview"
               icon="arrow-right"
-              disabled={!role}
-              onPress={() =>
-                role &&
-                router.push({ pathname: '/conversation', params: { mode: 'interview', role } })
-              }
+              onPress={() => {
+                // Tombol selalu aktif (desain final): kalau role belum dipilih, bilang.
+                if (!role) {
+                  setNeedRole(true);
+                  return;
+                }
+                router.push({ pathname: '/conversation', params: { mode: 'interview', role } });
+              }}
             />
           </View>
         </SafeAreaView>
@@ -196,7 +205,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 0 },
   },
-  breatheText: { fontSize: 13, fontWeight: '700', color: Pastel.mintInk },
+  breatheText: { fontSize: 13, fontFamily: Font.bold, color: Pastel.mintInk },
   backRow: { paddingHorizontal: 20, paddingTop: 8, zIndex: 2 },
   backBtn: {
     width: 38,
@@ -210,10 +219,10 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.85 },
   heroText: { paddingHorizontal: 24, paddingTop: 18, zIndex: 2 },
-  title: { fontSize: 27, lineHeight: 31, fontWeight: '800', letterSpacing: -0.7, color: '#FFFFFF' },
+  title: { fontSize: 27, lineHeight: 31, fontFamily: Font.extrabold, letterSpacing: -0.7, color: '#FFFFFF' },
   subtitle: {
     fontSize: 15,
-    fontWeight: '400',
+    fontFamily: Font.regular,
     color: 'rgba(255,255,255,0.68)',
     marginTop: 9,
     maxWidth: 260,
@@ -243,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  howText: { flex: 1, fontSize: 14.5, fontWeight: '500', color: Ink },
+  howText: { flex: 1, fontSize: 14.5, fontFamily: Font.medium, color: Ink },
 
   rolesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
   roleCard: {
@@ -260,10 +269,11 @@ const styles = StyleSheet.create({
   roleCardIdle: { backgroundColor: '#FFFFFF', borderColor: HairlineBorder },
   roleCardSelected: { backgroundColor: Pastel.lilac, borderColor: Pastel.lilac },
   roleText: { flexShrink: 1, fontSize: 13.5, lineHeight: 16 },
-  roleTextIdle: { color: Ink, fontWeight: '500' },
-  roleTextSelected: { color: ROLE_SELECTED_TEXT, fontWeight: '700' },
+  roleTextIdle: { color: Ink, fontFamily: Font.medium },
+  roleTextSelected: { color: ROLE_SELECTED_TEXT, fontFamily: Font.bold },
 
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  needRole: { textAlign: 'center', color: '#D92D20', fontSize: 14, fontFamily: Font.medium, marginBottom: 10 },
   footerInner: {
     paddingHorizontal: 24,
     paddingTop: 20,

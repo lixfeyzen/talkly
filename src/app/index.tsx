@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { TalklyMark } from '@/components/talkly-mark';
 import { Chip, ListRow, SectionLabel, BottomNav, HeroCard, PrimaryButton, GhostButton } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Pastel } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, Pastel, Font, HeroBg } from '@/constants/theme';
 import { fetchCurrentUser } from '@/lib/auth/api';
 import { fetchDashboard, type DashboardData } from '@/lib/dashboard/api';
 import { fetchSuggestedScenario, type SuggestedScenario } from '@/lib/conversations/api';
@@ -20,7 +20,7 @@ const LILAC_DEEP = '#2A1D45';
 const LILAC_MUTED = '#6E5C93';
 const LILAC_TODAY = '#8877A8';
 const LILAC_ICON = '#3E2C63';
-const HERO_BG = '#101014';
+const HERO_BG = HeroBg;
 
 export default function HomeScreen() {
   const [checking, setChecking] = useState(true);
@@ -58,28 +58,30 @@ export default function HomeScreen() {
     }
   }
 
-  const checkAuth = useCallback(() => {
-    setChecking(true);
-    setCheckFailed(false);
-    fetchCurrentUser()
+  // Cek sesi. Dipanggil saat layar dibuka (state awal sudah "checking") dan
+  // dari tombol Try again lewat retryAuth, yang lebih dulu mereset tampilan.
+  const checkAuth = useCallback((): Promise<boolean> => {
+    return fetchCurrentUser()
       .then((user) => {
         if (!user) {
           // Orang yang belum masuk melihat layar pembuka dulu, bukan langsung login.
           router.replace('/welcome');
-          return;
+          return false;
         }
         if (!user.nativeLanguage) {
           router.replace('/onboarding');
-          return;
+          return false;
         }
         setEmail(user.email);
         setUserName(user.name ?? null);
         setChecking(false);
+        return true;
       })
       .catch(() => {
         // Error jaringan/server, BUKAN 401 -- tidak berarti belum login.
         setChecking(false);
         setCheckFailed(true);
+        return false;
       });
   }, []);
 
@@ -112,6 +114,16 @@ export default function HomeScreen() {
         .then(value => { if (sequence === requestSequence.current) setPlan(value); })
         .catch(() => { if (sequence === requestSequence.current) { setPlan(null); setPlanFailed(true); } });
   }, []);
+  // Try again: sesudah sesi terbukti valid, muat ulang juga data Home yang
+  // tadi gagal dimuat saat server belum terjangkau.
+  const retryAuth = useCallback(() => {
+    setChecking(true);
+    setCheckFailed(false);
+    checkAuth().then((ok) => {
+      if (ok) loadHome();
+    });
+  }, [checkAuth, loadHome]);
+
   useFocusEffect(
     useCallback(() => {
       loadHome();
@@ -133,7 +145,7 @@ export default function HomeScreen() {
       <View style={[styles.root, styles.centered]}>
         <TalklyMark size={64} />
         <Text style={styles.checkFailedText}>Can’t reach the server. Try again in a moment.</Text>
-        <PrimaryButton label="Try again" onPress={checkAuth} />
+        <PrimaryButton label="Try again" onPress={retryAuth} />
       </View>
     );
   }
@@ -161,7 +173,7 @@ export default function HomeScreen() {
             <View style={styles.header}>
               <View style={styles.lockup}>
                 <TalklyMark size={22} variant="white" />
-                <Text style={styles.wordmark}>Talkly</Text>
+                <Text style={styles.wordmark}>talkly</Text>
               </View>
               <Pressable
                 onPress={() => router.push('/settings')}
@@ -372,7 +384,7 @@ const styles = StyleSheet.create({
     backgroundColor: Pastel.lilac,
     transform: [{ rotate: '-5deg' }],
   },
-  bubbleYouGotThisText: { fontSize: 13, fontWeight: '700', color: Pastel.lilacInk },
+  bubbleYouGotThisText: { fontSize: 13, fontFamily: Font.bold, color: Pastel.lilacInk },
   dot: { position: 'absolute', zIndex: 3, width: 12, height: 12, borderRadius: 999 },
   header: {
     flexDirection: 'row',
@@ -384,7 +396,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   lockup: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  wordmark: { fontSize: 18, fontWeight: '800', letterSpacing: -0.5, color: '#FFFFFF' },
+  wordmark: { fontSize: 18, fontFamily: Font.extrabold, letterSpacing: -0.5, color: '#FFFFFF' },
   avatar: {
     width: 40,
     height: 40,
@@ -395,9 +407,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  avatarText: { color: '#FFFFFF', fontSize: 14, fontFamily: Font.bold },
   greeting: { paddingHorizontal: Spacing.four, paddingTop: 6, zIndex: 2 },
-  greetingTitle: { fontSize: 25, lineHeight: 29, fontWeight: '800', letterSpacing: -0.6, color: '#FFFFFF' },
+  greetingTitle: { fontSize: 25, lineHeight: 29, fontFamily: Font.extrabold, letterSpacing: -0.6, color: '#FFFFFF' },
   greetingCaption: { fontSize: 15, color: 'rgba(255,255,255,0.68)', marginTop: 8 },
   sheet: {
     flexGrow: 1,
@@ -412,7 +424,7 @@ const styles = StyleSheet.create({
   },
   countdown: { borderRadius: 24, paddingVertical: 13, paddingHorizontal: 18 },
   cdTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cdLabel: { fontSize: 12, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase', color: LILAC_MUTED },
+  cdLabel: { fontSize: 12, fontFamily: Font.bold, letterSpacing: 0.6, textTransform: 'uppercase', color: LILAC_MUTED },
   cdIconTile: {
     width: 32,
     height: 32,
@@ -422,9 +434,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cdNumRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 5 },
-  cdNum: { fontSize: 34, lineHeight: 34, fontWeight: '800', letterSpacing: -1, color: LILAC_DEEP, fontVariant: ['tabular-nums'] },
-  cdUnit: { fontSize: 15, fontWeight: '500', color: LILAC_MUTED },
-  cdRole: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3, color: LILAC_DEEP, marginTop: 2 },
+  cdNum: { fontSize: 34, lineHeight: 34, fontFamily: Font.extrabold, letterSpacing: -1, color: LILAC_DEEP, fontVariant: ['tabular-nums'] },
+  cdUnit: { fontSize: 15, fontFamily: Font.medium, color: LILAC_MUTED },
+  cdRole: { fontSize: 18, fontFamily: Font.bold, letterSpacing: -0.3, color: LILAC_DEEP, marginTop: 2 },
   cdDivider: { height: 1, backgroundColor: 'rgba(62,44,99,0.14)', marginVertical: 8 },
   cdTodayRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   cdCheck: {
@@ -436,8 +448,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  cdTodayLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', color: LILAC_TODAY },
-  cdTask: { fontSize: 14, fontWeight: '600', color: LILAC_DEEP, lineHeight: 19 },
+  cdTodayLabel: { fontSize: 11, fontFamily: Font.bold, letterSpacing: 0.5, textTransform: 'uppercase', color: LILAC_TODAY },
+  cdTask: { fontSize: 14, fontFamily: Font.semibold, color: LILAC_DEEP, lineHeight: 19 },
   planPrompt: {
     borderRadius: 20,
     borderWidth: 1,
@@ -446,8 +458,8 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
-  planPromptTitle: { fontSize: 16, fontWeight: '700', color: Ink },
-  planPromptSub: { fontSize: 14, lineHeight: 20, color: '#60646C', fontWeight: '500' },
+  planPromptTitle: { fontSize: 16, fontFamily: Font.bold, color: Ink },
+  planPromptSub: { fontSize: 14, lineHeight: 20, color: '#60646C', fontFamily: Font.medium },
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   workspace: { gap: 6, marginTop: 1 },
   wsLabel: { paddingLeft: 2, marginBottom: 2 },

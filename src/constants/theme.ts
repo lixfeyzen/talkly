@@ -17,15 +17,16 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// Aksi = HITAM (satu CTA per layar). Tak ada lagi aksen ungu. AccentColor
-// dipetakan ke tinta hitam supaya tombol/highlight lama otomatis jadi hitam.
-export const AccentColor = '#111114';
+// Aksi = UNGU merek (desain final 2026-10-18; sebelumnya hitam). AccentColor
+// dipakai komponen lama, jadi ikut berubah tanpa menyentuh tiap pemanggil.
+export const AccentColor = '#5B3FD9';
 export const AccentColorOn = '#FFFFFF';
 export const Ink = '#111114';
 
-// Hero band near-black (dipakai di momen kunci: header tebal / skor readiness),
-// senada heroBg auth.
-export const HeroBg = '#101014';
+// Hero band (momen kunci: header tebal / skor readiness).
+// Desain final ungu (2026-10-18): band hero = ungu tua merek, bukan hitam.
+// Teks putih di atasnya ~7,9:1.
+export const HeroBg = '#4C2BC4';
 export const HeroText = '#FFFFFF';
 
 // Placeholder input (samakan dengan AuthPalette.placeholder). #686770 di atas
@@ -83,9 +84,9 @@ export const Pastel = {
   mintInk: '#1F4433',
 } as const;
 
-// Kanvas terang: linear halus near-putih (pengganti radial mockup; RN linear
-// tak radial). Kartu putih di atasnya menonjol lewat hairline + shadow lembut.
-export const BrandGradient = ['#FBFBFC', '#F4F5F7'] as const;
+// Kanvas terang kertas hangat dengan sedikit rona ungu (desain final). Kartu
+// putih di atasnya menonjol lewat hairline + shadow lembut.
+export const BrandGradient = ['#FBFAF8', '#F5F3F8'] as const;
 
 // Skala radius konsisten (dari mockup: 32 / 20 / 16 / 999).
 export const Radius = { sm: 12, md: 16, lg: 20, xl: 24, sheet: 32, pill: 999 } as const;

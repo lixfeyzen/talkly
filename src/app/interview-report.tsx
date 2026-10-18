@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 
 import { GradientBackground } from '@/components/gradient-background';
 import { PrimaryButton, SectionLabel } from '@/components/ui';
-import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, HeroBg } from '@/constants/theme';
+import { Spacing, MaxContentWidth, Ink, Pastel, HairlineBorder, HeroBg, Font } from '@/constants/theme';
 import { generateReport, type InterviewReportResponse } from '@/lib/interviews/api';
 import { fetchSuggestedScenario } from '@/lib/conversations/api';
 import { ApiError, NetworkError } from '@/lib/api/client';
@@ -340,10 +340,10 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     padding: Spacing.four,
   },
-  centerText: { color: '#60646C', fontSize: 14, fontWeight: '500', textAlign: 'center' },
-  errorText: { color: '#60646C', fontSize: 15, fontWeight: '500', textAlign: 'center' },
+  centerText: { color: '#60646C', fontSize: 14, fontFamily: Font.medium, textAlign: 'center' },
+  errorText: { color: '#60646C', fontSize: 15, fontFamily: Font.medium, textAlign: 'center' },
   backLink: { flexDirection: 'row', alignItems: 'center', gap: 2, marginBottom: Spacing.two },
-  backText: { color: Ink, fontSize: 15, fontWeight: '600' },
+  backText: { color: Ink, fontSize: 15, fontFamily: Font.semibold },
 
   // Shell (dark root + sheet putih, senada Home)
   root: { flex: 1, backgroundColor: HeroBg },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     backgroundColor: Pastel.mint,
     transform: [{ rotate: '5deg' }],
   },
-  heroBubbleText: { fontSize: 13, fontWeight: '700', color: Pastel.mintInk },
+  heroBubbleText: { fontSize: 13, fontFamily: Font.bold, color: Pastel.mintInk },
   nav: {
     height: 46,
     flexDirection: 'row',
@@ -392,11 +392,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.16)',
   },
   navSpacer: { width: 38, height: 38 },
-  navTitle: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  navTitle: { fontSize: 14, fontFamily: Font.semibold, color: 'rgba(255,255,255,0.7)' },
   scoreBlock: { paddingHorizontal: 24, paddingTop: 12, zIndex: 2 },
   scoreLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: 'rgba(255,255,255,0.55)',
@@ -405,14 +405,14 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 52,
     lineHeight: 52,
-    fontWeight: '800',
+    fontFamily: Font.extrabold,
     letterSpacing: -2,
     color: '#FFFFFF',
     fontVariant: ['tabular-nums'],
   },
-  scoreOutOf: { fontSize: 22, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  scoreOutOf: { fontSize: 22, fontFamily: Font.semibold, color: 'rgba(255,255,255,0.5)' },
   verdictRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' },
-  verdictWord: { fontSize: 19, fontWeight: '700', color: '#FFFFFF' },
+  verdictWord: { fontSize: 19, fontFamily: Font.bold, color: '#FFFFFF' },
   verdictDot: { width: 6, height: 6, borderRadius: 999, backgroundColor: '#CDEEDB' },
   verdictDelta: { fontSize: 14, color: 'rgba(255,255,255,0.6)' },
   heroTrack: {
@@ -454,8 +454,8 @@ const styles = StyleSheet.create({
     borderColor: HairlineBorder,
   },
   dimHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  dimLabel: { flexShrink: 1, marginRight: 6, fontSize: 13.5, fontWeight: '700', color: '#111114' },
-  dimScore: { fontSize: 15, fontWeight: '800', color: '#111114', fontVariant: ['tabular-nums'] },
+  dimLabel: { flexShrink: 1, marginRight: 6, fontSize: 13.5, fontFamily: Font.bold, color: '#111114' },
+  dimScore: { fontSize: 15, fontFamily: Font.extrabold, color: '#111114', fontVariant: ['tabular-nums'] },
   dimTrack: {
     height: 5,
     borderRadius: 999,
@@ -489,11 +489,11 @@ const styles = StyleSheet.create({
   highlightHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
   highlightKicker: {
     fontSize: 10.5,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
-  highlightQ: { fontSize: 14, fontWeight: '700', lineHeight: 18, marginBottom: 4 },
+  highlightQ: { fontSize: 14, fontFamily: Font.bold, lineHeight: 18, marginBottom: 4 },
   highlightWhy: { fontSize: 12.5, lineHeight: 18 },
 
   // Top fixes
@@ -506,15 +506,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fixNumText: { fontSize: 12, fontWeight: '700', color: Ink, fontVariant: ['tabular-nums'] },
+  fixNumText: { fontSize: 12, fontFamily: Font.bold, color: Ink, fontVariant: ['tabular-nums'] },
   fixText: { flex: 1, fontSize: 14, lineHeight: 20, color: Ink },
 
   // Answer upgrade
   upgradeCard: { padding: 15, borderRadius: 20, backgroundColor: '#F2F3F5' },
-  upgradeQuestion: { fontSize: 14, fontWeight: '700', color: Ink, marginBottom: 12 },
+  upgradeQuestion: { fontSize: 14, fontFamily: Font.bold, color: Ink, marginBottom: 12 },
   upgradeYourLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: '#8B8F98',
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   upgradeStrongerLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     color: Ink,
@@ -541,5 +541,5 @@ const styles = StyleSheet.create({
   // Aksi
   cta: { gap: 8, paddingTop: 2 },
   backHome: { alignItems: 'center', paddingVertical: 12 },
-  backHomeText: { fontSize: 15, fontWeight: '600', color: Ink },
+  backHomeText: { fontSize: 15, fontFamily: Font.semibold, color: Ink },
 });

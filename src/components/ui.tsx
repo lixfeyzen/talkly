@@ -1,6 +1,7 @@
 /**
  * Talkly UI kit — primitif bersama untuk SEMUA layar after-login (redesign
- * 2026-07-04). Nilai (radius/padding/font/warna/shadow) DISALIN PERSIS dari
+ * 2026-07-04; diselaraskan ke desain final ungu 2026-10-18: tombol utama ungu gradasi,
+ * pilihan aktif dan menu aktif ungu, font Plus Jakarta Sans). Nilai (radius/padding/font/warna/shadow) DISALIN PERSIS dari
  * component sheet Claude Design "Talkly After-Login.dc.html" supaya app 1:1
  * dengan mockup. Pakai komponen ini; jangan bikin varian sendiri per layar.
  */
@@ -16,8 +17,11 @@ import {
   type TextStyle,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { Ink, Placeholder, HairlineBorder, Pastel, Spacing } from '@/constants/theme';
+import { TalklyMark } from '@/components/talkly-mark';
+
+import { Ink, Placeholder, HairlineBorder, Pastel, Spacing, Font, Brand } from '@/constants/theme';
 
 type FeatherName = React.ComponentProps<typeof Feather>['name'];
 export type PastelName = 'ice' | 'lilac' | 'cream' | 'pink' | 'mint';
@@ -101,19 +105,25 @@ export function PrimaryButton({
       disabled={disabled || loading}
       accessibilityRole="button"
       style={({ pressed }) => [
-        styles.primaryBtn,
-        { opacity: disabled ? 0.4 : loading ? 0.7 : pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] },
+        styles.primaryShadow,
+        { opacity: disabled ? 0.45 : loading ? 0.8 : pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] },
         style,
       ]}>
-      {loading ? (
-        <ActivityIndicator color="#FFFFFF" />
-      ) : (
-        <>
-          {icon && iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
-          <Text style={styles.primaryBtnText}>{label}</Text>
-          {icon && !iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
-        </>
-      )}
+      <LinearGradient
+        colors={[Brand.violetLight, Brand.violetDeep]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.primaryBtn}>
+        {loading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <>
+            {icon && iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
+            <Text style={styles.primaryBtnText}>{label}</Text>
+            {icon && !iconLeft && <Feather name={icon} size={17} color="#FFFFFF" />}
+          </>
+        )}
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -175,11 +185,11 @@ export function Chip({
   let bg: string;
   let fg: string;
   let border = 'transparent';
-  let weight: TextStyle['fontWeight'] = '600';
+  let family: string = Font.semibold;
   if (selected) {
-    bg = pastel ? PASTEL_BG[pastel] : Ink;
+    bg = pastel ? PASTEL_BG[pastel] : Brand.violet;
     fg = pastel ? PASTEL_INK[pastel] : '#FFFFFF';
-    if (pastel) weight = '700';
+    if (pastel) family = Font.bold;
   } else if (pastel) {
     bg = '#FFFFFF';
     fg = '#60646C';
@@ -199,7 +209,7 @@ export function Chip({
         { backgroundColor: bg, borderColor: border, opacity: pressed ? 0.85 : 1 },
       ]}>
       {icon && <Feather name={icon} size={14} color={fg} />}
-      <Text style={[styles.chipText, compact && styles.chipTextCompact, { color: fg, fontWeight: weight }]}>
+      <Text style={[styles.chipText, compact && styles.chipTextCompact, { color: fg, fontFamily: family }]}>
         {label}
       </Text>
     </Pressable>
@@ -265,7 +275,7 @@ export function Toggle({ on, onToggle }: { on: boolean; onToggle?: () => void })
       onPress={onToggle}
       accessibilityRole="switch"
       accessibilityState={{ checked: on }}
-      style={[styles.toggle, { backgroundColor: on ? Ink : '#E4E5E8' }]}>
+      style={[styles.toggle, { backgroundColor: on ? Brand.violet : '#E4E5E8' }]}>
       <View style={[styles.toggleKnob, on ? styles.toggleKnobOn : styles.toggleKnobOff]} />
     </Pressable>
   );
@@ -347,9 +357,7 @@ export function EmptyState({
       <View style={[styles.stateDot, { top: 16, left: 22, backgroundColor: Pastel.pink }]} />
       <View style={[styles.stateDot, { top: 40, right: 26, backgroundColor: Pastel.mint }]} />
       <View style={[styles.stateDot, { bottom: 20, left: 34, backgroundColor: Pastel.cream }]} />
-      <View style={styles.stateBubble}>
-        <Text style={styles.stateBubbleText}>Let&apos;s talk</Text>
-      </View>
+      <TalklyMark size={40} />
       <Text style={styles.stateTitle}>{title}</Text>
       <Text style={styles.stateSub}>{subtitle}</Text>
       {ctaLabel && onCta && (
@@ -414,8 +422,8 @@ export function BottomNav({
         accessibilityRole="button"
         accessibilityState={{ selected: on }}
         style={styles.tabItem}>
-        <Feather name={icon} size={23} color={on ? Ink : '#8B8F98'} />
-        <Text style={[styles.tabLabel, { color: on ? Ink : '#8B8F98', fontWeight: on ? '700' : '500' }]}>
+        <Feather name={icon} size={23} color={on ? Brand.violet : '#77767F'} />
+        <Text style={[styles.tabLabel, { color: on ? Brand.violet : '#66656E', fontFamily: on ? Font.bold : Font.medium }]}>
           {label}
         </Text>
       </Pressable>
@@ -467,9 +475,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.45)',
   },
   heroInner: { position: 'relative' },
+  primaryShadow: {
+    borderRadius: 999,
+    shadowColor: Brand.violet,
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
+  },
   primaryBtn: {
     flexDirection: 'row',
-    backgroundColor: Ink,
     borderRadius: 999,
     height: 50,
     paddingHorizontal: 20,
@@ -477,7 +492,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  primaryBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  primaryBtnText: { color: '#FFFFFF', fontSize: 15, fontFamily: Font.bold },
   ghostBtn: {
     height: 50,
     borderRadius: 999,
@@ -487,7 +502,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ghostBtnText: { color: Ink, fontSize: 15, fontWeight: '700' },
+  ghostBtnText: { color: Ink, fontSize: 15, fontFamily: Font.bold },
   pastelTile: { borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   chip: {
     flexDirection: 'row',
@@ -519,8 +534,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 1,
   },
-  listRowTitle: { flex: 1, color: Ink, fontSize: 15, fontWeight: '600' },
-  listRowValue: { color: '#60646C', fontSize: 14, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  listRowTitle: { flex: 1, color: Ink, fontSize: 15, fontFamily: Font.semibold },
+  listRowValue: { color: '#60646C', fontSize: 14, fontFamily: Font.semibold, fontVariant: ['tabular-nums'] },
   statTile: {
     flex: 1,
     borderRadius: 20,
@@ -530,17 +545,17 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 30,
     lineHeight: 30,
-    fontWeight: '800',
+    fontFamily: Font.extrabold,
     letterSpacing: -1,
     fontVariant: ['tabular-nums'],
   },
-  statLabel: { fontSize: 12, fontWeight: '600' },
+  statLabel: { fontSize: 12, fontFamily: Font.semibold },
   miniBar: { gap: 8 },
   miniBarHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
-  miniBarLabel: { fontSize: 14, fontWeight: '700', color: Ink },
-  miniBarScore: { fontSize: 14, fontWeight: '700', color: Ink, fontVariant: ['tabular-nums'] },
+  miniBarLabel: { fontSize: 14, fontFamily: Font.bold, color: Ink },
+  miniBarScore: { fontSize: 14, fontFamily: Font.bold, color: Ink, fontVariant: ['tabular-nums'] },
   miniBarTrack: { height: 6, borderRadius: 999, backgroundColor: '#F2F3F5', overflow: 'hidden' },
-  miniBarFill: { height: '100%', borderRadius: 999, backgroundColor: Ink },
+  miniBarFill: { height: '100%', borderRadius: 999, backgroundColor: Brand.violet },
   toggle: { width: 46, height: 28, borderRadius: 999, justifyContent: 'center' },
   toggleKnob: {
     position: 'absolute',
@@ -557,16 +572,16 @@ const styles = StyleSheet.create({
   toggleKnobOn: { right: 3 },
   toggleKnobOff: { left: 3 },
   sectionLabel: {
-    color: '#8B8F98',
+    color: '#6E6D76',
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: Font.bold,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   bubble: { maxWidth: '84%', paddingHorizontal: 14, paddingVertical: 11 },
   bubbleUser: {
     alignSelf: 'flex-end',
-    backgroundColor: Ink,
+    backgroundColor: Brand.violet,
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     borderBottomLeftRadius: 18,
@@ -593,7 +608,7 @@ const styles = StyleSheet.create({
     borderColor: HairlineBorder,
     backgroundColor: '#FFFFFF',
   },
-  listenText: { fontSize: 12, fontWeight: '600', color: Ink },
+  listenText: { fontSize: 12, fontFamily: Font.semibold, color: Ink },
   typing: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
@@ -625,8 +640,8 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-4deg' }],
     marginBottom: 2,
   },
-  stateBubbleText: { fontSize: 13, fontWeight: '700', color: Pastel.lilacInk },
-  stateTitle: { fontSize: 15, fontWeight: '700', color: Ink, textAlign: 'center' },
+  stateBubbleText: { fontSize: 13, fontFamily: Font.bold, color: Pastel.lilacInk },
+  stateTitle: { fontSize: 15, fontFamily: Font.bold, color: Ink, textAlign: 'center' },
   stateSub: { fontSize: 13, lineHeight: 19, color: '#60646C', textAlign: 'center' },
   errorTile: {
     width: 46,
@@ -645,9 +660,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 11,
     borderRadius: 999,
-    backgroundColor: Ink,
+    backgroundColor: Brand.violet,
   },
-  statePillText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  statePillText: { color: '#FFFFFF', fontSize: 13, fontFamily: Font.bold },
   bottomBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
