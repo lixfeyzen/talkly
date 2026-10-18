@@ -1,6 +1,6 @@
 # Audit nilai fitur Talkly untuk bisnis (19 Oktober 2026)
 
-Penilaian saja, belum ada fitur yang diubah atau dihapus. Keputusan buang atau sembunyikan menunggu Yohanes.
+Penilaian saja, belum ada fitur yang diubah atau dihapus. Lihat bagian Revisi: dua dari tiga usulan awal ditarik sesudah diuji ulang.
 
 ## Dasar penilaian
 1. Pengguna sasaran: profesional non-penutur asli yang sedang menyiapkan interview kerja berbahasa Inggris (docs/PROJECT-NOTES.md).
@@ -20,13 +20,12 @@ Penilaian saja, belum ada fitur yang diubah atau dihapus. Keputusan buang atau s
 6. Ingatan pola kesalahan dan bahasa asal pengguna (dipakai di prompt AI). Ini pembeda Talkly dari app interview umum.
 7. Pengingat harian (notifikasi lokal, tanpa biaya server).
 
-### Sederhanakan
-1. Free chat. Skenario Networking, Small talk, dan Client meeting adalah bahasa Inggris kerja sesudah diterima, bukan persiapan interview, dan bersaing langsung dengan app bahasa yang jauh lebih besar. Usul: tetap ada sebagai pemanasan, tapi skenarionya hanya yang dekat dengan interview (About yourself, Salary talk), atau ganti jadi latihan satu pertanyaan bebas. Biaya AI-nya sama dengan mock interview per giliran.
-2. Dua layar kemajuan. Progress (dashboard) dan Practice history (trajectory) sama-sama menampilkan kemajuan. Usul: satukan jadi satu layar Progress.
-3. Streak. Murah dan tidak berbiaya AI, tapi untuk orang dengan tenggat interview, hitung mundur lebih bermakna daripada rangkaian hari. Usul: tetap ada sebagai angka kecil, jangan dijadikan pusat.
+### Revisi sesudah diuji ulang (19 Oktober 2026, atas pertanyaan "apakah anda yakin 100%")
+Versi pertama dokumen ini mengusulkan membuang Weekly challenge, memangkas Free chat, dan menyatukan dua layar kemajuan. Sesudah catatan proyek dan kode diperiksa ulang, dua usulan pertama kutarik:
 
-### Buang
-1. Weekly challenge. Sudah dimatikan di app, tapi kodenya masih ada: 1 layar, 5 rute server (backend/src/app/api/challenges), 1 tabel, dan tombol tersembunyi di Progress. Kode mati menambah beban rawat dan permukaan serangan tanpa manfaat bagi pengguna. Usul: hapus kode dan rutenya. Tabelnya dibiarkan dulu (menghapus data perlu izin terpisah).
+1. Free chat dan Streak tetap. Yohanes sudah membatalkan usulan membuang keduanya pada 7 Oktober 2026, karena Home adalah rancangan yang sudah disetujui dan alasannya hanya dugaan (docs/PROJECT-NOTES.md baris 313, docs/RENCANA-VALIDASI-BISNIS.md butir 4). Hari ini tidak ada bukti baru, jadi usulan yang sama tidak diajukan lagi. Satu-satunya akun bukan uji yang pernah berlatih justru memakai Free chat (3 sesi), walau itu kemungkinan akun Yohanes sendiri.
+2. Weekly challenge tetap seperti sekarang: ditunda, kode dipertahankan, sesuai keputusan yang tercatat (PROJECT-NOTES baris 391 dan 776). Alasan beban rawat dan keamanan juga ternyata lemah, karena kelima rutenya sudah dikunci di server lewat WEEKLY_CHALLENGE_ENABLED (backend/src/lib/features/v1.ts) dan app tidak bisa membukanya.
+3. Yang tetap diusulkan: menyatukan Progress (dashboard.tsx) dan Practice history (trajectory.tsx) jadi satu layar. Ini sejalan dengan bedah fitur 7 Oktober yang menilai grafik tren jangka panjang tidak perlu. Karena keduanya layar yang sudah disetujui, langkah pertamanya mockup, bukan kode.
 
 ## Yang belum pasti
 Belum pasti: fitur mana yang benar-benar dipakai, karena belum ada pengguna sungguhan. Cara memastikan: 5 orang target memakai app selama seminggu, lalu hitung siapa yang menyelesaikan mock interview pertama, membuka rapor, dan kembali di hari lain.
