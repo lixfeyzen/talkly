@@ -273,10 +273,12 @@ export default function HomeScreen() {
             <View style={styles.chipsWrap}>
               {/* Mock interview sudah ada sebagai tombol utama Start interview di atas
                   (audit alur 2026-10-18), jadi chip duplikatnya dihapus. */}
-              <Chip label="Free chat" onPress={() => router.push('/conversation')} />
+              {/* Label menyebut manfaatnya, bukan nama fiturnya (audit alur poin 5). */}
+              <Chip label="Chat with corrections" icon="message-circle" onPress={() => router.push('/conversation')} />
               {suggestion && (
                 <Chip
-                  label="Targeted"
+                  label="Practice my weak spots"
+                  icon="target"
                   onPress={() =>
                     router.push({
                       pathname: '/conversation',

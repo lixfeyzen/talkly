@@ -17,7 +17,14 @@
   (kecuali /api/auth/me) membuang token dan pindah ke /login (`setUnauthorizedHandler` di client.ts, dipasang
   di _layout.tsx); diuji tanpa token, dengan token palsu, lalu token asli tetap normal. Juga: fetch localhost
   di weekly-challenge diganti apiFetch, ejaan Practise diseragamkan jadi Practice.
-- Belum: login pertama 9 detik belum terulang; label Free chat belum diubah; uji Android asli.
+- Login lambat: produksi login 1,3 detik hangat (2026-10-19, curl ke talkly-api.vercel.app), lokal dari
+  Jakarta 0,3 detik. Sebab: fungsi Vercel jalan di iad1 (header X-Vercel-Id), sedangkan satu query Neon dari
+  Jakarta 32 sampai 50 ms, jadi database hampir pasti di Singapura (ASSUMED dari latensi; region Neon belum
+  dilihat di dashboard). Login = 5 query berurutan, tiap query menyeberang Amerika–Asia. Perbaikan:
+  `backend/vercel.json` regions sin1 (Hobby boleh 1 region, docs Vercel functions/configuring-functions/region);
+  berlaku saat deploy berikutnya. Angka 9 detik belum terulang (uji dingin ikut terganggu aktivitas lokal).
+- Label chip Home: Free chat → Chat with corrections, Targeted → Practice my weak spots (audit poin 5).
+- Belum: uji Android asli; ukur ulang login sesudah deploy sin1.
 
 ## Latihan dari lowongan (tempel lowongan, tanpa CV) — 2026-10-19: LULUS lokal
 - Alur: Interview → pilih role → "Practice for a specific job post" → tempel lowongan →
