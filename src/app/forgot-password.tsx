@@ -84,15 +84,16 @@ export default function ForgotPasswordScreen() {
   return (
     <AuthLayout
       title="Reset your password"
-      subtitle={step === 'email' ? 'We’ll email you a 6-digit code.' : 'Enter the code and choose a new password.'}
+      subtitle={
+        step === 'email'
+          ? 'Enter your account email. If it’s registered, we’ll send a 6-digit code (valid for 15 minutes).'
+          : `If ${email} is registered, a 6-digit code is on its way. Enter it and choose a new password.`
+      }
       topQuestion="Remember your password?"
       topAction="Back to sign in"
       onTopAction={() => router.push('/login')}>
       {step === 'email' ? (
         <>
-          <Text style={styles.hint}>
-            Enter your account email. If it’s registered, we’ll send a 6-digit code (valid for 15 minutes).
-          </Text>
           <AuthInput
             placeholder="Email"
             autoCapitalize="none"
@@ -113,9 +114,6 @@ export default function ForgotPasswordScreen() {
         </>
       ) : (
         <>
-          <Text style={styles.hint}>
-            If {email} is registered, a 6-digit code is on its way.
-          </Text>
           <AuthInput
             placeholder="6-digit code"
             keyboardType="number-pad"
@@ -156,7 +154,6 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  hint: { color: AuthPalette.textSecondary, fontSize: 14, lineHeight: 20, fontFamily: Font.medium },
   error: { color: AuthPalette.error, fontSize: 14, textAlign: 'center', fontFamily: Font.medium },
   resendLink: { alignSelf: 'center', marginTop: Spacing.two },
   resendText: { color: AuthPalette.textPrimary, fontSize: 14, fontFamily: Font.bold },
