@@ -20,10 +20,14 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const canSubmit = !!email && !!password && !loading;
-
+  // Tombol selalu aktif (desain final): isian kosong dijawab dengan pesan
+  // yang jelas, bukan tombol pudar yang tidak bilang apa-apa.
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (loading) return;
+    if (!email.trim() || !password) {
+      setError('Enter your email and password.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -86,7 +90,6 @@ export default function LoginScreen() {
       <AuthButton
         label="Sign in"
         onPress={handleSubmit}
-        disabled={!email || !password}
         loading={loading}
       />
     </AuthLayout>

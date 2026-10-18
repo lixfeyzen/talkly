@@ -1,9 +1,8 @@
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
-import { AuthButton, AuthPalette, BrandRow } from '@/components/auth/auth-layout';
+import { AuthButton, AuthPalette, BrandRow, GlowBackdrop } from '@/components/auth/auth-layout';
 import { Spacing, MaxContentWidth, Brand, Font } from '@/constants/theme';
 
 // Layar pertama untuk orang yang belum masuk (desain final ungu, 2026-10-18).
@@ -14,15 +13,28 @@ import { Spacing, MaxContentWidth, Brand, Font } from '@/constants/theme';
 export default function WelcomeScreen() {
   return (
     <View style={styles.page}>
-      <LinearGradient colors={[Brand.glow, Brand.paper]} style={styles.glow} pointerEvents="none" />
+      <GlowBackdrop />
       <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
         <ScrollView contentContainerStyle={styles.scroll} bounces={false}>
           <View style={styles.inner}>
             <BrandRow />
 
-            <Text style={styles.title} accessibilityRole="header">
-              Walk into your interview <Text style={styles.highlight}>ready.</Text>
-            </Text>
+            {/* Judul dipecah per baris supaya stabilo pada "ready." berupa kotak
+                sendiri yang tidak menimpa baris di atasnya (latar Text bersarang
+                di RN memenuhi seluruh tinggi baris). */}
+            <View
+              style={styles.titleBlock}
+              accessible
+              accessibilityRole="header"
+              accessibilityLabel="Walk into your interview ready.">
+              <Text style={styles.title}>Walk into your</Text>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>interview </Text>
+                <View style={styles.titleMark}>
+                  <Text style={[styles.title, styles.titleMarkText]}>ready.</Text>
+                </View>
+              </View>
+            </View>
             <Text style={styles.subtitle}>
               Practice real interview questions out loud. Talkly fixes what you say and remembers
               your weak spots.
@@ -59,7 +71,6 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: Brand.paper },
-  glow: { position: 'absolute', top: 0, left: 0, right: 0, height: 380 },
   flex: { flex: 1 },
   scroll: { flexGrow: 1 },
   inner: {
@@ -68,17 +79,25 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+    paddingTop: Spacing.four,
     paddingBottom: Spacing.four,
   },
+  titleBlock: { marginTop: Spacing.five + Spacing.three },
+  titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
   title: {
-    marginTop: Spacing.five,
     fontFamily: Font.extrabold,
-    fontSize: 36,
-    lineHeight: 40,
-    letterSpacing: -1.4,
+    fontSize: 38,
+    lineHeight: 42,
+    letterSpacing: -1.7,
     color: AuthPalette.textPrimary,
   },
+  titleMark: {
+    backgroundColor: Brand.highlight,
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    marginVertical: 3,
+  },
+  titleMarkText: { lineHeight: 36 },
   highlight: { backgroundColor: Brand.highlight, color: AuthPalette.textPrimary },
   subtitle: {
     marginTop: Spacing.three,
@@ -88,13 +107,13 @@ const styles = StyleSheet.create({
     color: AuthPalette.textSecondary,
   },
   card: {
-    marginTop: Spacing.four,
+    marginTop: Spacing.five,
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#ECECEE',
-    padding: Spacing.three,
-    gap: Spacing.two,
+    padding: Spacing.three + 4,
+    gap: Spacing.two + 2,
     shadowColor: Brand.violetDeep,
     shadowOpacity: 0.08,
     shadowRadius: 18,

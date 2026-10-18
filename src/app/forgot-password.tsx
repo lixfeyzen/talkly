@@ -22,7 +22,11 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleRequestCode() {
-    if (!email || loading) return;
+    if (loading) return;
+    if (!email.trim()) {
+      setError('Enter your account email.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -42,7 +46,15 @@ export default function ForgotPasswordScreen() {
   }
 
   async function handleReset() {
-    if (code.trim().length !== 6 || !newPassword || loading) return;
+    if (loading) return;
+    if (code.trim().length !== 6) {
+      setError('Enter the 6-digit code from the email.');
+      return;
+    }
+    if (!newPassword) {
+      setError('Enter a new password.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -96,7 +108,6 @@ export default function ForgotPasswordScreen() {
           <AuthButton
             label="Send code"
             onPress={handleRequestCode}
-            disabled={!email || loading}
             loading={loading}
           />
         </>
@@ -126,7 +137,6 @@ export default function ForgotPasswordScreen() {
           <AuthButton
             label="Reset password"
             onPress={handleReset}
-            disabled={code.trim().length !== 6 || !newPassword || loading}
             loading={loading}
           />
 

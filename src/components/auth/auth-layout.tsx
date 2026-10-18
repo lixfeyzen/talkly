@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import {
   StyleSheet,
   View,
@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { TalklyMark } from '@/components/talkly-mark';
 import { Spacing, MaxContentWidth, Brand, Font } from '@/constants/theme';
@@ -32,6 +33,25 @@ export const AuthPalette = {
   error: '#D92D20',
   success: '#067647',
 } as const;
+
+// Cahaya ungu lembut berbentuk radial di atas layar, sama dengan mockup final
+// (gradasi linear terlalu rata dan membuat seluruh bagian atas ungu).
+export function GlowBackdrop() {
+  // Id unik per layar, sebab sama seperti logo: di web layar lama di stack
+  // tetap terpasang tersembunyi dan url(#id) bersama akan ikut hilang.
+  const id = `authGlow${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  return (
+    <Svg style={styles.glow} width="100%" height="100%" pointerEvents="none">
+      <Defs>
+        <RadialGradient id={id} cx="50%" cy="0%" rx="75%" ry="100%" fx="50%" fy="0%">
+          <Stop offset="0" stopColor={Brand.glow} stopOpacity={1} />
+          <Stop offset="1" stopColor={Brand.glow} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
 
 export function BrandRow() {
   return (
@@ -60,11 +80,7 @@ export function AuthLayout({
 }) {
   return (
     <View style={styles.page}>
-      <LinearGradient
-        colors={[Brand.glow, Brand.paper]}
-        style={styles.glow}
-        pointerEvents="none"
-      />
+      <GlowBackdrop />
       <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           style={styles.root}
@@ -174,7 +190,7 @@ export function AuthButton({
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: AuthPalette.canvas },
   root: { flex: 1, backgroundColor: 'transparent' },
-  glow: { position: 'absolute', top: 0, left: 0, right: 0, height: 360 },
+  glow: { position: 'absolute', top: 0, left: 0, right: 0, height: 380 },
   scrollContent: { flexGrow: 1 },
   inner: {
     flexGrow: 1,
@@ -182,17 +198,17 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
     paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+    paddingTop: Spacing.four,
     paddingBottom: Spacing.four,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   brandText: { fontFamily: Font.extrabold, fontSize: 21, letterSpacing: -1, color: AuthPalette.textPrimary },
-  titleBlock: { marginTop: Spacing.five, gap: Spacing.two + 2 },
+  titleBlock: { marginTop: Spacing.five + Spacing.two, gap: Spacing.two + 2 },
   title: {
     fontFamily: Font.extrabold,
-    fontSize: 32,
-    lineHeight: 36,
-    letterSpacing: -1.2,
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -1,
     color: AuthPalette.textPrimary,
   },
   subtitle: { fontFamily: Font.medium, fontSize: 15, lineHeight: 22, color: AuthPalette.textSecondary },

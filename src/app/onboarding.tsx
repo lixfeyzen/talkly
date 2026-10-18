@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
-import { AuthButton, AuthPalette } from '@/components/auth/auth-layout';
+import { AuthButton, AuthPalette, GlowBackdrop } from '@/components/auth/auth-layout';
 import { Spacing, MaxContentWidth, Brand, Font, Placeholder } from '@/constants/theme';
 import { updateProfile, NATIVE_LANGUAGE_OPTIONS } from '@/lib/auth/api';
 import { NetworkError } from '@/lib/api/client';
@@ -23,7 +22,11 @@ export default function OnboardingScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleFinish() {
-    if (!selected || loading) return;
+    if (loading) return;
+    if (!selected) {
+      setError('Pick a language to continue.');
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -45,7 +48,7 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.page}>
-      <LinearGradient colors={[Brand.glow, Brand.paper]} style={styles.glow} pointerEvents="none" />
+      <GlowBackdrop />
       <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
         <View
           style={styles.progress}
@@ -120,7 +123,6 @@ export default function OnboardingScreen() {
                 <AuthButton
                   label="Start practicing"
                   onPress={handleFinish}
-                  disabled={!selected}
                   loading={loading}
                 />
                 <Pressable
@@ -141,7 +143,6 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: Brand.paper },
-  glow: { position: 'absolute', top: 0, left: 0, right: 0, height: 320 },
   flex: { flex: 1 },
   progress: {
     flexDirection: 'row',

@@ -19,10 +19,12 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const canSubmit = !!email && !!password && !loading;
-
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (loading) return;
+    if (!email.trim() || !password) {
+      setError('Enter your email and a password.');
+      return;
+    }
     // Cek lokal dulu (aturan sama dengan backend) supaya salah ketik tidak
     // makan jatah percobaan register.
     if (password.length < 8 || !/\S/.test(password)) {
@@ -80,7 +82,6 @@ export default function RegisterScreen() {
       <AuthButton
         label="Create account"
         onPress={handleSubmit}
-        disabled={!email || !password}
         loading={loading}
       />
     </AuthLayout>
