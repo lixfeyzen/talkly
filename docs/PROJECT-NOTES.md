@@ -5,6 +5,17 @@
 > Konteks lengkap & perbandingan ide lain: `D:\projek\portfolio-idea-research\IDEA-TIERS.md`.
 > Ide sebelumnya (expense-tracker) disimpan di `D:\projek\subscription-ai-mobile\`.
 
+## Latihan dari lowongan (tempel lowongan, tanpa CV) — 2026-10-19: LULUS lokal
+- Alur: Interview → pilih role → "Practice for a specific job post" → tempel lowongan →
+  pratinjau kebutuhan + 5 pertanyaan (pembuka & penutup tetap, 3 tengah dari lowongan) → mock interview biasa.
+- Server: `POST /api/interview-job` (`backend/src/lib/ai/job-post.ts`), kuota "ai", paket ditandatangani HMAC
+  terikat userId, dibekukan di giliran pembuka transkrip. Teks lowongan TIDAK disimpan/di-log. Tanpa migrasi DB.
+- Bukti: `npm run test:job-post` 18 lulus; `test:interview` 22 lulus; uji langsung: lowongan nyata 200,
+  resep 422, lowongan berisi perintah jahat 422, paket diubah 400; di web 375x812 giliran 1 mengirim paket,
+  giliran 2 tidak, Q2 dan Q3 = pertanyaan lowongan; muat ulang halaman kembali ke layar lowongan.
+- Belum: uji di Android asli; lowongan sah yang menyisipkan perintah ditolak utuh (aman, tapi pengguna harus
+  menempel ulang tanpa teks aneh). Rancangan: `docs/rancangan-latihan-dari-lowongan-2026-10-19.md`.
+
 ## Uji v6 "pinjam bukti dari jawaban lain" — 2026-10-10: GAGAL → dimatikan; 2 cacat ditemukan & diperbaiki
 
 Atas izin Yohanes ("sure"). Uji live di 4 transkrip HELD-OUT (I6 Designer, I2 SE, I3 Marketing, I4 General; tak

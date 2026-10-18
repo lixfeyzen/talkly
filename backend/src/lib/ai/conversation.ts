@@ -1,3 +1,4 @@
+import type { JobPack } from "@/lib/ai/job-post";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { openai } from "@/lib/ai/openai";
@@ -15,6 +16,8 @@ export type ChatTurn = {
   practiceContext?: AnswerPracticeContext;
   transferSelection?: FrozenTaskSelection | null; transferReason?: string;
   transferContext?: TransferContext; criterionCheck?: CriterionCheck;
+  // Latihan dari lowongan: paket pertanyaan dibekukan di giliran pembuka.
+  jobPack?: JobPack;
 };
 
 export const turnResultSchema = z.object({

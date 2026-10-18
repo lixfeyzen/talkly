@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { PrimaryButton, SectionLabel } from '@/components/ui';
-import { Ink, Pastel, HairlineBorder, HeroBg, MaxContentWidth, Font } from '@/constants/theme';
+import { Ink, Pastel, HairlineBorder, HeroBg, MaxContentWidth, Font, Brand } from '@/constants/theme';
 import { INTERVIEW_ROLES } from '@/lib/interviews/api';
 
 type FeatherName = ComponentProps<typeof Feather>['name'];
@@ -155,6 +155,20 @@ export default function InterviewStartScreen() {
                 router.push({ pathname: '/conversation', params: { mode: 'interview', role } });
               }}
             />
+            <Pressable
+              onPress={() => {
+                if (!role) {
+                  setNeedRole(true);
+                  return;
+                }
+                router.push({ pathname: '/interview-job', params: { role } });
+              }}
+              accessibilityRole="button"
+              hitSlop={6}
+              style={({ pressed }) => [styles.jobLink, pressed && styles.pressed]}>
+              <Feather name="clipboard" size={15} color={Brand.violet} />
+              <Text style={styles.jobLinkText}>Practice for a specific job post</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </View>
@@ -237,7 +251,7 @@ const styles = StyleSheet.create({
     marginTop: -26,
     paddingHorizontal: 24,
     paddingTop: 22,
-    paddingBottom: 120,
+    paddingBottom: 170,
     gap: 22,
   },
 
@@ -274,6 +288,8 @@ const styles = StyleSheet.create({
   roleTextSelected: { color: ROLE_SELECTED_TEXT, fontFamily: Font.bold },
 
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  jobLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, marginTop: 4 },
+  jobLinkText: { fontSize: 14.5, fontFamily: Font.semibold, color: Brand.violet },
   needRole: { textAlign: 'center', color: '#D92D20', fontSize: 14, fontFamily: Font.medium, marginBottom: 10 },
   footerInner: {
     paddingHorizontal: 24,

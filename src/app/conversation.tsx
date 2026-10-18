@@ -21,7 +21,7 @@ import { Chip, MessageBubble, BubbleTextColor, ListenPill, TypingDots, PrimaryBu
 import { Spacing, MaxContentWidth, Ink, Placeholder, HairlineBorder, Danger, Success, Font } from '@/constants/theme';
 import { sendMessage, fetchConversationDetail, criterionStatusLabel, criterionValidationLabel,
   type Mistake, type MistakeCategory, type FrozenTaskSelection, type TransferContext, type CriterionCheck } from '@/lib/conversations/api';
-import { buildInterviewOpener, INTERVIEW_ROLES, fetchReport, type AnswerPracticeContext } from '@/lib/interviews/api';
+import { buildInterviewOpener, INTERVIEW_ROLES, fetchReport, peekPendingJobPack, type AnswerPracticeContext } from '@/lib/interviews/api';
 import { ApiError } from '@/lib/api/client';
 import { WEEKLY_CHALLENGE_ENABLED, isWeeklyMode } from '@/lib/features/v1';
 import { transcribeAudio, fetchTtsAudioUri } from '@/lib/speech/api';
@@ -68,8 +68,15 @@ const PREVIEW_MESSAGES: Message[] = [
 ];
 
 export default function ConversationScreen() {
-  const { mode } = useLocalSearchParams<{ mode?: string | string[] }>();
+  const { mode, role, job } = useLocalSearchParams<{ mode?: string | string[]; role?: string; job?: string }>();
   if (!WEEKLY_CHALLENGE_ENABLED && isWeeklyMode(mode)) return <Redirect href="/" />;
+  // Latihan dari lowongan: paketnya hidup di memori. Setelah halaman dimuat
+  // ulang paketnya hilang, jadi kembali ke layar lowongan, bukan diam-diam
+  // memakai pertanyaan umum.
+  const jobRole = INTERVIEW_ROLES.find(r => r === role);
+  if (mode === 'interview' && job === '1' && jobRole && !peekPendingJobPack(jobRole)) {
+    return <Redirect href={{ pathname: '/interview-job', params: { role: jobRole } }} />;
+  }
   return <ActiveConversationScreen />;
 }
 
@@ -87,6 +94,7 @@ function ActiveConversationScreen() {
     practiceTarget?: string;
     transferSource?: string;
     transferSelection?: string;
+    job?: string;
   }>();
   const [practiceContext, setPracticeContext] = useState<AnswerPracticeContext | null>(null);
   const [practiceLocked, setPracticeLocked] = useState(false);
@@ -118,6 +126,7 @@ function ActiveConversationScreen() {
     ? INTERVIEW_ROLES.find(role => role === params.role)
     : undefined;
   const isInterview = Boolean(interviewRole);
+  const [jobPack] = useState(() => interviewRole && params.job === '1' ? peekPendingJobPack(interviewRole) : null);
   const interviewOpener = interviewRole ? buildInterviewOpener(interviewRole) : '';
   // Preview DESAIN dev-only: render frame mockup "02 Conversation" 1:1 (header,
   // pesan, koreksi, tombol report, input) TANPA AI. Hanya di __DEV__ + ?preview=1.
@@ -331,6 +340,7 @@ function ActiveConversationScreen() {
         transferTarget: !sessionId && isTransfer && transferContext
           ? { sourceRevisionSessionId: transferContext.selection.sourceRevisionSessionId, selectionId: transferContext.selection.selectionId }
           : undefined,
+        jobPack: !sessionId && isInterview && jobPack ? jobPack : undefined,
       }};
       setMessages((prev) => [...prev, { role: 'user', content: userText }]);
       setInput('');
@@ -387,7 +397,7 @@ function ActiveConversationScreen() {
     : isAnswerPractice
     ? practiceReady && practiceContext ? `${practiceContext.interviewRole} · Answer ${practiceContext.answerNumber}` : 'Loading your original answer'
     : isInterview
-    ? `${interviewRole}${
+    ? `${interviewRole}${jobPack ? ' · Job' : ''}${
         interviewProgress && !interviewProgress.finished
           ? ` · Q${interviewProgress.questionNumber}/${interviewProgress.total}`
           : interviewProgress?.finished

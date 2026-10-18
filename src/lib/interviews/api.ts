@@ -78,3 +78,29 @@ export async function generateReport(sessionId: string): Promise<InterviewReport
 export async function fetchReport(sessionId: string): Promise<InterviewReportResponse> {
   return apiFetch<InterviewReportResponse>(`/api/interviews/${sessionId}/report`, { auth: true });
 }
+
+// Latihan dari lowongan: server mengubah teks lowongan jadi 3 pertanyaan +
+// kebutuhan utama, ditandatangani supaya tidak bisa diubah di klien.
+export const JOB_TEXT_MIN = 80;
+export const JOB_TEXT_MAX = 6000;
+
+export type JobPack = { requirements: string[]; questions: string[]; token: string };
+
+export async function createJobPack(jobText: string, role: InterviewRole): Promise<JobPack> {
+  return apiFetch<JobPack>('/api/interview-job', {
+    method: 'POST',
+    auth: true,
+    body: { jobText, role },
+    timeoutMs: AI_TIMEOUT_MS,
+  });
+}
+
+// Paket dibawa dari layar lowongan ke layar percakapan lewat memori, bukan URL
+// (terlalu panjang dan tidak perlu terlihat). Hilang kalau halaman dimuat ulang.
+let pendingJobPack: { role: InterviewRole; pack: JobPack } | null = null;
+export function setPendingJobPack(role: InterviewRole, pack: JobPack) {
+  pendingJobPack = { role, pack };
+}
+export function peekPendingJobPack(role: InterviewRole): JobPack | null {
+  return pendingJobPack && pendingJobPack.role === role ? pendingJobPack.pack : null;
+}

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MISTAKE_CATEGORIES } from "@/lib/ai/mistake-categories";
 import { INTERVIEW_ROLES } from "@/lib/ai/interview";
+import { signedJobPackSchema } from "@/lib/ai/job-post";
 
 export const sendMessageSchema = z
   .object({
@@ -15,6 +16,9 @@ export const sendMessageSchema = z
     // Weekly intent is recognized only so deferred v1 requests get a clear error.
     mode: z.enum(["free", "mock_interview", "answer_practice", "criterion_transfer", "weekly_challenge"]).optional(),
     interviewRole: z.enum(INTERVIEW_ROLES).optional(),
+    // Latihan dari lowongan: paket bertanda tangan dari /api/interview-job,
+    // hanya untuk memulai mock interview baru.
+    jobPack: signedJobPackSchema.optional(),
     practiceTarget: z.object({
       sourceSessionId: z.string().uuid(),
       targetId: z.string().regex(/^[a-f0-9]{64}$/),
@@ -39,6 +43,9 @@ export const sendMessageSchema = z
   })
   .refine((d) => !d.transferTarget || !d.mode || d.mode === "criterion_transfer", {
     message: "transferTarget belongs only to criterion_transfer",
+  })
+  .refine((d) => !d.jobPack || (d.mode === "mock_interview" && !d.sessionId), {
+    message: "jobPack belongs only to a new mock interview",
   })
   .refine((d) => !d.practiceTarget || !d.transferTarget, {
     message: "Choose either answer revision or guided application",

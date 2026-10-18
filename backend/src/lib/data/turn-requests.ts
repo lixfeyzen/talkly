@@ -5,6 +5,7 @@ import type { TurnResult } from "@/lib/ai/conversation";
 import type { StreakData } from "@/lib/data/streaks";
 import type { AnswerPracticeContext } from "@/lib/practice/interview-target";
 import type { FrozenTaskSelection, TransferContext } from "@/lib/practice/criterion-transfer";
+import type { JobPack } from "@/lib/ai/job-post";
 
 export type TurnResponse = TurnResult & {
   sessionId: string;
@@ -20,6 +21,7 @@ export type PreparedTurn = {
   openingMessage?: string;
   practiceContext?: AnswerPracticeContext;
   transferContext?: TransferContext;
+  jobPack?: JobPack;
   expectedTurns: number;
   createdAt: string;
   response: TurnResponse;
@@ -125,7 +127,8 @@ export async function completeTurnRequest(userId: string, requestId: string): Pr
     ...(prepared.expectedTurns === 0 && prepared.openingMessage
       ? [{ role: "assistant", content: prepared.openingMessage, requestId, createdAt: prepared.createdAt,
           ...(prepared.practiceContext ? { practiceContext: prepared.practiceContext } : {}),
-          ...(prepared.transferContext ? { transferContext: prepared.transferContext } : {}) }]
+          ...(prepared.transferContext ? { transferContext: prepared.transferContext } : {}),
+          ...(prepared.jobPack ? { jobPack: prepared.jobPack } : {}) }]
       : []),
     { role: "user", content: prepared.message, mistakes: prepared.response.mistakes, requestId, createdAt: prepared.createdAt,
       ...(prepared.response.feedbackGuidanceVersion !== undefined ? { feedbackGuidanceVersion: prepared.response.feedbackGuidanceVersion } : {}) },

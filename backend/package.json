@@ -30,7 +30,8 @@
     "test:confidence": "tsx --test src/lib/ai/confidence.test.ts",
     "test:confidence-helper": "tsx scripts/test-confidence-helper.mts",
     "test:persistence": "node --wasm-num-compilation-tasks=1 --no-wasm-tier-up scripts/test-persistence.mjs",
-    "test:learning": "node --wasm-num-compilation-tasks=1 --no-wasm-tier-up scripts/test-learning-loop.mjs"
+    "test:learning": "node --wasm-num-compilation-tasks=1 --no-wasm-tier-up scripts/test-learning-loop.mjs",
+    "test:job-post": "tsx scripts/test-job-post.mts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

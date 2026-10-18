@@ -10,6 +10,7 @@ import {
   buildInterviewOpener,
   countAnswers,
   getInterviewQuestions,
+  getJobInterviewQuestions,
   isInterviewFinished,
   QUESTIONS_PER_INTERVIEW,
   INTERVIEW_COMPLETION_REPLY,
@@ -34,6 +35,7 @@ import {
   resolvePracticeContext, savedPracticeContext, buildAnswerPracticePrompt,
 } from "@/lib/practice/interview-target";
 import type { InterviewReport } from "@/lib/ai/interview-report";
+import { jobPackSchema, verifyJobPack, type JobPack } from "@/lib/ai/job-post";
 import {
   findTaskSelection, savedTransferContext, freezeTaskSelection,
   buildTaskSelectionPrompt, buildTransferPrompt, validateCriterionCheck, buildTransferReply,
@@ -156,6 +158,18 @@ export async function POST(req: NextRequest) {
     if (mode === "mock_interview" && isInterviewFinished(history)) {
       return jsonCors({ error: "interview_finished" }, { status: 409 });
     }
+    // Latihan dari lowongan: sesi baru membawa paket bertanda tangan; sesi
+    // lanjutan memakai paket yang sudah dibekukan di giliran pembuka.
+    let jobPack: JobPack | null = null;
+    if (mode === "mock_interview") {
+      if (history.length === 0 && input.jobPack) {
+        jobPack = verifyJobPack(input.jobPack, auth.userId);
+        if (!jobPack) return jsonCors({ error: "invalid_job_pack" }, { status: 400 });
+      } else if (history.length > 0) {
+        const frozen = jobPackSchema.safeParse(history[0]?.role === "assistant" ? history[0].jobPack : undefined);
+        jobPack = frozen.success ? frozen.data : null;
+      }
+    }
 
     reservation = await claimTurnRequest(auth.userId, requestId, payloadHash, requestedSessionId ?? null);
     if (reservation.response || reservation.result) return jsonCors(await completeTurnRequest(auth.userId, requestId));
@@ -175,7 +189,7 @@ export async function POST(req: NextRequest) {
       : practiceContext
       ? `${buildAnswerPracticePrompt(practiceContext, native)} ${buildTaskSelectionPrompt(practiceContext, native)}`
       : mode === "mock_interview" && role
-      ? buildInterviewSystemPrompt(role, getInterviewQuestions(role, sessionId), countAnswers(history), user?.nativeLanguage ?? null, MISTAKE_CATEGORIES)
+      ? buildInterviewSystemPrompt(role, jobPack ? getJobInterviewQuestions(jobPack.questions) : getInterviewQuestions(role, sessionId), countAnswers(history), user?.nativeLanguage ?? null, MISTAKE_CATEGORIES)
       : undefined;
     const openingMessage = history.length === 0
       ? transferContext?.selection.task.question ?? practiceContext?.originalQuestion ?? (mode === "mock_interview" && role ? buildInterviewOpener(role) : undefined)
@@ -219,6 +233,7 @@ export async function POST(req: NextRequest) {
     await prepareTurnResult(reservation, {
       message: input.message, openingMessage, ...(practiceContext ? { practiceContext } : {}),
       ...(transferContext ? { transferContext } : {}),
+      ...(jobPack && history.length === 0 ? { jobPack } : {}),
       expectedTurns: history.length, createdAt: new Date().toISOString(), response,
     });
     return jsonCors(await completeTurnRequest(auth.userId, requestId));

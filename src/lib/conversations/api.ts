@@ -69,6 +69,8 @@ export async function sendMessage(params: {
   interviewRole?: string;
   practiceTarget?: { sourceSessionId: string; targetId: string };
   transferTarget?: { sourceRevisionSessionId: string; selectionId: string };
+  // Latihan dari lowongan: paket bertanda tangan, hanya di giliran pertama.
+  jobPack?: { requirements: string[]; questions: string[]; token: string };
   message: string;
 }): Promise<SendMessageResponse> {
   return apiFetch<SendMessageResponse>('/api/conversations', {
