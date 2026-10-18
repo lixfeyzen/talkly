@@ -99,7 +99,7 @@ export default function InterviewJobScreen() {
                   placeholderTextColor={Placeholder}
                   multiline
                   textAlignVertical="top"
-                  maxLength={JOB_TEXT_MAX + 500}
+                  maxLength={JOB_TEXT_MAX + 2000}
                   accessibilityLabel="Job post"
                   style={styles.input}
                 />

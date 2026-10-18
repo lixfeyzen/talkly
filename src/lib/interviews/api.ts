@@ -82,7 +82,7 @@ export async function fetchReport(sessionId: string): Promise<InterviewReportRes
 // Latihan dari lowongan: server mengubah teks lowongan jadi 3 pertanyaan +
 // kebutuhan utama, ditandatangani supaya tidak bisa diubah di klien.
 export const JOB_TEXT_MIN = 80;
-export const JOB_TEXT_MAX = 6000;
+export const JOB_TEXT_MAX = 20000;
 
 export type JobPack = { requirements: string[]; questions: string[]; token: string };
 

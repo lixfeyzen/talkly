@@ -13,8 +13,15 @@
 - Bukti: `npm run test:job-post` 18 lulus; `test:interview` 22 lulus; uji langsung: lowongan nyata 200,
   resep 422, lowongan berisi perintah jahat 422, paket diubah 400; di web 375x812 giliran 1 mengirim paket,
   giliran 2 tidak, Q2 dan Q3 = pertanyaan lowongan; muat ulang halaman kembali ke layar lowongan.
-- Belum: uji di Android asli; lowongan sah yang menyisipkan perintah ditolak utuh (aman, tapi pengguna harus
-  menempel ulang tanpa teks aneh). Rancangan: `docs/rancangan-latihan-dari-lowongan-2026-10-19.md`.
+- Closed loop lowongan sungguhan (2026-10-19, `backend/scripts/job-post-live/`): 7 lowongan publik Greenhouse
+  (GitLab, Stripe, Airbnb, Xendit) + 4 kasus tepi (lowongan Indonesia, tempelan LinkedIn bercampur menu,
+  lowongan asli berisi catatan untuk AI, artikel berita). Putaran 1: 6/11, akar masalah: (1) batas 6.000 huruf
+  menolak kebanyakan lowongan asli (GitLab median 8.026, Airbnb median 7.192, maks 16.733) → batas 20.000;
+  (2) pertanyaan perilaku berbentuk perintah ("Tell me about a time ...") dibuang saringan lalu dilaporkan
+  "bukan lowongan" → diterima, keluaran rusak kini dicoba ulang 1x lalu 502, bukan 422; (3) lowongan asli
+  berisi catatan untuk AI ditolak → kini diabaikan bagiannya; (4) satu kebutuhan gelar dikarang → prompt
+  melarang menambah syarat. Putaran akhir: 11/11 lulus.
+- Belum: uji di Android asli. Rancangan: `docs/rancangan-latihan-dari-lowongan-2026-10-19.md`.
 
 ## Uji v6 "pinjam bukti dari jawaban lain" — 2026-10-10: GAGAL → dimatikan; 2 cacat ditemukan & diperbaiki
 
